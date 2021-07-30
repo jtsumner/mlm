@@ -10,17 +10,14 @@ configfile: "../config/config.yaml"
 
 #report: "report/workflow.rst"
 include: "rules/common.smk"
-
+include: "rules/metagenomics.smk"
 localrules: multiqc_trimmed
 
 # Allow users to fix the underlying OS via singularity.
 rule all:
     input:
-        "multiqc_report.html",
-        expand("../results/filtered/{dataset}/{sample}.filtered.{read}.fastq.gz", 
-            dataset=DATASETS, 
-            sample=samples["sample_name"],
-            read=READS
-        )
-
-include: "rules/metagenomics.smk"
+        expand("../results/filtered/{dataset}/{sample}.filtered.R1.fastq.gz",
+            sample=samples["sample"], dataset=samples["dataset"]),
+        expand("../results/filtered/{dataset}/{sample}.filtered.R2.fastq.gz", 
+            sample=samples["sample"], dataset=samples["dataset"])
+        #expand("../results/filtered/{dataset}/{sample}.filtered.R2.fastq.gz")

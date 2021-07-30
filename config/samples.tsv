@@ -1,16 +1,5 @@
-sample_name
-B01_community_standard_10_ng_S28
-B02_community_standard_10_ng_S55
-B02_community_standard_1_ng_S29
-B02_community_standard_1_ng_S54
-community_standard_10ng_S30
-community_standard_1ng_S31
-DNA_B01_01_S1
-DNA_B01_02_S2
-DNA_B01_03_S3
-DNA_B02_01_S30
-DNA_B02_02_S31
-DNA_B02_04_S32
-DNA_B03_01_S1
-DNA_B03_02_S2
-DNA_B03_03_S3
+sample	dataset
+B01_community_standard_10_ng_S28	Batch_01
+DNA_B01_01_S1	Batch_01
+DNA_B02_01_S30	Batch_02
+DNA_B03_03_S3	Batch_03
