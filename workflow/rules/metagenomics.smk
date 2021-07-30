@@ -21,23 +21,23 @@ rule fastp_pe:
         r1 = "{dataset}/{sample}_R1_001.fastq.gz",
         r2 = "{dataset}/{sample}_R2_001.fastq.gz"
     output:
-        r1Filtered = "data/filtered/{dataset}/{sample}.filtered.R1.fastq.gz",
-        r2Filtered = "data/filtered/{dataset}/{sample}.filtered.R2.fastq.gz",
-        json = "data/filtered/{dataset}/{sample}_fastp.json",
-        html = "data/filtered/{dataset}/{sample}_fastp.html"
+        r1Filtered = "../results/filtered/{dataset}/{sample}.filtered.R1.fastq.gz",
+        r2Filtered = "../results/filtered/{dataset}/{sample}.filtered.R2.fastq.gz",
+        json = "../results/filtered/{dataset}/{sample}_fastp.json",
+        html = "../results/filtered/{dataset}/{sample}_fastp.html"
     threads: 16
     shell: 
-        "fastp -i {input.r1} -I {input.r2} --out1 {output.r1Filtered}
+        "fastp -i {input.r1} -I {input.r2} --out1 {output.r1Filtered}"
         " --out2 {output.r2Filtered --detect_adapter_for_pe --thread {threads}" 
         " --length_required 50 -j {output.json} -h {output.html} -V"
 
-rule fastqc
+rule fastqc:
     input: 
-        "data/filtered/{dataset}/{sample}.filtered.{read}.fastq.gz"
+        "../results/filtered/{dataset}/{sample}.filtered.{read}.fastq.gz"
     output:
-        "data/filtered/{dataset}/fastqc/{sample}.filtered.{read}_fastqc.html"
+        "../results/filtered/{dataset}/fastqc/{sample}.filtered.{read}_fastqc.html"
     params:
-        outDir = "data/filtered/{dataset}/fastqc"
+        outDir = "../results/filtered/{dataset}/fastqc"
     wildcard_constraints:
         reads="[r]1|2"
     threads: 12
@@ -46,14 +46,14 @@ rule fastqc
 
 rule multiqc:
     input:
-        expand("data/filtered/{dataset}/fastqc/{sample}.filtered.{read}_fastqc.html")
+        expand("../results/filtered/{dataset}/fastqc/{sample}.filtered.{read}_fastqc.html")
     output:
-        "data/filtered/{dataset}/fastqc/multiqc_report.html"
+        "../results/filtered/{dataset}/fastqc/multiqc_report.html"
     params:
-        inDir="data/filtered/{datasets}/fastqc"
+        inDir="../results/filtered/{datasets}/fastqc"
 
     shell:
-        "module load multiqc; multiqc {params.inDir}
+        "module load multiqc; multiqc {params.inDir}"
 
 ### deconvolution
 """
