@@ -10,7 +10,6 @@ configfile: "../config/config.yaml"
 
 #report: "report/workflow.rst"
 include: "rules/common.smk"
-include: "rules/metagenomics.smk"
 
 localrules: multiqc_trimmed
 
@@ -18,4 +17,10 @@ localrules: multiqc_trimmed
 rule all:
     input:
         "multiqc_report.html",
-        expand("data/filtered/{dataset}/{sample}.filtered.{read}.fastq.gz")
+        expand("../results/filtered/{dataset}/{sample}.filtered.{read}.fastq.gz", 
+            dataset=DATASETS, 
+            sample=samples["sample_name"],
+            read=READS
+        )
+
+include: "rules/metagenomics.smk"
