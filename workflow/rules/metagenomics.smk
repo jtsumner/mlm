@@ -18,33 +18,45 @@ def get_fastp_input(wildcards):
 
 rule fastp_pe:
     input:
+        r1 = "{dataset}/{sample}_R1_001.fastq.gz",
+        r2 = "{dataset}/{sample}_R2_001.fastq.gz"
     output:
-    log:
-    conda:
-    params:
-    threads:
-    shell:
+        r1Filtered = "data/filtered/{dataset}/{sample}.filtered.R1.fastq.gz",
+        r2Filtered = "data/filtered/{dataset}/{sample}.filtered.R2.fastq.gz",
+        json = "data/filtered/{dataset}/{sample}_fastp.json",
+        html = "data/filtered/{dataset}/{sample}_fastp.html"
+    threads: 16
+    shell: 
+        "fastp -i {input.r1} -I {input.r2} --out1 {output.r1Filtered}
+        " --out2 {output.r2Filtered --detect_adapter_for_pe --thread {threads}" 
+        " --length_required 50 -j {output.json} -h {output.html} -V"
 
 rule fastqc
-    input:
+    input: 
+        "data/filtered/{dataset}/{sample}.filtered.{read}.fastq.gz"
     output:
-    log:
-    conda:
+        "data/filtered/{dataset}/fastqc/{sample}.filtered.{read}_fastqc.html"
     params:
-    threads:
+        outDir = "data/filtered/{dataset}/fastqc"
+    wildcard_constraints:
+        reads="[r]1|2"
+    threads: 12
     shell:
+        "module load fastqc/0.11.5; fastqc -t {threads} {input} --outdir {params.outDir}"
 
 rule multiqc:
     input:
+        expand("data/filtered/{dataset}/fastqc/{sample}.filtered.{read}_fastqc.html")
     output:
-    log:
-    conda:
+        "data/filtered/{dataset}/fastqc/multiqc_report.html"
     params:
-    threads:
+        inDir="data/filtered/{datasets}/fastqc"
+
     shell:
+        "module load multiqc; multiqc {params.inDir}
 
 ### deconvolution
-
+"""
 rule get_genome:
     input:
     output:
@@ -99,3 +111,4 @@ rule metaphlan3:
     threads:
     shell:
 
+"""
