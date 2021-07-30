@@ -1,0 +1,11 @@
+name: seq_processing
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - fastp=0.20.1
+  - biopython=1.78
+  - fastqc=0.11.9
+  - quast=5.0.2
+  - matplotlib=3.3.3

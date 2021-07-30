@@ -1,0 +1,43 @@
+__default__:
+  allocation: "p31288"
+  partition: "short"
+  cpus: "1"
+  nodes: "1"
+  time: 01:00:00
+  mem: "20g"
+  jobname: "{rule}_{wildcards}"
+  output: "logs_slurm/{rule}_{wildcards}.out"
+  error: "logs_slurm/{rule}_{wildcards}.error"
+  email: "jacksumner2026@u.northwestern.edu"
+  email_type: "FAIL"
+
+multiqc_trimmed:
+  jobname: "multiqc_trimmed"
+  output: "logs_slurm/multiqc_trimmed.out"
+  error: "logs_slurm/multiqc_trimmed.err"
+
+assemble:
+  cpus: "{threads}"
+  time: 04:00:00
+  mem: "100g"
+
+first_fastp:
+  cpus: "{threads}"
+
+second_fastp:
+  cpus: "{threads}"
+
+fastqc_trimmed:
+  cpus: "{threads}"
+
+vibrant_parsed:
+  cpus: "{threads}"
+  time: 04:00:00
+  mem: "100g"
+
+vcontact_parsed:
+  nodes: "4"
+  cpus: "{threads}"
+  time: 05:00:00
+  partition: "normal"
+  mem: "50g"

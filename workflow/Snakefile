@@ -1,0 +1,31 @@
+# The main entry point of your workflow.
+# After configuring, running snakemake -n in a clone of this repository should successfully execute a dry-run of the workflow.
+import itertools
+
+report: "report/workflow.rst"
+include: "rules/common.smk"
+localrules: ftp_first, ftp_second, multiqc_trimmed, concat_vibrant_phageAA
+
+# Allow users to fix the underlying OS via singularity.
+rule all:
+    input:
+        #expand("../data/spades_assemblies/{sample}/scaffolds.fasta", sample=samples["sample"]),
+        "multiqc_report.html",
+        #expand("../data/parsed_assemblies/{sample}_greater1kb_scaffolds.fasta", sample=samples["sample"]),
+        expand("../data/quast/raw_scaffolds/results_{sample}/report.html", sample=samples["sample"]),
+        expand("../data/quast/parsed_scaffolds/results_{sample}/report.html", sample=samples["sample"]),
+        #expand("../data/vibrant_output/{sample}/VIBRANT_{sample}_greater1kb_scaffolds/VIBRANT_phages_{sample}_greater1kb_scaffolds/{sample}_greater1kb_scaffolds.phages_combined.faa", sample=samples["sample"]),
+        #"../data/vcontact2_data/g2g_concat_phages_combined.simple.csv",
+        "../data/vcontact2_data/vcontact2_output/genome_by_genome_overview.csv"
+
+        # The first rule should define the default target files
+        # Subsequent target rules can be specified below. They should start with all_*.
+include: "rules/download_reads.smk"
+include: "rules/trim.smk"
+include: "rules/concat_reads.smk"
+include: "rules/assemble.smk"
+include: "rules/other.smk"
+include: "rules/fastqc_analysis.smk"
+include: "rules/assembly_qc.smk"
+include: "rules/quast_qc.smk"
+include: "rules/vibrant.smk"

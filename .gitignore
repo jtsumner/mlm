@@ -1,0 +1,3 @@
+# ignore all .fastq.gz files
+*.fastq.gz
+.snakemake/
