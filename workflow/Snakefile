@@ -7,17 +7,18 @@ import sys
 import pandas as pd
 
 configfile: "../config/config.yaml"
-
-#report: "report/workflow.rst"
 include: "rules/common.smk"
 include: "rules/metagenomics.smk"
 localrules: multiqc_trimmed
 
-# Allow users to fix the underlying OS via singularity.
 rule all:
     input:
         expand("../results/filtered/{dataset}/{sample}.filtered.R1.fastq.gz",
             sample=samples["sample"], dataset=samples["dataset"]),
         expand("../results/filtered/{dataset}/{sample}.filtered.R2.fastq.gz", 
+            sample=samples["sample"], dataset=samples["dataset"]),
+        expand("../results/filtered/{dataset}/fastqc/{sample}.filtered.R1_fastqc.html",
+            sample=samples["sample"], dataset=samples["dataset"]),
+        expand("../results/bwa/{dataset}/{sample}.mapped.bam",
             sample=samples["sample"], dataset=samples["dataset"])
-        #expand("../results/filtered/{dataset}/{sample}.filtered.R2.fastq.gz")
+
