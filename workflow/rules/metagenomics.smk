@@ -14,7 +14,7 @@ rule fastp_pe:
         json = "../results/filtered/{dataset}/{sample}_fastp.json",
         html = "../results/filtered/{dataset}/{sample}_fastp.html"
     conda:
-        "../envs/seq_processing.yml"
+        "../envs/old_envs/seq_processing.yml"
     threads: 16
     shell: 
         "fastp -i {input.r1} -I {input.r2} --out1 {output.r1Filtered} --out2 {output.r2Filtered} --detect_adapter_for_pe --thread {threads} --length_required 50 -j {output.json} -h {output.html} -V"
