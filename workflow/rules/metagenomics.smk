@@ -38,8 +38,8 @@ rule bwa_map:
         r1Filtered = "../results/filtered/{dataset}/{sample}.filtered.R1.fastq.gz",
         r2Filtered = "../results/filtered/{dataset}/{sample}.filtered.R2.fastq.gz"
     output:
-        bam = "../results/bwa/{dataset}/{sample}.mapped.sam",
-        #bam = "../results/bwa/{dataset}/{sample}.mapped.bam"
+        #sam = "../results/bwa/{dataset}/{sample}.mapped.sam",
+        bam = "../results/bwa/{dataset}/{sample}.mapped.bam"
     params:
         genome = "/projects/b1042/HartmannLab/jack/SCRIPT/expPipeline_v1/data/genome/hg38.fa.gz"
     threads: 19
