@@ -49,7 +49,7 @@ rule bwa_map:
         module load bwa/0.7.17
         module load samtools/1.10.1
         module load bedtools/2.29.2
-        bwa mem -t 19 {params.genome} {input.r1Filtered} {input.r2Filtered} > {output.sam}
+        bwa mem -t 19 {params.genome} {input.r1Filtered} {input.r2Filtered} > {output.bam}
         """
 
 """
