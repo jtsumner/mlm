@@ -11,5 +11,8 @@ __default__:
   email: "jacksumner2026@u.northwestern.edu"
   email_type: "FAIL"
 
-metagenomics:
+bwa_map:
+  cpus: "{threads}"
+  
+fastp_pe:
   cpus: "{threads}"
