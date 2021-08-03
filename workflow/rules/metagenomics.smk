@@ -39,7 +39,8 @@ rule bwa_map:
         r2Filtered = "../results/filtered/{dataset}/{sample}.filtered.R2.fastq.gz"
     output:
         sam = temp("../results/bwa/{dataset}/{sample}.mapped.sam"),
-        bam = "../results/bwa/{dataset}/{sample}.mapped.bam"
+        bam = "../results/bwa/{dataset}/{sample}.mapped.bam",
+        unmappedBam = "../results/bwa/{dataset}/{sample}.unmapped.bam"
     params:
         genome = "/projects/b1042/HartmannLab/jack/SCRIPT/expPipeline_v1/data/genome/hg38.fa.gz"
     threads: 20
@@ -51,6 +52,7 @@ rule bwa_map:
         module load bedtools/2.29.2
         bwa mem -t {threads} {params.genome} {input.r1Filtered} {input.r2Filtered} > {output.sam}
         samtools view -Subh -o {output.bam} {output.sam}
+        samtools sort -o {output.unmappedBam} {output.bam}
         """
 
 """

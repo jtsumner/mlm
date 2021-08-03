@@ -20,5 +20,7 @@ rule all:
         expand("../results/filtered/{dataset}/fastqc/{sample}.filtered.R1_fastqc.html",
             sample=samples["sample"], dataset=samples["dataset"]), #  FastQC
         expand("../results/bwa/{dataset}/{sample}.mapped.bam",
-            sample=samples["sample"], dataset=samples["dataset"]) #  BWA
+            sample=samples["sample"], dataset=samples["dataset"]), #  BWA
+        expand("../results/bwa/{dataset}/{sample}.unmapped.bam",
+            sample=samples["sample"], dataset=samples["dataset"])  # BWA Unmapped
 
