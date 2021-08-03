@@ -38,8 +38,8 @@ rule bwa_map:
         r1Filtered = "../results/filtered/{dataset}/{sample}.filtered.R1.fastq.gz",
         r2Filtered = "../results/filtered/{dataset}/{sample}.filtered.R2.fastq.gz"
     output:
-        sam = "../results/bwa/{dataset}/{sample}.mapped.sam",
-        bam = "../results/bwa/{dataset}/{sample}.mapped.bam"
+        bam = "../results/bwa/{dataset}/{sample}.mapped.sam",
+        #bam = "../results/bwa/{dataset}/{sample}.mapped.bam"
     params:
         genome = "/projects/b1042/HartmannLab/jack/SCRIPT/expPipeline_v1/data/genome/hg38.fa.gz"
     threads: 19
@@ -50,10 +50,10 @@ rule bwa_map:
         module load samtools/1.10.1
         module load bedtools/2.29.2
         bwa mem -t 19 {params.genome} {input.r1Filtered} {input.r2Filtered} > {output.sam}
-        samtools view -Subh {output.sam} | samtools sort –o {output.bam} -
         """
 
 """
+        # samtools view -Subh {output.sam} | samtools sort –o {output.bam} -
 
 rule multiqc:
     input:
