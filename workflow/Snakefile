@@ -14,11 +14,11 @@ localrules: multiqc_trimmed
 rule all:
     input:
         expand("../results/filtered/{dataset}/{sample}.filtered.R1.fastq.gz",
-            sample=samples["sample"], dataset=samples["dataset"]),
+            sample=samples["sample"], dataset=samples["dataset"]), #  FastP R2
         expand("../results/filtered/{dataset}/{sample}.filtered.R2.fastq.gz", 
-            sample=samples["sample"], dataset=samples["dataset"]),
+            sample=samples["sample"], dataset=samples["dataset"]), #  FastP R2
         expand("../results/filtered/{dataset}/fastqc/{sample}.filtered.R1_fastqc.html",
-            sample=samples["sample"], dataset=samples["dataset"]),
+            sample=samples["sample"], dataset=samples["dataset"]), #  FastQC
         expand("../results/bwa/{dataset}/{sample}.mapped.bam",
-            sample=samples["sample"], dataset=samples["dataset"])
+            sample=samples["sample"], dataset=samples["dataset"]) #  BWA
 
