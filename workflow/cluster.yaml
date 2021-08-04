@@ -1,7 +1,7 @@
 __default__:
   allocation: "p31288"
   partition: "short"
-  cpus: "1"
+  cpus: "2"
   nodes: "1"
   time: 01:00:00
   mem: "20g"
@@ -16,4 +16,13 @@ bwa_map:
 
 fastp_pe:
   cpus: "{threads}"
-  
+
+metaphlan_setup:
+  cpus: "{threads}"
+  time: 04:00:00
+  mem: "50g"
+
+metaphlan:
+  cpus: "{threads}"
+  time: 04:00:00
+  mem: "50g"
