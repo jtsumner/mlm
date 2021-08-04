@@ -80,7 +80,8 @@ rule metaphlan:
         cleanFastQ1 = "../results/bwa/{dataset}/{sample}.clean.R1.fastq",
         cleanFastQ2 = "../results/bwa/{dataset}/{sample}.clean.R2.fastq"
     output:
-        profile = "../results/{dataset}/abundance/metaphlan/{sample}.metaphlan_profile.txt"
+        profile = "../results/{dataset}/abundance/metaphlan/{sample}.metaphlan_profile.txt",
+        bowtie_out = "../results/{dataset}/abundance/metaphlan/{sample}.bowtie2.bz2"
     conda: 
         "../envs/metaphlan.yml"
     params:
@@ -89,6 +90,7 @@ rule metaphlan:
     shell:
         """
         metaphlan {input.cleanFastQ1},{input.cleanFastQ2} \
+        --bowtie2out {output.bowtie_out} \
         --index {params.metaphlan_idx} \
         --bowtie2db {input.metaphlan_db} \
         --nproc {threads} \
