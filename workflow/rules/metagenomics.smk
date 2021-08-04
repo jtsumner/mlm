@@ -61,11 +61,46 @@ rule bwa_map:
         bedtools bamtofastq -i {output.unmappedBam} -fq {output.cleanFastQ1} -fq2 {output.cleanFastQ2}
         """
 
+rule metaphlan_setup:
+    output:
+        metaphlan_tar = "../resources/metaphlan_db/{params.metaphlan_idx}.tar"
+    conda: 
+        "../envs/metaphlan.yaml"
+    params:
+        metaphlan_idx = "mpa_v30_CHOCOPhlAn_201901",
+        metaphlan_db = "../resources/metaphlan_db",
+    shell:
+        """
+        metaphlan --install --index {params.metaphlan_idx} --bowtie2db {params.metaphlan_db} 
+        """
+
 rule metaphlan:
     input:
         cleanFastQ1 = "../results/bwa/{dataset}/{sample}.clean.R1.fastq",
         cleanFastQ2 = "../results/bwa/{dataset}/{sample}.clean.R2.fastq"
     output:
+        profile = "../results/{dataset}/abundance/metaphlan/{sample}.metaphlan_profile.txt"
+    conda: 
+        "../envs/metaphlan.yaml"
+    params:
+        metaphlan_db = "path/to/database", #  Path to metaphlan database
+        metaphlan_idx = "mpa_v30_CHOCOPhlAn_201901" # Index for metaphlan
+    threads: 20
+    shell:
+        """
+        metaphlan {input.cleanFastQ1},{input.cleanFastQ2} \
+        --index {params.metaphlan_idx} \
+        --bowtie2db {params.metaphlan_db} \
+        --nproc {threads} \
+        --input_type fastq \
+        -o {output.profile}
+        """
+
+"""
+rule metaphlan_merge:
+
+rule metaphlan_abundance:
+"""
 
 """
         # samtools view -Subh {output.sam} | samtools sort –o {output.bam} -

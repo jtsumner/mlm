@@ -26,5 +26,7 @@ rule all:
         expand("../results/bwa/{dataset}/{sample}.clean.R1.fastq",
             sample=samples["sample"], dataset=samples["dataset"]), #  BWA fastq R1
         expand("../results/bwa/{dataset}/{sample}.clean.R2.fastq",
-            sample=samples["sample"], dataset=samples["dataset"]) #  BWA fastq R2
-
+            sample=samples["sample"], dataset=samples["dataset"]), #  BWA fastq R2
+        expand("../results/{dataset}/abundance/metaphlan/{sample}.metaphlan_profile.txt",
+            sample=samples["sample"], dataset=samples["dataset"]), # Metaphlan profiles
+        "../resources/metaphlan_db/{params.metaphlan_idx}.tar" #  Metaphlan setup/Database
