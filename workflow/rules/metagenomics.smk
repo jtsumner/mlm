@@ -98,10 +98,10 @@ rule metaphlan:
         -o {output.profile}
         """
 
-"""
+
 def metaphlan_merge_inputs(wildcards):
     files = expand("../results/{dataset}/abundance/metaphlan/{sample}.metaphlan_profile.txt",
-        sample=samples["sample"], dataset=samples["dataset"])
+        zip, sample=samples["sample"], dataset=samples["dataset"])
     return files
 
 rule metaphlan_merge:
@@ -115,7 +115,7 @@ rule metaphlan_merge:
         "merge_metaphlan_tables.py {input} > {output}"
 
  
-
+"""
 rule metaphlan_abundance:
 """
 

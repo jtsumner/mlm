@@ -29,7 +29,6 @@ rule all:
             zip, sample=samples["sample"], dataset=samples["dataset"]), #  BWA fastq R2
         directory("../resources/metaphlan_db"), #  Metaphlan setup/Database
         expand("../results/{dataset}/abundance/metaphlan/{sample}.metaphlan_profile.txt",
-            zip, sample=samples["sample"], dataset=samples["dataset"]) # Metaphlan profiles
-
-       # "../results/allDatasets/metaphlan/merged_abundance_table.allDatasets.txt" #  Metaphlan merged abundance table
+            zip, sample=samples["sample"], dataset=samples["dataset"]), # Metaphlan profiles
+        "../results/allDatasets/metaphlan/merged_abundance_table.allDatasets.txt" #  Metaphlan merged abundance table
     
