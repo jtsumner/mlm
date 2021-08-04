@@ -3,16 +3,17 @@ import pandas as pd
 from snakemake.utils import validate
 
 
+### Run FastP to trim/filter reads ###
 
 rule fastp_pe:
     input:
         r1 = get_r1,
         r2 = get_r2
     output:
-        r1Filtered = "../results/filtered/{dataset}/{sample}.filtered.R1.fastq.gz",
-        r2Filtered = "../results/filtered/{dataset}/{sample}.filtered.R2.fastq.gz",
-        json = "../results/filtered/{dataset}/{sample}_fastp.json",
-        html = "../results/filtered/{dataset}/{sample}_fastp.html"
+        r1Filtered = "../results/{dataset}/filtered/{sample}.filtered.R1.fastq.gz",
+        r2Filtered = "../results/{dataset}/filtered/{sample}.filtered.R2.fastq.gz",
+        json = "../results/{dataset}/filtered/{sample}_fastp.json",
+        html = "../results/{dataset}/filtered/{sample}_fastp.html"
     conda:
         "../envs/seq_processing.yml"
     threads: 16
@@ -22,28 +23,31 @@ rule fastp_pe:
 
 rule fastqc:
     input: 
-        "../results/filtered/{dataset}/{sample}.filtered.R1.fastq.gz",
-        "../results/filtered/{dataset}/{sample}.filtered.R2.fastq.gz"
+        "../results/{dataset}/filtered/{sample}.filtered.R1.fastq.gz",
+        "../results/{dataset}/filtered/{sample}.filtered.R2.fastq.gz"
     output:
-        "../results/filtered/{dataset}/fastqc/{sample}.filtered.R1_fastqc.html",
-        "../results/filtered/{dataset}/fastqc/{sample}.filtered.R2_fastqc.html"
+        "../results/{dataset}/filtered/fastqc/{sample}.filtered.R1_fastqc.html",
+        "../results/{dataset}/filtered/fastqc/{sample}.filtered.R2_fastqc.html"
     params:
-        outDir = "../results/filtered/{dataset}/fastqc"
+        outDir = "../results/{dataset}/filtered/fastqc"
     threads: 12
     shell:
         "module load fastqc/0.11.5 ; fastqc -t {threads} {input} --outdir {params.outDir}"
 
+
+### Remove contaminant reads aligning to human reference genome ###
+
 rule bwa_map:
     input:
-        r1Filtered = "../results/filtered/{dataset}/{sample}.filtered.R1.fastq.gz",
-        r2Filtered = "../results/filtered/{dataset}/{sample}.filtered.R2.fastq.gz"
+        r1Filtered = "../results/{dataset}/filtered/{sample}.filtered.R1.fastq.gz",
+        r2Filtered = "../results/{dataset}/filtered/{sample}.filtered.R2.fastq.gz"
     output:
-        sam = temp("../results/bwa/{dataset}/{sample}.mapped.sam"),
-        bam = "../results/bwa/{dataset}/{sample}.mapped.bam",
-        sortedBam = "../results/bwa/{dataset}/{sample}.mapped.sorted.bam",
-        unmappedBam = "../results/bwa/{dataset}/{sample}.unmapped.bam",
-        cleanFastQ1 = "../results/bwa/{dataset}/{sample}.clean.R1.fastq",
-        cleanFastQ2 = "../results/bwa/{dataset}/{sample}.clean.R2.fastq"
+        sam = temp("../results/{dataset}/bwa/{sample}.mapped.sam"),
+        bam = "../results/{dataset}/bwa/{sample}.mapped.bam",
+        sortedBam = "../results/{dataset}/bwa/{sample}.mapped.sorted.bam",
+        unmappedBam = "../results/{dataset}/bwa/{sample}.unmapped.bam",
+        cleanFastQ1 = "../results/{dataset}/bwa/{sample}.clean.R1.fastq",
+        cleanFastQ2 = "../results/{dataset}/bwa/{sample}.clean.R2.fastq"
     params:
         genome = "/projects/b1042/HartmannLab/jack/SCRIPT/expPipeline_v1/data/genome/hg38.fa.gz"
     threads: 20
@@ -61,6 +65,15 @@ rule bwa_map:
         bedtools bamtofastq -i {output.unmappedBam} -fq {output.cleanFastQ1} -fq2 {output.cleanFastQ2}
         """
 
+
+### Setup Metaphlan. Run Metaphlan on samples to make abundance tables ###
+
+def metaphlan_merge_inputs(wildcards):
+    files = expand("../results/{dataset}/abundance/metaphlan/{sample}.metaphlan_profile.txt",
+        zip, sample=samples["sample"], dataset=samples["dataset"])
+    return files
+
+
 rule metaphlan_setup:
     output:
         metaphlan_db = directory("../resources/metaphlan_db")
@@ -74,11 +87,12 @@ rule metaphlan_setup:
         metaphlan --install --index {params.metaphlan_idx} --bowtie2db {output.metaphlan_db} --nproc {threads}
         """
 
+
 rule metaphlan:
     input:
         metaphlan_db = rules.metaphlan_setup.output.metaphlan_db,
-        cleanFastQ1 = "../results/bwa/{dataset}/{sample}.clean.R1.fastq",
-        cleanFastQ2 = "../results/bwa/{dataset}/{sample}.clean.R2.fastq"
+        cleanFastQ1 = "../results/{dataset}/bwa/{sample}.clean.R1.fastq",
+        cleanFastQ2 = "../results/{dataset}/bwa/{sample}.clean.R2.fastq"
     output:
         profile = "../results/{dataset}/abundance/metaphlan/{sample}.metaphlan_profile.txt",
         bowtie_out = "../results/{dataset}/abundance/metaphlan/{sample}.bowtie2.bz2"
@@ -99,11 +113,6 @@ rule metaphlan:
         """
 
 
-def metaphlan_merge_inputs(wildcards):
-    files = expand("../results/{dataset}/abundance/metaphlan/{sample}.metaphlan_profile.txt",
-        zip, sample=samples["sample"], dataset=samples["dataset"])
-    return files
-
 rule metaphlan_merge:
     input:
         metaphlan_merge_inputs
@@ -113,6 +122,7 @@ rule metaphlan_merge:
         "../envs/metaphlan.yml"
     shell:
         "merge_metaphlan_tables.py {input} > {output}"
+
 
 rule metaphlan_species_abundance:
     input:
@@ -126,6 +136,7 @@ rule metaphlan_species_abundance:
         grep -E "s__|clade" {input} | sed 's/^.*s__//g' \
         | cut -f1,3- | sed -e 's/clade_name/sample/g' > {output}
         """
+
 
 rule metaphlan_genus_abundance:
     input:
@@ -152,10 +163,10 @@ rule metaphlan_abundance:
 
 rule multiqc:
     input:
-        expand("../results/filtered/{dataset}/{sample}.filtered.R1.fastq.gz"),
-        expand("../results/filtered/{dataset}/{sample}.filtered.R2.fastq.gz")
+        expand("../results/{dataset}/filtered/{sample}.filtered.R1.fastq.gz"),
+        expand("../results/{dataset}/filtered/{sample}.filtered.R2.fastq.gz")
     output:
-        expand("../results/filtered/{dataset}/fastqc/multiqc_report.html")
+        expand("../results/{dataset}/filtered/fastqc/multiqc_report.html")
     params:
         inDir="../results/filtered/{datasets}/fastqc"
 
