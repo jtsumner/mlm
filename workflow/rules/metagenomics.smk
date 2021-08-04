@@ -114,6 +114,21 @@ rule metaphlan_merge:
     shell:
         "merge_metaphlan_tables.py {input} > {output}"
 
+rule metaphlan_species_abundance:
+    input:
+        "../results/allDatasets/metaphlan/merged_abundance_table.allDatasets.txt"
+    output:
+        "../results/allDatasets/metaphlan/merged_abundance_table.species.allDatasets.txt"
+    conda:
+        "../envs/metaphlan.yml"
+    shell:
+        """
+        grep -E "s__|clade" {input} | sed 's/^.*s__//g' \
+        | cut -f1,3- | sed -e 's/clade_name/body_site/g' > {output}
+        """
+
+
+
  
 """
 rule metaphlan_abundance:
