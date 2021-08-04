@@ -137,7 +137,7 @@ rule metaphlan_genus_abundance:
     shell:
         """
         grep -E "g__|clade" {input} | sed 's/^.*g__//g' \
-        | sed 's/s__.*\t//g' |cut -f1,3- | sed -e 's/clade_name/sample/g' > {output}
+        | grep -v s__ |cut -f1,3- | sed -e 's/clade_name/sample/g' > {output}
         """
 
 
