@@ -124,7 +124,20 @@ rule metaphlan_species_abundance:
     shell:
         """
         grep -E "s__|clade" {input} | sed 's/^.*s__//g' \
-        | cut -f1,3- | sed -e 's/clade_name/body_site/g' > {output}
+        | cut -f1,3- | sed -e 's/clade_name/sample/g' > {output}
+        """
+
+rule metaphlan_genus_abundance:
+    input:
+        "../results/allDatasets/metaphlan/merged_abundance_table.allDatasets.txt"
+    output:
+        "../results/allDatasets/metaphlan/merged_abundance_table.genus.allDatasets.txt"
+    conda:
+        "../envs/metaphlan.yml"
+    shell:
+        """
+        grep -E "g__|clade" {input} | sed 's/^.*g__//g' \
+        | sed 's/s__.*\t//g' |cut -f1,3- | sed -e 's/clade_name/sample/g' > {output}
         """
 
 

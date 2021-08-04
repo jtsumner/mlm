@@ -31,5 +31,5 @@ rule all:
         expand("../results/{dataset}/abundance/metaphlan/{sample}.metaphlan_profile.txt",
             zip, sample=samples["sample"], dataset=samples["dataset"]), # Metaphlan profiles
         "../results/allDatasets/metaphlan/merged_abundance_table.allDatasets.txt", #  Metaphlan merged abundance table
-        "../results/allDatasets/metaphlan/merged_abundance_table.species.allDatasets.txt" #  Metaphlan species abundance table
-    
+        "../results/allDatasets/metaphlan/merged_abundance_table.species.allDatasets.txt", #  Metaphlan species abundance table
+        "../results/allDatasets/metaphlan/merged_abundance_table.genus.allDatasets.txt" #  " " genus
