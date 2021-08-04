@@ -63,19 +63,20 @@ rule bwa_map:
 
 rule metaphlan_setup:
     output:
+        metaphlan_db = directory("../resources/metaphlan_db"),
         metaphlan_tar = "../resources/metaphlan_db/{params.metaphlan_idx}.tar"
     conda: 
         "../envs/metaphlan.yml"
     params:
-        metaphlan_idx = "mpa_v30_CHOCOPhlAn_201901",
-        metaphlan_db = "../resources/metaphlan_db",
+        metaphlan_idx = config["metaphlan_idx"] # Index for metaphlan
     shell:
         """
-        metaphlan --install --index {params.metaphlan_idx} --bowtie2db {params.metaphlan_db} 
+        metaphlan --install --index {params.metaphlan_idx} --bowtie2db {output.metaphlan_db} 
         """
 
 rule metaphlan:
     input:
+        metaphlan_db = rules.metaphlan_setup.output.metaphlan_db,
         cleanFastQ1 = "../results/bwa/{dataset}/{sample}.clean.R1.fastq",
         cleanFastQ2 = "../results/bwa/{dataset}/{sample}.clean.R2.fastq"
     output:
@@ -83,21 +84,35 @@ rule metaphlan:
     conda: 
         "../envs/metaphlan.yml"
     params:
-        metaphlan_db = "path/to/database", #  Path to metaphlan database
-        metaphlan_idx = "mpa_v30_CHOCOPhlAn_201901" # Index for metaphlan
+        metaphlan_idx = config["metaphlan_idx"] # Index for metaphlan
     threads: 20
     shell:
         """
         metaphlan {input.cleanFastQ1},{input.cleanFastQ2} \
         --index {params.metaphlan_idx} \
-        --bowtie2db {params.metaphlan_db} \
+        --bowtie2db {input.metaphlan_db} \
         --nproc {threads} \
         --input_type fastq \
         -o {output.profile}
         """
 
 """
+def metaphlan_merge_inputs(wildcards):
+    files = expand("../results/{dataset}/abundance/metaphlan/{sample}.metaphlan_profile.txt",
+        sample=samples["sample"], dataset=samples["dataset"])
+    return files
+
 rule metaphlan_merge:
+    input:
+        metaphlan_merge_inputs
+    output:
+        "../results/allDatasets/metaphlan/merged_abundance_table.allDatasets.txt"
+    conda:
+        "../envs/metaphlan.yml"
+    shell:
+        "merge_metaphlan_tables.py {input} > {output}"
+
+ 
 
 rule metaphlan_abundance:
 """

@@ -3,4 +3,6 @@
 # one row per sample. It can be parsed easily via pandas.
 
 samples: "../config/samples_test2.tsv"
+
+metaphlan_idx: "mpa_v30_CHOCOPhlAn_201901"
   
