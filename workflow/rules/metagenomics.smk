@@ -40,7 +40,10 @@ rule bwa_map:
     output:
         sam = temp("../results/bwa/{dataset}/{sample}.mapped.sam"),
         bam = "../results/bwa/{dataset}/{sample}.mapped.bam",
-        unmappedBam = "../results/bwa/{dataset}/{sample}.unmapped.bam"
+        sortedBam = "../results/bwa/{dataset}/{sample}.mapped.sorted.bam",
+        unmappedBam = "../results/bwa/{dataset}/{sample}.unmapped.bam",
+        cleanFastQ1 = "../results/bwa/{dataset}/{sample}.clean.R1.fastq",
+        cleanFastQ2 = "../results/bwa/{dataset}/{sample}.clean.R2.fastq"
     params:
         genome = "/projects/b1042/HartmannLab/jack/SCRIPT/expPipeline_v1/data/genome/hg38.fa.gz"
     threads: 20
@@ -52,8 +55,17 @@ rule bwa_map:
         module load bedtools/2.29.2
         bwa mem -t {threads} {params.genome} {input.r1Filtered} {input.r2Filtered} > {output.sam}
         samtools view -Subh -o {output.bam} {output.sam}
-        samtools sort -o {output.unmappedBam} {output.bam}
+        samtools sort -o {output.sortedBam} {output.bam}
+
+        samtools view -b -f 12 -F 256 -o {output.unmappedBam} {output.sortedBam}
+        bedtools bamtofastq -i {output.unmappedBam} -fq {output.cleanFastQ1} -fq2 {output.cleanFastQ2}
         """
+
+rule metaphlan:
+    input:
+        cleanFastQ1 = "../results/bwa/{dataset}/{sample}.clean.R1.fastq",
+        cleanFastQ2 = "../results/bwa/{dataset}/{sample}.clean.R2.fastq"
+    output:
 
 """
         # samtools view -Subh {output.sam} | samtools sort –o {output.bam} -

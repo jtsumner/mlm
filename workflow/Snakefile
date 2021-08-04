@@ -22,5 +22,9 @@ rule all:
         expand("../results/bwa/{dataset}/{sample}.mapped.bam",
             sample=samples["sample"], dataset=samples["dataset"]), #  BWA
         expand("../results/bwa/{dataset}/{sample}.unmapped.bam",
-            sample=samples["sample"], dataset=samples["dataset"])  # BWA Unmapped
+            sample=samples["sample"], dataset=samples["dataset"]),  # BWA Unmapped
+        expand("../results/bwa/{dataset}/{sample}.clean.R1.fastq",
+            sample=samples["sample"], dataset=samples["dataset"]), #  BWA fastq R1
+        expand("../results/bwa/{dataset}/{sample}.clean.R2.fastq",
+            sample=samples["sample"], dataset=samples["dataset"]) #  BWA fastq R2
 
