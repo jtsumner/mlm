@@ -63,15 +63,15 @@ rule bwa_map:
 
 rule metaphlan_setup:
     output:
-        metaphlan_db = directory("../resources/metaphlan_db"),
-        metaphlan_tar = "../resources/metaphlan_db/{params.metaphlan_idx}.tar"
+        metaphlan_db = directory("../resources/metaphlan_db")
     conda: 
         "../envs/metaphlan.yml"
     params:
         metaphlan_idx = config["metaphlan_idx"] # Index for metaphlan
+    threads: 10
     shell:
         """
-        metaphlan --install --index {params.metaphlan_idx} --bowtie2db {output.metaphlan_db} 
+        metaphlan --install --index {params.metaphlan_idx} --bowtie2db {output.metaphlan_db} --nproc {threads}
         """
 
 rule metaphlan:
