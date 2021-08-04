@@ -65,7 +65,7 @@ rule metaphlan_setup:
     output:
         metaphlan_tar = "../resources/metaphlan_db/{params.metaphlan_idx}.tar"
     conda: 
-        "../envs/metaphlan.yaml"
+        "../envs/metaphlan.yml"
     params:
         metaphlan_idx = "mpa_v30_CHOCOPhlAn_201901",
         metaphlan_db = "../resources/metaphlan_db",
@@ -81,7 +81,7 @@ rule metaphlan:
     output:
         profile = "../results/{dataset}/abundance/metaphlan/{sample}.metaphlan_profile.txt"
     conda: 
-        "../envs/metaphlan.yaml"
+        "../envs/metaphlan.yml"
     params:
         metaphlan_db = "path/to/database", #  Path to metaphlan database
         metaphlan_idx = "mpa_v30_CHOCOPhlAn_201901" # Index for metaphlan
