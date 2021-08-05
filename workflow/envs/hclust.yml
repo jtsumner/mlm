@@ -1,4 +1,4 @@
-name: metaphlan
+name: hclust
 channels:
   - biobakery
   - conda-forge
