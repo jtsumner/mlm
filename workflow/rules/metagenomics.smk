@@ -152,6 +152,18 @@ rule metaphlan_genus_abundance:
         """
 
 
+rule hclust:
+    input:
+        "../results/allDatasets/metaphlan/merged_abundance_table.species.allDatasets.txt"
+    output:
+        "../results/allDatasets/metaphlan/abundance_heatmap_species.png"
+    conda:
+        "../envs/hclust.yml"
+    shell:
+        """
+        hclust2.py -i {input} -o {output} --f_dist_f braycurtis --s_dist_f braycurtis --cell_aspect_ratio 0.5 -l --flabel_size 10 --slabel_size 10 --max_flabel_len 100 --max_slabel_len 100 --minv 0.1 --dpi 300
+
+        """
 
  
 """
