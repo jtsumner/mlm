@@ -1,11 +1,14 @@
 #! /bin/bash
 
-rm samples.tsv
-rm tmp.tsv
+# Create .tsv file of file name prefix and dataset (dataset = read file parent directory )
+for i in $(ls Batch_0*/*.gz) ; do echo $i | awk -F'_R' '{print $1}' | awk -F'/' '{print $2 "\t" $1}' >> a.tsv ; done
 
-for i in $(ls Batch_0*/*.gz) ; do echo $i | awk -F'_R' '{print $1}' >> tmp.tsv ; done
+# remove duplicates from R1/R2
+sort -u a.tsv > b.tsv
 
-while read p ; do echo $p ; awk -F'/' '{print $2 "\t" $1}' >> samples.tsv ; done < tmp.tsv
+# add header
+echo -ne "sample\tdataset\n" | cat - b.tsv > samples_minimal.tsv
 
-sed -i '1s/^/sample\tdataset\n/' samples.tsv
+# rm temp files
+rm a.tsv b.tsv
 
