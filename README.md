@@ -3,4 +3,12 @@ This is a microbiome snakemake workflow to identify and analyze viral contigs fr
 
 Note: This repository was built using https://github.com/snakemake-workflows/cookiecutter-snakemake-workflow as a temlate
 
+-------------
 
+## Notes on snakemake 
+
+Execute to create a DAG visualization of the pipeline
+
+```
+snakemake --forceall --dag | dot -Tpdf > dag.pdf
+```
