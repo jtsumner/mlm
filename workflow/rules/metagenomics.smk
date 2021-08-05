@@ -121,7 +121,10 @@ rule metaphlan_merge:
     conda:
         "../envs/metaphlan.yml"
     shell:
-        "merge_metaphlan_tables.py {input} > {output}"
+        """
+        echo {input} > '../results/allDatasets/metaphlan
+        "merge_metaphlan_tables.py {input} > {output}
+        """
 
 
 rule metaphlan_species_abundance:
