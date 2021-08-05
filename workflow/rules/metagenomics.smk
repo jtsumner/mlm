@@ -122,7 +122,7 @@ rule metaphlan_merge:
         "../envs/metaphlan.yml"
     shell:
         """
-        "merge_metaphlan_tables.py {input} > {output}
+        merge_metaphlan_tables.py {input} > {output}
         """
 
 
