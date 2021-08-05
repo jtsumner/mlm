@@ -122,7 +122,6 @@ rule metaphlan_merge:
         "../envs/metaphlan.yml"
     shell:
         """
-        echo {input} > '../results/allDatasets/metaphlan
         "merge_metaphlan_tables.py {input} > {output}
         """
 
