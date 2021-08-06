@@ -158,16 +158,49 @@ rule hclust:
     input:
         "../results/allDatasets/metaphlan/merged_abundance_table.species.allDatasets.txt"
     output:
-        "../results/allDatasets/metaphlan/abundance_heatmap_species.png"
+        "../results/allDatasets/metaphlan/abundance_heatmap_species.allDatasets.png"
     conda:
         "../envs/hclust.yml"
     shell:
         """
         hclust2.py -i {input} -o {output} --f_dist_f braycurtis --s_dist_f braycurtis --cell_aspect_ratio 0.5 -l --flabel_size 10 --slabel_size 10 --max_flabel_len 100 --max_slabel_len 100 --minv 0.1 --dpi 300
-
         """
 
+### Setup and Execute Kaiju ###
  
+rule kaiju_setup:
+    output:
+        tar = "../resources/kaiju_head/kaiju-v1.8.0-linux-x86_64.tar.gz"
+    threads: 10
+    params:
+        kaiju_archive = "https://github.com/bioinformatics-centre/kaiju/releases/download/v1.8.0/kaiju-v1.8.0-linux-x86_64.tar.gz",
+        kaiju_old_dir = "kaiju-v1.8.0-linux-x86_64-static",
+        kaiju_head = "../resources/kaiju_head",
+        kaijuDB = "../resources/kaiju_head/kaijuDB",
+        database = "refseq"
+    shell:
+        """
+        wget {params.kaiju_archive} -P {params.kaiju_head}
+        tar -xvzf {params.kaiju_head}/kaiju-v1.8.0-linux-x86_64.tar.gz -C {params.kaiju_head} --transform s/{params.kaiju_old_dir}/kaijuDir/
+        cd {params.kaijuDB}
+        {params.kaiju_head}/kaijuDir/kaiju-makedb -s {params.database} -t {threads}
+        """
+"""
+rule kaiju_db:
+    input:
+    output:
+    threads:
+    shell:
+
+rule kaiju_refseq:
+    input:
+    output:
+    threads:
+    shell:
+
+"""
+
+
 """
 rule metaphlan_abundance:
 """

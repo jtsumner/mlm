@@ -33,5 +33,6 @@ rule all:
         "../results/allDatasets/metaphlan/merged_abundance_table.allDatasets.txt", #  Metaphlan merged abundance table
         "../results/allDatasets/metaphlan/merged_abundance_table.species.allDatasets.txt", #  Metaphlan species abundance table
         "../results/allDatasets/metaphlan/merged_abundance_table.genus.allDatasets.txt", #  " " genus
-        "../results/allDatasets/metaphlan/abundance_heatmap_species.png"
+        "../results/allDatasets/metaphlan/abundance_heatmap_species.allDatasets.png",
+        "../resources/kaiju_head/kaiju-v1.8.0-linux-x86_64.tar.gz" # Kaiju Tar
          #hclust2.py -i merged_abundance_table.species.allDatasets.txt -o abundance_heatmap.species.allDatasets.png --f_dist_f braycurtis --s_dist_f braycurtis --cell_aspect_ratio 0.5 -l --flabel_size 6 --slabel_size 10 --max_flabel_len 100 --max_slabel_len 100 --minv 0.1 --dpi 300
