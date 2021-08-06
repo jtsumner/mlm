@@ -173,13 +173,12 @@ rule kaiju_setup:
         tar = "../resources/kaiju_head/kaiju-v1.8.0-linux-x86_64.tar.gz",
         binDir = directory("../resources/kaiju_head/kaijuDir"),
         kaijuDB = directory("../resources/kaiju_head/kaijuDB")
-    threads: 10
     params:
         kaiju_archive = "https://github.com/bioinformatics-centre/kaiju/releases/download/v1.8.0/kaiju-v1.8.0-linux-x86_64.tar.gz",
         kaiju_old_dir = "kaiju-v1.8.0-linux-x86_64-static",
         kaiju_head = "../resources/kaiju_head",
-        kaijuDB = "../resources/kaiju_head/kaijuDB",
         database = "refseq"
+    threads: 10
     shell:
         """
         wget {params.kaiju_archive} -P {params.kaiju_head}
