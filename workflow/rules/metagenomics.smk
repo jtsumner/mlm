@@ -171,7 +171,8 @@ rule hclust:
 rule kaiju_setup:
     output:
         tar = "../resources/kaiju_head/kaiju-v1.8.0-linux-x86_64.tar.gz",
-        binDir = directory("../resources/kaiju_head/kaijuDir")
+        binDir = directory("../resources/kaiju_head/kaijuDir"),
+        kaijuDB = directory("../resources/kaiju_head/kaijuDB")
     threads: 10
     params:
         kaiju_archive = "https://github.com/bioinformatics-centre/kaiju/releases/download/v1.8.0/kaiju-v1.8.0-linux-x86_64.tar.gz",
@@ -200,7 +201,7 @@ rule kaiju_refseq:
     shell:
 
 """
-#kaijuDB = directory("../resources/kaiju_head/kaijuDB")
+#
 
 
 # cd {output.kaijuDB}
