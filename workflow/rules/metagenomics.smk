@@ -172,7 +172,7 @@ rule kaiju_setup:
     output:
         tar = "../resources/kaiju_head/kaiju-v1.8.0-linux-x86_64.tar.gz",
         binDir = directory("../resources/kaiju_head/kaijuDir"),
-        dbDir = directory("../resources/kaiju_head/kaijuDB")
+        kaijuDB = directory("../resources/kaiju_head/kaijuDB")
     threads: 10
     params:
         kaiju_archive = "https://github.com/bioinformatics-centre/kaiju/releases/download/v1.8.0/kaiju-v1.8.0-linux-x86_64.tar.gz",
@@ -184,7 +184,7 @@ rule kaiju_setup:
         """
         wget {params.kaiju_archive} -P {params.kaiju_head}
         tar -xvzf {params.kaiju_head}/kaiju-v1.8.0-linux-x86_64.tar.gz -C {params.kaiju_head} --transform s/{params.kaiju_old_dir}/kaijuDir/
-        cd {params.kaijuDB}
+        cd {kaijuDB}
         ../kaijuDir/kaiju-makedb -s {params.database} -t {threads}
         """
 """
