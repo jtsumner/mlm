@@ -171,37 +171,37 @@ rule hclust:
 rule kaiju_setup:
     output:
         tar = "../resources/kaiju_head/kaiju-v1.8.0-linux-x86_64.tar.gz",
-        binDir = directory("../resources/kaiju_head/kaijuDir"),
-        kaijuDB = directory("../resources/kaiju_head/kaijuDB")
+        kaijuDir = directory("../resources/kaiju_head/kaijuDir"),
     params:
-        kaiju_archive = "https://github.com/bioinformatics-centre/kaiju/releases/download/v1.8.0/kaiju-v1.8.0-linux-x86_64.tar.gz",
-        kaiju_old_dir = "kaiju-v1.8.0-linux-x86_64-static",
         kaiju_head = "../resources/kaiju_head",
-        database = "refseq"
+        kaiju_archive = "https://github.com/bioinformatics-centre/kaiju/releases/download/v1.8.0/kaiju-v1.8.0-linux-x86_64.tar.gz",
+        kaiju_old_dir = "kaiju-v1.8.0-linux-x86_64-static"
     threads: 10
     shell:
         """
         wget {params.kaiju_archive} -P {params.kaiju_head}
         tar -xvzf {params.kaiju_head}/kaiju-v1.8.0-linux-x86_64.tar.gz -C {params.kaiju_head}
-        mv {params.kaiju_head}/{params.kaiju_old_dir} {params.kaiju_head}/kaijuDir
-        mkdir {output.kaijuDB}
-        cd {output.kaijuDB}
-        ../kaijuDir/kaiju-makedb -s {params.database} -t {threads}
+        mv {params.kaiju_head}/{params.kaiju_old_dir} {output.kaijuDir}
         """
-"""
+
 rule kaiju_db:
     input:
+        "../resources/kaiju_head/kaiju-v1.8.0-linux-x86_64.tar.gz"
     output:
-    threads:
+        tar = "../resources/kaiju_head/kaijuDB/kaiju_db_refseq_2021-02-26.tgz",
+        kaijuDB = directory("../resources/kaiju_head/kaijuDB")
+    params:
+        kaiju_head = "../resources/kaiju_head",
+        database = "https://kaiju.binf.ku.dk/database/kaiju_db_refseq_2021-02-26.tgz"
+    threads: 10
     shell:
+        """
+        wget {params.database} -P {output.kaijuDB}
+        tar -xvzf {output.tar} -C {output.kaijuDB}
+        """
 
-rule kaiju_refseq:
-    input:
-    output:
-    threads:
-    shell:
 
-"""
+
 #
 
 
