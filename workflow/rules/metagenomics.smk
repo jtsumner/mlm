@@ -187,6 +187,7 @@ rule kaiju_setup:
         mv {params.kaiju_head}/{params.kaiju_old_dir} {params.kaiju_head}/kaijuDir
         mkdir {output.kaijuDB}
         cd {output.kaijuDB}
+        ../kaijDir/kaiju-makedb -s {params.database} -t {threads}
         
         """
 """
