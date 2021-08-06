@@ -184,7 +184,7 @@ rule kaiju_setup:
         """
         wget {params.kaiju_archive} -P {params.kaiju_head}
         tar -xvzf {params.kaiju_head}/kaiju-v1.8.0-linux-x86_64.tar.gz -C {params.kaiju_head} --transform s/{params.kaiju_old_dir}/kaijuDir/
-        cd {kaijuDB}
+        cd {output.kaijuDB}
         ../kaijuDir/kaiju-makedb -s {params.database} -t {threads}
         """
 """
