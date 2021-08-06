@@ -26,3 +26,7 @@ metaphlan:
   cpus: "{threads}"
   time: 04:00:00
   mem: "50g"
+
+kaiju_setup:
+  cpus: "{threads}"
+  mem: "50g"
