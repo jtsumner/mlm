@@ -201,8 +201,29 @@ rule kaiju_db:
         """
 
 
+rule kaiju_refseq:
+    input:
+        kaiju_sb = rules.metaphlan_setup.output.metaphlan_db,
+        cleanFastQ1 = "../results/{dataset}/bwa/{sample}.clean.R1.fastq",
+        cleanFastQ2 = "../results/{dataset}/bwa/{sample}.clean.R2.fastq"
+    output:
+        profile = "../results/{dataset}/abundance/kaiju_refseq/{sample}.kaiju_refseq.txt",
+    params:
+        db_path = "../resources/kaiju_head/kaijuDB",
+        mode = "mem"
+    threads: 25
+    shell:
+        """
+        ../resources/kaiju_head/kaijuDir/kaiju -z {threads} \
+        -t {params.db_path}/nodes.dmp \
+        -f {params.db_path}/kaiju_db_refseq.fmi \
+        -i {input.cleanFastQ1} \
+        -j {input.cleanFastQ2} \
+        -a {params.mode} \ 
+        -o {output.profile}
+        """
 
-#
+
 
 
 # cd {output.kaijuDB}

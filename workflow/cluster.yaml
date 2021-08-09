@@ -30,3 +30,7 @@ metaphlan:
 kaiju_setup:
   cpus: "{threads}"
   mem: "50g"
+
+kaiju_refseq:
+  cpus: "{threads}"
+  mem: "50g"
