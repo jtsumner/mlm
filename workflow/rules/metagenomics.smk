@@ -203,7 +203,7 @@ rule kaiju_db:
 
 rule kaiju_refseq:
     input:
-        kaiju_sb = rules.metaphlan_setup.output.metaphlan_db,
+        kaiju_sb = rules.kaiju_db.output.tar,
         cleanFastQ1 = "../results/{dataset}/bwa/{sample}.clean.R1.fastq",
         cleanFastQ2 = "../results/{dataset}/bwa/{sample}.clean.R2.fastq"
     output:
@@ -224,6 +224,30 @@ rule kaiju_refseq:
         """
 
 
+def kaiju_merge_inputs(wildcards):
+    files = expand("../results/{dataset}/abundance/kaiju_refseq/{sample}.kaiju_refseq.txt",
+        zip, sample=samples["sample"], dataset=samples["dataset"])
+    return files
+
+
+rule kaiju_merge:
+    input: 
+        kaiju_merge_inputs
+    output:
+        "../results/allDatasets/kaiju/kaiju_abundance_table.species.allDatasets.txt"
+    params:
+        db_path = "../resources/kaiju_head/kaijuDB",
+        taxa = "species"
+    shell:
+        """
+        ../resources/kaiju_head/kaijuDir/kaiju2table \
+        -t {params.db_path}/nodes.dmp \
+        -n {params.db_path}/names.dmp \
+        -r {params.taxa} \
+        -o {output} \
+        {input}
+        """
+ 
 
 
 # cd {output.kaijuDB}
