@@ -33,4 +33,4 @@ kaiju_setup:
 
 kaiju_refseq:
   cpus: "{threads}"
-  mem: "50g"
+  mem: "100g"
