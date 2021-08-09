@@ -219,7 +219,7 @@ rule kaiju_refseq:
         -f {params.db_path}/kaiju_db_refseq.fmi \
         -i {input.cleanFastQ1} \
         -j {input.cleanFastQ2} \
-        -a {params.mode} \ 
+        -a {params.mode} \
         -o {output.profile}
         """
 
