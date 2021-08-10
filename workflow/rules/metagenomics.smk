@@ -274,7 +274,7 @@ rule kneaddata:
         cleanR1 = "../results/{dataset}/kneaddata/{sample}/{sample}_kneaddata_paired_1.fastq",
         cleanR2 = "../results/{dataset}/kneaddata/{sample}/{sample}_kneaddata_paired_2.fastq"
     params:
-        db_index = "../resources/kneaddata/hg37dec_v0"
+        db_index = "../resources/kneaddata/hg37dec_v0.1.1.bt2"
     threads: 12
     conda:
         "../envs/kneaddata.yml"
