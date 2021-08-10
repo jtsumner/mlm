@@ -285,6 +285,7 @@ rule kneaddata:
         --input {input.r2} \
         --output {output.outDir} \
         --reference-db {params.db_index} \
-        -t {threads}
+        -t {threads} \
+        --bypass-trf
         """
 
