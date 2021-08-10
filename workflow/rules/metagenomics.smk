@@ -249,6 +249,18 @@ rule kaiju_merge:
         """
  
 
+### Setup and Execute KneadData ###
+
+
+rule kneaddata_setup:
+    output:
+        dbDir = directory("../resources/kneaddata")
+    conda:
+        "../envs/kneaddata.yml"
+    shell:
+        """
+        kneaddata_database --download human_genome bowtie2 {output.dbDir}
+        """
 
 # cd {output.kaijuDB}
 # ../kaijDir/kaiju-makedb -s {params.database} -t {threads}
