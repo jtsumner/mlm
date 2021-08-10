@@ -34,3 +34,7 @@ kaiju_setup:
 kaiju_refseq:
   cpus: "{threads}"
   mem: "100g"
+
+kneaddata:
+  cpus: "{threads}"
+  mem: "25g"

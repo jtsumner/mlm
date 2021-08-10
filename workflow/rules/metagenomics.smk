@@ -254,16 +254,39 @@ rule kaiju_merge:
 
 rule kneaddata_setup:
     output:
-        dbDir = directory("../resources/kneaddata")
+        kneaddata_db = directory("../resources/kneaddata"),
+        index = "../resources/kneaddata/hg37dec_v0.1.rev.2.bt2"
     conda:
         "../envs/kneaddata.yml"
     shell:
         """
-        kneaddata_database --download human_genome bowtie2 {output.dbDir}
+        kneaddata_database --download human_genome bowtie2 {output.kneaddata_db}
         """
 
-# cd {output.kaijuDB}
-# ../kaijDir/kaiju-makedb -s {params.database} -t {threads}
+
+rule kneaddata:
+    input:
+        kneaddata_db = rules.kneaddata_setup.output.kneaddata_db,
+        r1 = get_r1,
+        r2 = get_r2
+    output:
+        outDir = directory("../results/{dataset}/kneaddata/{sample}"),
+        cleanR1 = "../results/{dataset}/kneaddata/{sample}/{sample}_kneaddata_paired_1.fastq",
+        cleanR2 = "../results/{dataset}/kneaddata/{sample}/{sample}_kneaddata_paired_2.fastq"
+    params:
+        db_index = "../resources/kneaddata/hg37dec_v0"
+    threads: 12
+    conda:
+        "../envs/kneaddata.yml"
+    shell:
+        """
+        kneaddata \
+        --input {input.r1} \
+        --input {input.r2} \
+        --output {output.outDir} \
+        --reference-db {params.db_index} \
+        -t {threads}
+        """
 
 """
 rule metaphlan_abundance:
