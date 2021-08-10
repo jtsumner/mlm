@@ -3,3 +3,6 @@
 .snakemake/
 .DS_Store
 
+# Ignore contents of data directory but keep gitkeep
+data/*
+!data/.gitkeep
