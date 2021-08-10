@@ -1,0 +1,9 @@
+name: kneaddata
+channels:
+  - biobakery
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=2.7
+  - biobakery::kneaddata=0.10.00
