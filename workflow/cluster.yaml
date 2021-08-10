@@ -37,4 +37,4 @@ kaiju_refseq:
 
 kneaddata:
   cpus: "{threads}"
-  mem: "25g"
+  mem: "100g"
