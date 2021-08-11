@@ -109,6 +109,7 @@ rule metaphlan:
         --bowtie2db {input.metaphlan_db} \
         --nproc {threads} \
         --input_type fastq \
+        --unknown_estimation \
         -o {output.profile}
         """
 
@@ -135,7 +136,7 @@ rule metaphlan_species_abundance:
         "../envs/metaphlan.yml"
     shell:
         """
-        grep -E "s__|clade" {input} | sed 's/^.*s__//g' \
+        grep -E "s__|clade|UNKNOWN" {input} | sed 's/^.*s__//g' \
         | cut -f1,3- | sed -e 's/clade_name/sample/g' > {output}
         """
 
@@ -149,7 +150,7 @@ rule metaphlan_genus_abundance:
         "../envs/metaphlan.yml"
     shell:
         """
-        grep -E "g__|clade" {input} | sed 's/^.*g__//g' \
+        grep -E "g__|clade|UNKNOWN" {input} | sed 's/^.*g__//g' \
         | grep -v s__ |cut -f1,3- | sed -e 's/clade_name/sample/g' > {output}
         """
 
