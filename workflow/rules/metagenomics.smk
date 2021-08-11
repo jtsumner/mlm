@@ -271,13 +271,13 @@ rule kneaddata:
         r2 = get_r2
     output:
         outDir = directory("../results/{dataset}/kneaddata/{sample}"),
-        cleanR1 = "../results/{dataset}/kneaddata/{sample}/{sample}_kneaddata_paired_1.fastq",
-        cleanR2 = "../results/{dataset}/kneaddata/{sample}/{sample}_kneaddata_paired_2.fastq"
+        cleanR1 = "../results/{dataset}/kneaddata/{sample}/{sample}_R1_001_kneaddata_paired_2.fastq",
+        cleanR2 = "../results/{dataset}/kneaddata/{sample}/{sample}_R1_001_kneaddata_paired_1.fastq"
     params:
         db_index = "../resources/kneaddata/hg37dec_v0.1.1.bt2"
     conda:
         "../envs/kneaddata.yml"
-    threads: 12
+    threads: 25
     shell:
         """
         kneaddata \
