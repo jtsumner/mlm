@@ -356,8 +356,56 @@ rule hclust_KD:
         "../envs/hclust.yml"
     shell:
         """
-        hclust2.py -i {input} -o {output} --f_dist_f braycurtis --s_dist_f braycurtis --cell_aspect_ratio 0.5 -l --flabel_size 10 --slabel_size 10 --max_flabel_len 100 --max_slabel_len 100 --minv 0.1 --dpi 300
+        hclust2.py -i {input} -o {output} --f_dist_f braycurtis --s_dist_f braycurtis --cell_aspect_ratio 0.5 -l --flabel_size 6 --slabel_size 15 --max_flabel_len 100 --max_slabel_len 100 --minv 0.1 --dpi 300
         """
+
+rule kaiju_refseq_KD:
+    input:
+        kaiju_sb = rules.kaiju_db.output.tar,
+        cleanFastQ1 = "../results/{dataset}/kneaddata/{sample}/{sample}_R1_001_kneaddata_paired_1.fastq",
+        cleanFastQ2 = "../results/{dataset}/kneaddata/{sample}/{sample}_R1_001_kneaddata_paired_2.fastq"
+    output:
+        profile = "../results/{dataset}/abundance/kaiju_refseq_KD/{sample}.kaiju_refseq_KD.txt",
+    params:
+        db_path = "../resources/kaiju_head/kaijuDB",
+        mode = "mem"
+    threads: 25
+    shell:
+        """
+        ../resources/kaiju_head/kaijuDir/kaiju -z {threads} \
+        -t {params.db_path}/nodes.dmp \
+        -f {params.db_path}/kaiju_db_refseq.fmi \
+        -i {input.cleanFastQ1} \
+        -j {input.cleanFastQ2} \
+        -a {params.mode} \
+        -o {output.profile}
+        """
+
+
+def kaiju_merge_inputs_KD(wildcards):
+    files = expand("../results/{dataset}/abundance/kaiju_refseq_KD/{sample}.kaiju_refseq_KD.txt",
+        zip, sample=samples["sample"], dataset=samples["dataset"])
+    return files
+
+
+rule kaiju_merge_KD:
+    input: 
+        kaiju_merge_inputs_KD
+    output:
+        "../results/allDatasets/kaiju_KD/kaiju_abundance_table_KD.species.allDatasets.txt"
+    params:
+        db_path = "../resources/kaiju_head/kaijuDB",
+        taxa = "species"
+    shell:
+        """
+        ../resources/kaiju_head/kaijuDir/kaiju2table \
+        -t {params.db_path}/nodes.dmp \
+        -n {params.db_path}/names.dmp \
+        -r {params.taxa} \
+        -o {output} \
+        {input}
+        """
+ 
 
 """
 done 1. add metaphlan 
