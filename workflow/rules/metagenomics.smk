@@ -349,7 +349,7 @@ rule metaphlan_species_abundance_kneaddata:
 
 rule hclust_KD:
     input:
-        "../results/allDatasets/metaphlan_kneaddata/merged_abundance_table.KD_allDatasets.txt"
+        "../results/allDatasets/metaphlan_kneaddata/merged_abundance_table.species.KD_allDatasets.txt"
     output:
         "../results/allDatasets/metaphlan_kneaddata/abundance_heatmap_KD_species.allDatasets.png"
     conda:
