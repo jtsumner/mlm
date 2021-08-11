@@ -342,7 +342,7 @@ rule metaphlan_species_abundance_kneaddata:
         "../envs/metaphlan.yml"
     shell:
         """
-        grep -E "s__|clade" {input} | sed 's/^.*s__//g' \
+        grep -E "s__|clade|UNKNOWN" {input} | sed 's/^.*s__//g' \
         | cut -f1,3- | sed -e 's/clade_name/sample/g' > {output}
         """
 
