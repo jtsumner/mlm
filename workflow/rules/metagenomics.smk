@@ -347,11 +347,22 @@ rule metaphlan_species_abundance_kneaddata:
         | cut -f1,3- | sed -e 's/clade_name/sample/g' > {output}
         """
 
+rule hclust_KD:
+    input:
+        "../results/allDatasets/metaphlan_kneaddata/merged_abundance_table.KD_allDatasets.txt"
+    output:
+        "../results/allDatasets/metaphlan_kneaddata/abundance_heatmap_KD_species.allDatasets.png"
+    conda:
+        "../envs/hclust.yml"
+    shell:
+        """
+        hclust2.py -i {input} -o {output} --f_dist_f braycurtis --s_dist_f braycurtis --cell_aspect_ratio 0.5 -l --flabel_size 10 --slabel_size 10 --max_flabel_len 100 --max_slabel_len 100 --minv 0.1 --dpi 300
+        """
 
 """
-1. add metaphlan 
-2. add metaphlan merge
-3. add metaphlan species + cleanup
+done 1. add metaphlan 
+done 2. add metaphlan merge
+done 3. add metaphlan species + cleanup
 4. add kaiju refseq
 5. add kaiju refseq merge
 6. make figure
