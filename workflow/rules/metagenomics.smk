@@ -289,3 +289,71 @@ rule kneaddata:
         --bypass-trf
         """
 
+rule metaphlan_kneaddata:
+    input:
+        metaphlan_db = rules.metaphlan_setup.output.metaphlan_db,
+        cleanFastQ1 = "../results/{dataset}/kneaddata/{sample}/{sample}_R1_001_kneaddata_paired_1.fastq",
+        cleanFastQ2 = "../results/{dataset}/kneaddata/{sample}/{sample}_R1_001_kneaddata_paired_2.fastq"
+    output:
+        profile = "../results/{dataset}/abundance/metaphlan_kneaddata/{sample}.metaphlan_profile_KD.txt",
+        bowtie_out = "../results/{dataset}/abundance/metaphlan_kneaddata/{sample}.bowtie2.bz2"
+    conda: 
+        "../envs/metaphlan.yml"
+    params:
+        metaphlan_idx = config["metaphlan_idx"] # Index for metaphlan
+    threads: 20
+    shell:
+        """
+        metaphlan {input.cleanFastQ1},{input.cleanFastQ2} \
+        --bowtie2out {output.bowtie_out} \
+        --index {params.metaphlan_idx} \
+        --bowtie2db {input.metaphlan_db} \
+        --nproc {threads} \
+        --input_type fastq \
+        -o {output.profile}
+        """
+
+def metaphlan_merge_kneaddata_inputs(wildcards):
+    files = expand("../results/{dataset}/abundance/metaphlan_kneaddata/{sample}.metaphlan_profile_KD.txt",
+        zip, sample=samples["sample"], dataset=samples["dataset"])
+    return files
+
+
+rule metaphlan_merge_kneaddata:
+    input:
+        metaphlan_merge_kneaddata_inputs
+    output:
+        "../results/allDatasets/metaphlan_kneaddata/merged_abundance_table.KD_allDatasets.txt"
+    conda:
+        "../envs/metaphlan.yml"
+    shell:
+        """
+        merge_metaphlan_tables.py {input} > {output}
+        """
+
+
+rule metaphlan_species_abundance_kneaddata:
+    input:
+        "../results/allDatasets/metaphlan_kneaddata/merged_abundance_table.KD_allDatasets.txt"
+    output:
+        "../results/allDatasets/metaphlan_kneaddata/merged_abundance_table.species.KD_allDatasets.txt"
+    conda:
+        "../envs/metaphlan.yml"
+    shell:
+        """
+        grep -E "s__|clade" {input} | sed 's/^.*s__//g' \
+        | cut -f1,3- | sed -e 's/clade_name/sample/g' > {output}
+        """
+
+
+"""
+1. add metaphlan 
+2. add metaphlan merge
+3. add metaphlan species + cleanup
+4. add kaiju refseq
+5. add kaiju refseq merge
+6. make figure
+7. add kaiju nr euk
+8. add kaiju nr euk greedy
+9. make figure
+"""

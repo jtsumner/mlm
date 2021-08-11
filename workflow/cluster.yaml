@@ -38,3 +38,8 @@ kaiju_refseq:
 kneaddata:
   cpus: "{threads}"
   mem: "100g"
+
+metaphlan_kneaddata:
+  cpus: "{threads}"
+  time: 04:00:00
+  mem: "50g"
