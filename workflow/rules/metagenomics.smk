@@ -310,6 +310,7 @@ rule metaphlan_kneaddata:
         --bowtie2db {input.metaphlan_db} \
         --nproc {threads} \
         --input_type fastq \
+        --unknown_estimation \
         -o {output.profile}
         """
 
