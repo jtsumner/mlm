@@ -347,6 +347,7 @@ rule metaphlan_species_abundance_kneaddata:
         | cut -f1,3- | sed -e 's/clade_name/sample/g' > {output}
         """
 
+
 rule hclust_KD:
     input:
         "../results/allDatasets/metaphlan_kneaddata/merged_abundance_table.species.KD_allDatasets.txt"
@@ -359,6 +360,46 @@ rule hclust_KD:
         hclust2.py -i {input} -o {output} --f_dist_f braycurtis --s_dist_f braycurtis --cell_aspect_ratio 0.5 -l --flabel_size 6 --slabel_size 15 --max_flabel_len 100 --max_slabel_len 100 --minv 0.1 --dpi 300
         """
 
+rule metaphlan_merge_kneaddata_BWA:
+    input:
+        KD = "../results/allDatasets/metaphlan_kneaddata/merged_abundance_table.KD_allDatasets.txt",
+        BWA = "../results/allDatasets/metaphlan/merged_abundance_table.allDatasets.txt"
+    output:
+        "../results/allDatasets/compare/merged_abundance_table.KD_BWA_allDatasets.txt"
+    conda:
+        "../envs/metaphlan.yml"
+    shell:
+        """
+        merge_metaphlan_tables.py {input.KD} {input.BWA} > {output}
+        """
+
+rule metaphlan_species_abundance_KD_BWA:
+    input:
+        "../results/allDatasets/compare/merged_abundance_table.KD_BWA_allDatasets.txt"
+    output:
+        "../results/allDatasets/compare/merged_abundance_table.species.KD_BWA_allDatasets.txt"
+    conda:
+        "../envs/metaphlan.yml"
+    shell:
+        """
+        grep -E "s__|clade|UNKNOWN" {input} | sed 's/^.*s__//g' \
+        | cut -f1,3- | sed -e 's/clade_name/sample/g' > {output}
+        """
+
+
+
+rule hclust_KD_BWA:
+    input:
+        "../results/allDatasets/compare/merged_abundance_table.species.KD_BWA_allDatasets.txt"
+    output:
+        "../results/allDatasets/compare/abundance_heatmap_KD_BWA_species.allDatasets.png"
+    conda:
+        "../envs/hclust.yml"
+    shell:
+        """
+        hclust2.py -i {input} -o {output} --f_dist_f braycurtis --s_dist_f braycurtis --cell_aspect_ratio 0.5 -l --flabel_size 6 --slabel_size 15 --max_flabel_len 100 --max_slabel_len 100 --minv 0.1 --dpi 300
+        """
+##
 rule kaiju_refseq_KD:
     input:
         kaiju_sb = rules.kaiju_db.output.tar,
