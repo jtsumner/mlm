@@ -397,10 +397,10 @@ rule KDBWA_hclust:
         "../envs/hclust.yml"
     shell:
         """
-        hclust2.py -i {input} -o {output} --f_dist_f braycurtis --s_dist_f braycurtis --cell_aspect_ratio 0.5 -l --flabel_size 8 --slabel_size 10 --max_flabel_len 100 --max_slabel_len 100 --minv 0.1 --dpi 300
+        hclust2.py -i {input} -o {output} --f_dist_f braycurtis --s_dist_f braycurtis --cell_aspect_ratio 1.0 -l --flabel_size 8 --slabel_size 10 --max_flabel_len 100 --max_slabel_len 100 --minv 0.1 --dpi 300
         """
 ##
-rule kaiju_refseq_KD:
+rule KD_kaiju_refseq:
     input:
         kaiju_sb = rules.kaiju_db.output.tar,
         cleanFastQ1 = "../results/{dataset}/kneaddata/{sample}/{sample}_R1_001_kneaddata_paired_1.fastq",
@@ -429,7 +429,7 @@ def kaiju_merge_inputs_KD(wildcards):
     return files
 
 
-rule kaiju_merge_KD:
+rule KD_kaiju_merge_KD:
     input: 
         kaiju_merge_inputs_KD
     output:
