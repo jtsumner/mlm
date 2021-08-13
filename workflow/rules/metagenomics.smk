@@ -418,8 +418,8 @@ rule KD_sort:
 rule kaiju_refseq_KD:
     input:
         kaiju_sb = rules.kaiju_db.output.tar,
-        cleanFastQ1 = "../results/{dataset}/bwa/{sample}.clean.R1.fastq",
-        cleanFastQ2 = "../results/{dataset}/bwa/{sample}.clean.R2.fastq"
+        cleanFastQ1 = "../results/{dataset}/kneaddata/{sample}/{sample}_R1_001_kneaddata_paired_1.fastq",
+        cleanFastQ2 = "../results/{dataset}/kneaddata/{sample}/{sample}_R1_001_kneaddata_paired_2.fastq"
     output:
         profile = "../results/{dataset}/abundance/kaiju_refseq_kneaddata/{sample}.kaiju_refseq.txt",
     params:
