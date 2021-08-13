@@ -400,11 +400,25 @@ rule KDBWA_hclust:
         hclust2.py -i {input} -o {output} --f_dist_f braycurtis --s_dist_f braycurtis --cell_aspect_ratio 1.0 -l --flabel_size 8 --slabel_size 10 --max_flabel_len 100 --max_slabel_len 100 --minv 0.1 --dpi 300
         """
 ##
+
+rule KD_sort:
+    input:
+        cleanFastQ1 = "../results/{dataset}/kneaddata/{sample}/{sample}_R1_001_kneaddata_paired_1.fastq",
+        cleanFastQ2 = "../results/{dataset}/kneaddata/{sample}/{sample}_R1_001_kneaddata_paired_2.fastq"
+    output:
+        sortedR1 = "../results/{dataset}/kneaddata_sorted/{sample}_R1_001_kneaddata_paired_1.sorted.fastq",
+        sortedR2 = "../results/{dataset}/kneaddata_sorted/{sample}_R1_001_kneaddata_paired_2.sorted.fastq"
+    shell:
+        """
+        cat {input.cleanFastQ1} | paste - - - - | sort -k1,1 -t " " | tr "\t" "\n" > {output.sortedR1}
+        cat {input.cleanFastQ2} | paste - - - - | sort -k1,1 -t " " | tr "\t" "\n" > {output.sortedR2}
+        """
+
 rule KD_kaiju_refseq:
     input:
         kaiju_sb = rules.kaiju_db.output.tar,
-        cleanFastQ1 = "../results/{dataset}/kneaddata/{sample}/{sample}_R1_001_kneaddata_paired_1.fastq",
-        cleanFastQ2 = "../results/{dataset}/kneaddata/{sample}/{sample}_R1_001_kneaddata_paired_2.fastq"
+        sortedR1 = "../results/{dataset}/kneaddata_sorted/{sample}_R1_001_kneaddata_paired_1.sorted.fastq",
+        sortedR2 = "../results/{dataset}/kneaddata_sorted/{sample}_R1_001_kneaddata_paired_2.sorted.fastq"
     output:
         profile = "../results/{dataset}/abundance/kaiju_refseq_KD/{sample}.kaiju_refseq_KD.txt"
     params:
@@ -416,8 +430,8 @@ rule KD_kaiju_refseq:
         ../resources/kaiju_head/kaijuDir/kaiju -z {threads} \
         -t {params.db_path}/nodes.dmp \
         -f {params.db_path}/kaiju_db_refseq.fmi \
-        -i {input.cleanFastQ1} \
-        -j {input.cleanFastQ2} \
+        -i {input.sortedR1} \
+        -j {input.sortedR2} \
         -a {params.mode} \
         -o {output.profile}
         """
@@ -447,15 +461,3 @@ rule KD_kaiju_merge_KD:
         {input}
         """
  
-
-"""
-done 1. add metaphlan 
-done 2. add metaphlan merge
-done 3. add metaphlan species + cleanup
-4. add kaiju refseq
-5. add kaiju refseq merge
-6. make figure
-7. add kaiju nr euk
-8. add kaiju nr euk greedy
-9. make figure
-"""
