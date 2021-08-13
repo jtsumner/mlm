@@ -406,7 +406,7 @@ rule KD_kaiju_refseq:
         cleanFastQ1 = "../results/{dataset}/kneaddata/{sample}/{sample}_R1_001_kneaddata_paired_1.fastq",
         cleanFastQ2 = "../results/{dataset}/kneaddata/{sample}/{sample}_R1_001_kneaddata_paired_2.fastq"
     output:
-        profile = "../results/{dataset}/abundance/kaiju_refseq_KD/{sample}.kaiju_refseq_KD.txt",
+        profile = "../results/{dataset}/abundance/kaiju_refseq_KD/{sample}.kaiju_refseq_KD.txt"
     params:
         db_path = "../resources/kaiju_head/kaijuDB",
         mode = "mem"

@@ -39,7 +39,11 @@ kneaddata:
   cpus: "{threads}"
   mem: "100g"
 
-metaphlan_kneaddata:
+KD_metaphlan:
   cpus: "{threads}"
   time: 04:00:00
   mem: "50g"
+
+KD_kaiju_refseq:
+  cpus: "{threads}"
+  mem: "100g"
