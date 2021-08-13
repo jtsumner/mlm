@@ -414,13 +414,14 @@ rule KD_sort:
         cat {input.cleanFastQ2} | paste - - - - | sort -k1,1 -t " " | tr "\t" "\n" > {output.sortedR2}
         """
 
-rule KD_kaiju_refseq:
+
+rule kaiju_refseq_KD:
     input:
         kaiju_sb = rules.kaiju_db.output.tar,
-        sortedR1 = "../results/{dataset}/kneaddata_sorted/{sample}_R1_001_kneaddata_paired_1.sorted.fastq",
-        sortedR2 = "../results/{dataset}/kneaddata_sorted/{sample}_R1_001_kneaddata_paired_2.sorted.fastq"
+        cleanFastQ1 = "../results/{dataset}/bwa/{sample}.clean.R1.fastq",
+        cleanFastQ2 = "../results/{dataset}/bwa/{sample}.clean.R2.fastq"
     output:
-        profile = "../results/{dataset}/abundance/kaiju_refseq_KD/{sample}.kaiju_refseq_KD.txt"
+        profile = "../results/{dataset}/abundance/kaiju_refseq_kneaddata/{sample}.kaiju_refseq.txt",
     params:
         db_path = "../resources/kaiju_head/kaijuDB",
         mode = "mem"
@@ -430,11 +431,33 @@ rule KD_kaiju_refseq:
         ../resources/kaiju_head/kaijuDir/kaiju -z {threads} \
         -t {params.db_path}/nodes.dmp \
         -f {params.db_path}/kaiju_db_refseq.fmi \
-        -i {input.sortedR1} \
-        -j {input.sortedR2} \
+        -i {input.cleanFastQ1} \
+        -j {input.cleanFastQ2} \
         -a {params.mode} \
         -o {output.profile}
         """
+
+# rule KD_kaiju_refseq:
+#     input:
+#         kaiju_sb = rules.kaiju_db.output.tar,
+#         sortedR1 = "../results/{dataset}/kneaddata_sorted/{sample}_R1_001_kneaddata_paired_1.sorted.fastq",
+#         sortedR2 = "../results/{dataset}/kneaddata_sorted/{sample}_R1_001_kneaddata_paired_2.sorted.fastq"
+#     output:
+#         profile = "../results/{dataset}/abundance/kaiju_refseq_KD/{sample}.kaiju_refseq_KD.txt"
+#     params:
+#         db_path = "../resources/kaiju_head/kaijuDB",
+#         mode = "mem"
+#     threads: 25
+#     shell:
+#         """
+#         ../resources/kaiju_head/kaijuDir/kaiju -z {threads} \
+#         -t {params.db_path}/nodes.dmp \
+#         -f {params.db_path}/kaiju_db_refseq.fmi \
+#         -i {input.sortedR1} \
+#         -j {input.sortedR2} \
+#         -a {params.mode} \
+#         -o {output.profile}
+#         """
 
 
 def kaiju_merge_inputs_KD(wildcards):

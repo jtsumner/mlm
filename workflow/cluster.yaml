@@ -44,6 +44,6 @@ KD_metaphlan:
   time: 04:00:00
   mem: "50g"
 
-KD_kaiju_refseq:
+kaiju_refseq_KD:
   cpus: "{threads}"
-  mem: "100g"
+  mem: "70g"
