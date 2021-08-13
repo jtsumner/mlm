@@ -290,7 +290,7 @@ rule kneaddata:
         --bypass-trf
         """
 
-rule metaphlan_kneaddata:
+rule KD_metaphlan:
     input:
         metaphlan_db = rules.metaphlan_setup.output.metaphlan_db,
         cleanFastQ1 = "../results/{dataset}/kneaddata/{sample}/{sample}_R1_001_kneaddata_paired_1.fastq",
@@ -321,7 +321,7 @@ def metaphlan_merge_kneaddata_inputs(wildcards):
     return files
 
 
-rule metaphlan_merge_kneaddata:
+rule KD_metaphlan_merge:
     input:
         metaphlan_merge_kneaddata_inputs
     output:
@@ -334,7 +334,7 @@ rule metaphlan_merge_kneaddata:
         """
 
 
-rule metaphlan_species_abundance_kneaddata:
+rule KD_metaphlan_species_abundance:
     input:
         "../results/allDatasets/metaphlan_kneaddata/merged_abundance_table.KD_allDatasets.txt"
     output:
@@ -348,7 +348,7 @@ rule metaphlan_species_abundance_kneaddata:
         """
 
 
-rule hclust_KD:
+rule KD_hclust:
     input:
         "../results/allDatasets/metaphlan_kneaddata/merged_abundance_table.species.KD_allDatasets.txt"
     output:
@@ -360,10 +360,10 @@ rule hclust_KD:
         hclust2.py -i {input} -o {output} --f_dist_f braycurtis --s_dist_f braycurtis --cell_aspect_ratio 0.5 -l --flabel_size 6 --slabel_size 15 --max_flabel_len 100 --max_slabel_len 100 --minv 0.1 --dpi 300
         """
 
-rule metaphlan_merge_kneaddata_BWA:
+rule KDBWA_metaphlan_merge:
     input:
-        KD = "../results/allDatasets/metaphlan_kneaddata/merged_abundance_table.KD_allDatasets.txt",
-        BWA = "../results/allDatasets/metaphlan/merged_abundance_table.allDatasets.txt"
+        KD = metaphlan_merge_kneaddata_inputs,
+        BWA = metaphlan_merge_inputs
     output:
         "../results/allDatasets/compare/merged_abundance_table.KD_BWA_allDatasets.txt"
     conda:
@@ -373,7 +373,7 @@ rule metaphlan_merge_kneaddata_BWA:
         merge_metaphlan_tables.py {input.KD} {input.BWA} > {output}
         """
 
-rule metaphlan_species_abundance_KD_BWA:
+rule KDBWA_metaphlan_species_abundance:
     input:
         "../results/allDatasets/compare/merged_abundance_table.KD_BWA_allDatasets.txt"
     output:
@@ -388,7 +388,7 @@ rule metaphlan_species_abundance_KD_BWA:
 
 
 
-rule hclust_KD_BWA:
+rule KDBWA_hclust:
     input:
         "../results/allDatasets/compare/merged_abundance_table.species.KD_BWA_allDatasets.txt"
     output:
