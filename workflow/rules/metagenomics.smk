@@ -182,3 +182,16 @@ rule concat_reads:
         cat {input.cleanFastQ1} > {output.concatR1}
         cat {input.cleanFastQ2} > {output.concatR2}
         """
+
+rule megahit_coassembly:
+    input:
+        concatR1 = "../results/allDatasets/coassembly/concat_reads/concat_reads.clean.R1.fastq",
+        concatR2 = "../results/allDatasets/coassembly/concat_reads/concat_reads.clean.R2.fastq"
+    output:
+        scaffolds = "../results/allDatasets/coassembly/megahit_result/final.contigs.fa"
+    threads: 25
+    shell:
+        """
+        module load megahit/1.0.6.1
+        megahit -t {threads} -m 100e9 -1 {input.concatR1} -2 {input.concatR2} -o "../results/allDatasets/coassembly/megahit_result"
+        """

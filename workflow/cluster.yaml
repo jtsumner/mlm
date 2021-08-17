@@ -47,3 +47,7 @@ KD_metaphlan:
 kaiju_refseq_KD:
   cpus: "{threads}"
   mem: "70g"
+
+megahit_coassembly:
+  cpus: "{threads}"
+  mem: "110g"
