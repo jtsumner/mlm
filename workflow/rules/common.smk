@@ -28,7 +28,7 @@ def get_read_path(wildcards):
 
 def get_r1(wildcards):
     tmp = get_read_path(wildcards)
-    if tmp["dataset"] == "Batch_04"
+    if tmp["dataset"] == "Batch_04":
         return "../data/" + tmp["dataset"] + "/" + tmp["sample"] + "_R1.fastq.gz"
     return "../data/" + tmp["dataset"] + "/" + tmp["sample"] + "_R1_001.fastq.gz"
 
