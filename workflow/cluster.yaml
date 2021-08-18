@@ -49,5 +49,8 @@ kaiju_refseq_KD:
   mem: "70g"
 
 megahit_coassembly:
+  nodes: "4"
   cpus: "{threads}"
-  mem: "110g"
+  time: 48:00:00
+  partition: "normal"
+  mem: "440g"

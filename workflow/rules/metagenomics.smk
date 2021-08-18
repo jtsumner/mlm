@@ -191,11 +191,11 @@ rule megahit_coassembly:
         scaffolds = "../results/allDatasets/coassembly/megahit_result/final.contigs.fa"
     params:
         outdir = "../results/allDatasets/coassembly/megahit_result/tmp"
-    threads: 25
+    threads: 100
     shell:
         """
         module load megahit/1.0.6.1
-        megahit -t {threads} -m 100e9 -1 {input.concatR1} -2 {input.concatR2} -o {params.outdir}
+        megahit -t {threads} -m 420e9 -1 {input.concatR1} -2 {input.concatR2} -o {params.outdir}
         mv {params.outdir} ../results/allDatasets/coassembly/
         rmdir ../results/allDatasets/coassembly/megahit_result
         mv ../results/allDatasets/coassembly/tmp ../results/allDatasets/coassembly/megahit_result
