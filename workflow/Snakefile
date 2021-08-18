@@ -36,5 +36,5 @@ rule all:
         "../results/allDatasets/metaphlan/abundance_heatmap_species.allDatasets.png",
         "../results/allDatasets/coassembly/concat_reads/concat_reads.clean.R1.fastq", # Concat R1
         "../results/allDatasets/coassembly/concat_reads/concat_reads.clean.R2.fastq", # Concat R2
-        "../results/allDatasets/coassembly/megahit_result/final.contigs.fa", #  megahit coassembly
-        directory("../results/allDatasets/coassembly/megahit_result")
+        directory("../results/allDatasets/coassembly/megahit_result"),
+        "../results/allDatasets/coassembly/megahit_result/final.contigs.fa" #  megahit coassembly
