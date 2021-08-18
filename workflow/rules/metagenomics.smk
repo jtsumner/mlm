@@ -228,7 +228,7 @@ rule megahit_monoassemble:
     shell:
         """
         module load megahit/1.0.6.1
-        megahit -t {threads} -m 520e9 -1 {input.cleanR1} -2 {input.cleanR1} -o {params.outdir_tmp}
+        megahit -t {threads} -m 0.9 -1 {input.cleanR1} -2 {input.cleanR1} -o {params.outdir_tmp}
         
         mv {params.outdir_tmp} {params.outdir_base}
         rmdir {params.outdir_final}
