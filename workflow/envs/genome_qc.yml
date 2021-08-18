@@ -1,0 +1,8 @@
+name: genome_qc
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - quast=5.0.2
+  - matplotlib=3.3.3

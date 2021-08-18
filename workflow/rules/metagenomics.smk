@@ -168,7 +168,7 @@ rule hclust:
         """
 
 
-### Assembly with megahit ###
+### Co-assembly with megahit ###
 
 rule concat_reads:
     input:
@@ -195,8 +195,39 @@ rule megahit_coassembly:
     shell:
         """
         module load megahit/1.0.6.1
-        megahit -t {threads} -m 420e9 -1 {input.concatR1} -2 {input.concatR2} -o {params.outdir}
+        megahit -t {threads} -m 520e9 -1 {input.concatR1} -2 {input.concatR2} -o {params.outdir}
         mv {params.outdir} ../results/allDatasets/coassembly/
         rmdir ../results/allDatasets/coassembly/megahit_result
         mv ../results/allDatasets/coassembly/tmp ../results/allDatasets/coassembly/megahit_result
         """
+
+rule megahit_monoassemble:
+    input:
+        cleanFastQ1 = "../results/{dataset}/bwa/{sample}.clean.R1.fastq",
+        cleanFastQ2 = "../results/{dataset}/bwa/{sample}.clean.R2.fastq"
+    output:
+        scaffolds = "../results/{dataset}/assembly/{sample}/final.contigs.fa"
+    params:
+        outdir_tmp = "../results/{dataset}/assembly/{sample}/tmp",
+        outdir_base = "../results/{dataset}/assembly/{sample}"
+    threads: 100
+    shell:
+        """
+        module load megahit/1.0.6.1
+        megahit -t {threads} -m 520e9 -1 {input.concatR1} -2 {input.concatR2} -o {params.outdir}
+        mv {params.outdir} {params.outdir_base}
+        rmdir {params.outdir_base}/megahit_result
+        mv .{params.outdir_base}/tmp/* {params.outdir_base}/
+        """
+
+rule quast_co:
+    input:
+        "../results/allDatasets/coassembly/megahit_result/final.contigs.fa"
+    output:
+        direc=directory("../results/allDatasets/coassembly/quast"),
+        report="../results/allDatasets/coassembly/quast/report.html"
+    threads: 1
+    conda:
+        "../envs/genome_qc.yml"
+    shell:
+        "quast.py -o {output.direc} --threads {threads} {input}"

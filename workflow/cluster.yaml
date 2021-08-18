@@ -54,3 +54,10 @@ megahit_coassembly:
   time: 048:00:00
   partition: "normal"
   mem: "110g"
+
+megahit_monoassemble:
+  nodes: "1"
+  cpus: "{threads}"
+  time: 048:00:00
+  partition: "normal"
+  mem: "110g"
