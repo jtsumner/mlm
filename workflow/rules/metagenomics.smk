@@ -188,11 +188,15 @@ rule megahit_coassembly:
         concatR1 = "../results/allDatasets/coassembly/concat_reads/concat_reads.clean.R1.fastq",
         concatR2 = "../results/allDatasets/coassembly/concat_reads/concat_reads.clean.R2.fastq"
     output:
-        outdir = directory("../results/allDatasets/coassembly/megahit_result"),
         scaffolds = "../results/allDatasets/coassembly/megahit_result/final.contigs.fa"
+    params:
+        outdir = "../results/allDatasets/coassembly/megahit_result/tmp"
     threads: 25
     shell:
         """
         module load megahit/1.0.6.1
-        megahit -t {threads} -m 100e9 -1 {input.concatR1} -2 {input.concatR2} -o {output.outdir}
+        megahit -t {threads} -m 100e9 -1 {input.concatR1} -2 {input.concatR2} -o {params.outdir}
+        mv {params.outdir} ../results/allDatasets/coassembly/
+        rmdir ../results/allDatasets/coassembly/megahit_result
+        mv ../results/allDatasets/coassembly/tmp ../results/allDatasets/coassembly/megahit_result
         """
