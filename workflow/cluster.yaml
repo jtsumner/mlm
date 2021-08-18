@@ -61,3 +61,4 @@ megahit_monoassemble:
   time: 048:00:00
   partition: "normal"
   mem: "110g"
+

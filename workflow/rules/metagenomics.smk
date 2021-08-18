@@ -201,25 +201,6 @@ rule megahit_coassembly:
         mv ../results/allDatasets/coassembly/tmp ../results/allDatasets/coassembly/megahit_result
         """
 
-rule megahit_monoassemble:
-    input:
-        cleanFastQ1 = "../results/{dataset}/bwa/{sample}.clean.R1.fastq",
-        cleanFastQ2 = "../results/{dataset}/bwa/{sample}.clean.R2.fastq"
-    output:
-        scaffolds = "../results/{dataset}/assembly/{sample}/final.contigs.fa"
-    params:
-        outdir_tmp = "../results/{dataset}/assembly/{sample}/tmp",
-        outdir_base = "../results/{dataset}/assembly/{sample}"
-    threads: 100
-    shell:
-        """
-        module load megahit/1.0.6.1
-        megahit -t {threads} -m 520e9 -1 {input.concatR1} -2 {input.concatR2} -o {params.outdir}
-        mv {params.outdir} {params.outdir_base}
-        rmdir {params.outdir_base}/megahit_result
-        mv .{params.outdir_base}/tmp/* {params.outdir_base}/
-        """
-
 rule quast_co:
     input:
         "../results/allDatasets/coassembly/megahit_result/final.contigs.fa"
@@ -231,3 +212,26 @@ rule quast_co:
         "../envs/genome_qc.yml"
     shell:
         "quast.py -o {output.direc} --threads {threads} {input}"
+
+
+rule megahit_monoassemble:
+    input:
+        cleanR1 = "../results/{dataset}/bwa/{sample}.clean.R1.fastq",
+        cleanR2 = "../results/{dataset}/bwa/{sample}.clean.R2.fastq"
+    output:
+        scaffolds = "../results/{dataset}/assembly/{sample}/final.contigs.fa"
+    params:
+        outdir_base = "../results/{dataset}/assembly",
+        outdir_final = "../results/{dataset}/assembly/{sample}",
+        outdir_tmp = "../results/{dataset}/assembly/{sample}/{sample}_tmp"
+    threads: 20
+    shell:
+        """
+        module load megahit/1.0.6.1
+        megahit -t {threads} -m 520e9 -1 {input.cleanR1} -2 {input.cleanR1} -o {params.outdir_tmp}
+        
+        mv {params.outdir_tmp} {params.outdir_base}
+        rmdir {params.outdir_final}
+        mv {params.outdir_final}_tmp {params.outdir_final}
+        """
+
