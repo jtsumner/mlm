@@ -4,7 +4,7 @@
 #SBATCH -t 168:00:00
 #SBATCH -n 8
 #SBATCH -p long
-#SBATCH --mem-per-cpu=3.2gb
+#SBATCH --mem-per-cpu=3gb
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=jacksumner2026@u.northwestern.edu
 module load anaconda3
