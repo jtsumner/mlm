@@ -2,9 +2,9 @@
 #SBATCH -A p31288
 #SBATCH --job-name="scheduler"
 #SBATCH -t 168:00:00
-#SBATCH -n 2
+#SBATCH -n 8
 #SBATCH -p long
-#SBATCH --mem-per-cpu=3gb
+#SBATCH --mem-per-cpu=3.2gb
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=jacksumner2026@u.northwestern.edu
 module load anaconda3

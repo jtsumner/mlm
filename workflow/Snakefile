@@ -33,10 +33,10 @@ rule all:
         "../results/allDatasets/metaphlan/merged_abundance_table.allDatasets.txt", #  Metaphlan merged abundance table
         "../results/allDatasets/metaphlan/merged_abundance_table.species.allDatasets.txt", #  Metaphlan species abundance table
         "../results/allDatasets/metaphlan/merged_abundance_table.genus.allDatasets.txt", #  " " genus
-        "../results/allDatasets/metaphlan/abundance_heatmap_species.allDatasets.png",
+        "../results/allDatasets/metaphlan/abundance_heatmap_species.allDatasets.png"
         #"../results/allDatasets/coassembly/concat_reads/concat_reads.clean.R1.fastq", # Concat R1
         #"../results/allDatasets/coassembly/concat_reads/concat_reads.clean.R2.fastq", # Concat R2
         #"../results/allDatasets/coassembly/megahit_result/final.contigs.fa", #  megahit coassembly
         #"../results/allDatasets/coassembly/quast/report.html",
         #expand("../results/{dataset}/assembly/{sample}/final.contigs.fa",
-            zip, sample=samples["sample"], dataset=samples["dataset"]) # Megahit monoassembly
+        #    zip, sample=samples["sample"], dataset=samples["dataset"]) # Megahit monoassembly
