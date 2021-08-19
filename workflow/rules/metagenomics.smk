@@ -43,9 +43,9 @@ rule bwa_map:
         r2Filtered = "../results/{dataset}/filtered/{sample}.filtered.R2.fastq.gz"
     output:
         sam = temp("../results/{dataset}/bwa/{sample}.mapped.sam"),
-        bam = "../results/{dataset}/bwa/{sample}.mapped.bam",
-        sortedBam = "../results/{dataset}/bwa/{sample}.mapped.sorted.bam",
-        unmappedBam = "../results/{dataset}/bwa/{sample}.unmapped.bam",
+        bam = temp("../results/{dataset}/bwa/{sample}.mapped.bam"),
+        sortedBam = temp("../results/{dataset}/bwa/{sample}.mapped.sorted.bam"),
+        unmappedBam = temp("../results/{dataset}/bwa/{sample}.unmapped.bam"),
         cleanFastQ1 = "../results/{dataset}/bwa/{sample}.clean.R1.fastq",
         cleanFastQ2 = "../results/{dataset}/bwa/{sample}.clean.R2.fastq"
     params:
