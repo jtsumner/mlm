@@ -19,10 +19,6 @@ rule all:
             zip, sample=samples["sample"], dataset=samples["dataset"]), #  FastP R2
         expand("../results/{dataset}/filtered/fastqc/{sample}.filtered.R1_fastqc.html",
             zip, sample=samples["sample"], dataset=samples["dataset"]), #  FastQC
-        expand("../results/{dataset}/bwa/{sample}.mapped.bam",
-            zip, sample=samples["sample"], dataset=samples["dataset"]), #  BWA
-        expand("../results/{dataset}/bwa/{sample}.unmapped.bam",
-            zip, sample=samples["sample"], dataset=samples["dataset"]),  # BWA Unmapped
         expand("../results/{dataset}/bwa/{sample}.clean.R1.fastq",
             zip, sample=samples["sample"], dataset=samples["dataset"]), #  BWA fastq R1
         expand("../results/{dataset}/bwa/{sample}.clean.R2.fastq",

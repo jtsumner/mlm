@@ -42,14 +42,14 @@ rule bwa_map:
         r1Filtered = "../results/{dataset}/filtered/{sample}.filtered.R1.fastq.gz",
         r2Filtered = "../results/{dataset}/filtered/{sample}.filtered.R2.fastq.gz"
     output:
-        sam = temp("../results/{dataset}/bwa/{sample}.mapped.sam"),
-        bam = temp("../results/{dataset}/bwa/{sample}.mapped.bam"),
-        sortedBam = temp("../results/{dataset}/bwa/{sample}.mapped.sorted.bam"),
-        unmappedBam = temp("../results/{dataset}/bwa/{sample}.unmapped.bam"),
         cleanFastQ1 = "../results/{dataset}/bwa/{sample}.clean.R1.fastq",
         cleanFastQ2 = "../results/{dataset}/bwa/{sample}.clean.R2.fastq"
     params:
-        genome = "/projects/b1042/HartmannLab/jack/SCRIPT/expPipeline_v1/data/genome/hg38.fa.gz"
+        genome = "/projects/b1042/HartmannLab/jack/SCRIPT/expPipeline_v1/data/genome/hg38.fa.gz",
+        sam = "../results/{dataset}/bwa/{sample}.mapped.sam",
+        bam = "../results/{dataset}/bwa/{sample}.mapped.bam",
+        sortedBam = "../results/{dataset}/bwa/{sample}.mapped.sorted.bam",
+        unmappedBam = "../results/{dataset}/bwa/{sample}.unmapped.bam"
     threads: 20
     shell:
         """
@@ -57,12 +57,12 @@ rule bwa_map:
         module load bwa/0.7.17
         module load samtools/1.10.1
         module load bedtools/2.29.2
-        bwa mem -t {threads} {params.genome} {input.r1Filtered} {input.r2Filtered} > {output.sam}
-        samtools view -Subh -o {output.bam} {output.sam}
-        samtools sort -o {output.sortedBam} {output.bam}
+        bwa mem -t {threads} {params.genome} {input.r1Filtered} {input.r2Filtered} > {params.sam}
+        samtools view -Subh -o {params.bam} {params.sam}
+        samtools sort -o {params.sortedBam} {params.bam}
 
-        samtools view -b -f 12 -F 256 -o {output.unmappedBam} {output.sortedBam}
-        bedtools bamtofastq -i {output.unmappedBam} -fq {output.cleanFastQ1} -fq2 {output.cleanFastQ2}
+        samtools view -b -f 12 -F 256 -o {params.unmappedBam} {params.sortedBam}
+        bedtools bamtofastq -i {params.unmappedBam} -fq {output.cleanFastQ1} -fq2 {output.cleanFastQ2}
         """
 
 
