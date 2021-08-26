@@ -245,4 +245,4 @@ rule quast_mono:
     conda:
         "../envs/genome_qc.yml"
     shell:
-        "quast.py -o {output.direc} --threads {threads} -L {input}"
+        "quast.py -o {output.direc} --threads {threads} --min-contig 0 -L {input}"
