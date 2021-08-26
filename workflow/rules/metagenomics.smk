@@ -235,3 +235,14 @@ rule megahit_monoassemble:
         mv {params.outdir_final}_tmp {params.outdir_final}
         """
 
+rule quast_mono:
+    input:
+        scaffolds = "../results/{dataset}/assembly/{sample}/final.contigs.fa"
+    output:
+        direc=directory("../results/{dataset}/assembly/quast/{sample}_quast"),
+        report="../results/{dataset}/assembly/quast/{sample}_quast/report.html"
+    threads: 1
+    conda:
+        "../envs/genome_qc.yml"
+    shell:
+        "quast.py -o {output.direc} --threads {threads} -L {input}"
