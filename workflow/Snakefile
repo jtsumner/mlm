@@ -38,4 +38,6 @@ rule all:
         expand("../results/{dataset}/assembly/{sample}/final.contigs.fa",
             zip, sample=samples["sample"], dataset=samples["dataset"]), # Megahit monoassembly
         expand("../results/{dataset}/assembly/quast/{sample}_quast/report.html",
-            zip, sample=samples["sample"], dataset=samples["dataset"])
+            zip, sample=samples["sample"], dataset=samples["dataset"]),
+        "../results/allDatasets/single_sample_assemblies/allSamples.megahit_g1000.fa" # merged clean monoassemblies
+        

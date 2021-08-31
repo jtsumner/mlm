@@ -246,3 +246,26 @@ rule quast_mono:
         "../envs/genome_qc.yml"
     shell:
         "quast.py -o {output.direc} --threads {threads} --min-contig 0 -L {input}"
+
+
+rule parse_assembly:
+    input:
+        "../results/{dataset}/assembly/{sample}/final.contigs.fa"
+    output:
+        "../results/{dataset}/assembly/megahit_g1000/{sample}.megahit_g1000.fa"
+    conda:
+        "../envs/seq_processing.yml"
+    script:
+        "../scripts/parse_contigs.py"
+
+
+rule concat_monoassemblies:
+    input:
+        expand("../results/{dataset}/assembly/megahit_g1000/{sample}.megahit_g1000.fa",
+            zip, sample=samples["sample"], dataset=samples["dataset"])
+    output:
+        "../results/allDatasets/single_sample_assemblies/allSamples.megahit_g1000.fa"
+    shell:
+        """
+        cat {input} > {output}
+        """
