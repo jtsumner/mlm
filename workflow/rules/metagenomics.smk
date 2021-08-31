@@ -159,7 +159,7 @@ rule hclust:
     input:
         "../results/allDatasets/metaphlan/merged_abundance_table.species.allDatasets.txt"
     output:
-        "../results/allDatasets/metaphlan/abundance_heatmap_species.allDatasets.png"
+        report("../results/allDatasets/metaphlan/abundance_heatmap_species.allDatasets.png", caption="results/hclust.rst", category="METAPHLAN")
     conda:
         "../envs/hclust.yml"
     shell:
