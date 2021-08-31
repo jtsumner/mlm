@@ -9,6 +9,7 @@ import pandas as pd
 configfile: "../config/config.yaml"
 include: "rules/common.smk"
 include: "rules/metagenomics.smk"
+include: "rules/bin_assembly.smk"
 localrules: multiqc_trimmed
 report: "report/workflow.rst"
 
@@ -40,4 +41,5 @@ rule all:
         expand("../results/{dataset}/assembly/quast/{sample}_quast/report.html",
             zip, sample=samples["sample"], dataset=samples["dataset"]),
         "../results/allDatasets/single_sample_assemblies/allSamples.megahit_g1000.fa", # merged clean monoassemblies
-        "../results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast/report.html"
+        "../results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast/report.html",
+        "../results/allDatasets/single_sample_assemblies/megahit_g1000.bwt"
