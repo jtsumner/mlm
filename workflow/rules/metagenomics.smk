@@ -269,3 +269,17 @@ rule concat_monoassemblies:
         """
         cat {input} > {output}
         """
+
+rule quast_g1000:
+    input:
+        scaffolds = "../results/allDatasets/single_sample_assemblies/allSamples.megahit_g1000.fa"
+    output:
+        direc=directory("../results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast"),
+        report="../results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast/report.html"
+    threads: 1
+    conda:
+        "../envs/genome_qc.yml"
+    shell:
+        "quast.py -o {output.direc} --threads {threads} --min-contig 0 -L {input}"
+
+        
