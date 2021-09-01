@@ -45,5 +45,4 @@ rule all:
         "../results/allDatasets/single_sample_assemblies/megahit_g1000.bwt",
         expand("../results/allDatasets/single_sample_assemblies/mapped_reads/{dataset}/{sample}.mapped.sorted.bam",
             zip, sample=samples["sample"], dataset=samples["dataset"]), # mapped reads
-        "NOT SURE WHAT THIS SHOULD BE SWITCH THIS LATER"
-        
+        "../results/allDatasets/single_sample_assemblies/megahit_genomeBins/membership.txt"        

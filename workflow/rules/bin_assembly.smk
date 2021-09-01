@@ -64,7 +64,7 @@ rule bin_contigs:
 
     output:
         outDir = directory("../results/allDatasets/single_sample_assemblies/megahit_genomeBins"),
-        megahit_fi = "NOT SURE WHAT THIS SHOULD BE SWITCH THIS LATER"
+        megahit_fi = "../results/allDatasets/single_sample_assemblies/megahit_genomeBins/membership.txt"
     conda:
         "../envs/metabat2.yml"
     threads: 12
