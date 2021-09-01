@@ -42,4 +42,7 @@ rule all:
             zip, sample=samples["sample"], dataset=samples["dataset"]),
         "../results/allDatasets/single_sample_assemblies/allSamples.megahit_g1000.fa", # merged clean monoassemblies
         "../results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast/report.html",
-        "../results/allDatasets/single_sample_assemblies/megahit_g1000.bwt"
+        "../results/allDatasets/single_sample_assemblies/megahit_g1000.bwt",
+        expand("../results/allDatasets/single_sample_assemblies/mapped_reads/{dataset}/{sample}.mapped.sorted.bam",
+            zip, sample=samples["sample"], dataset=samples["dataset"]) # mapped reads
+    
