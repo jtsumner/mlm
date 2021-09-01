@@ -218,7 +218,8 @@ rule quast_co:
         "../results/allDatasets/coassembly/megahit_result/final.contigs.fa"
     output:
         direc=directory("../results/allDatasets/coassembly/quast"),
-        report="../results/allDatasets/coassembly/quast/report.html"
+        report="../results/allDatasets/coassembly/quast/report.html",
+        table=report("../results/allDatasets/coassembly/quast/report.tsv", caption="../report/quast_co.rst", category="ASSEMBLY", subcategory="COASSEMBLY")
     threads: 1
     conda:
         "../envs/genome_qc.yml"
@@ -297,3 +298,17 @@ rule quast_g1000:
         "quast.py -o {output.direc} --threads {threads} --min-contig 0 -L {input}"
 
         
+rule multiqc_quast:
+    input:
+        quast_reports=expand("../results/{dataset}/assembly/quast/{sample}_quast/report.html", zip, sample=samples["sample"], dataset=samples["dataset"])
+    output:
+        outDirMulti=directory("../results/allDatasets/single_sample_assemblies/multiqc_data"),
+        multiqc_report = "../results/allDatasets/single_sample_assemblies/multiqc_data/report.html"
+    params:
+        directories=expand("../results/{dataset}/assembly/quast", dataset=samples["dataset"])
+    shell:
+        """
+        module load multiqc
+        multiqc --export {params.directories}
+        mv multiqc* {output.outDirMulti}
+        """
