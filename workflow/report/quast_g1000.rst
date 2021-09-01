@@ -1,0 +1,1 @@
+Quast output statistics for aggregated single sample contigs > 100bp contigs.
