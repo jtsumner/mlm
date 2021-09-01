@@ -219,7 +219,9 @@ rule quast_co:
     output:
         direc=directory("../results/allDatasets/coassembly/quast"),
         report="../results/allDatasets/coassembly/quast/report.html",
-        table=report("../results/allDatasets/coassembly/quast/report.tsv", caption="../report/quast_co.rst", category="ASSEMBLY", subcategory="COASSEMBLY")
+        table=report("../results/allDatasets/coassembly/quast/report.tsv", caption="../report/quast_co.rst", category="ASSEMBLY", subcategory="COASSEMBLY"),
+        pdf=report("../results/allDatasets/coassembly/quast/report.pdf", caption="../report/quast_co.rst", category="ASSEMBLY", subcategory="COASSEMBLY")
+
     threads: 1
     conda:
         "../envs/genome_qc.yml"
@@ -291,7 +293,9 @@ rule quast_g1000:
     output:
         direc=directory("../results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast"),
         report="../results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast/report.html",
-        tsv_report=report("../results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast/report.tsv", caption="../report/quast_g1000.rst", category="ASSEMBLY", subcategory="Single Sample")
+        tsv_report=report("../results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast/report.tsv", caption="../report/quast_g1000.rst", category="ASSEMBLY", subcategory="Single Sample"),
+        pdf_report=report("../results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast/report.pdf", caption="../report/quast_g1000.rst", category="ASSEMBLY", subcategory="Single Sample")
+
     threads: 1
     conda:
         "../envs/genome_qc.yml"
