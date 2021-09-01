@@ -214,6 +214,8 @@ rule quast_co:
         "quast.py -o {output.direc} --threads {threads} {input}"
 
 
+# Single samples assemblies 
+
 rule megahit_monoassemble:
     input:
         cleanR1 = "../results/{dataset}/bwa/{sample}.clean.R1.fastq",

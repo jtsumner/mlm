@@ -62,3 +62,9 @@ megahit_monoassemble:
   partition: "normal"
   mem: "100g"
 
+bin_contigs:
+  nodes: "1"
+  cpus: "{threads}"
+  time: 05:00:00
+  partition: "normal"
+  mem: "36g"

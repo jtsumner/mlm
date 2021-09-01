@@ -11,6 +11,6 @@ source activate snakemake
 
 # Must be in microbiome-snakemake/workflow/ directory to execute
 cd $SLURM_SUBMIT_DIR
-
+#sed -i 's/"starttime": null/"starttime": 0/g' *
 #--max-jobs-per-second 5 --max-status-checks-per-second 5 
 snakemake --report report.html
