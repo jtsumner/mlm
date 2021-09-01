@@ -290,7 +290,8 @@ rule quast_g1000:
         scaffolds = "../results/allDatasets/single_sample_assemblies/allSamples.megahit_g1000.fa"
     output:
         direc=directory("../results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast"),
-        report="../results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast/report.html"
+        report="../results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast/report.html",
+        tsv_report=report("../results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast/report.tsv", caption="../report/quast_g1000.rst", category="ASSEMBLY", subcategory="Single Sample")
     threads: 1
     conda:
         "../envs/genome_qc.yml"
