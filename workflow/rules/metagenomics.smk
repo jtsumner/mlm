@@ -307,13 +307,13 @@ rule multiqc_quast:
     input:
         quast_reports=expand("../results/{dataset}/assembly/quast/{sample}_quast/report.html", zip, sample=samples["sample"], dataset=samples["dataset"])
     output:
-        outDirMulti=directory("../results/allDatasets/single_sample_assemblies/multiqc_data"),
-        multiqc_report = "../results/allDatasets/single_sample_assemblies/multiqc_data/report.html"
+        outDir=directory("../results/allDatasets/single_sample_assemblies/multiqc_stats"),
+        multiqc_report = "../results/allDatasets/single_sample_assemblies/multiqc_stats/report.html"
     params:
-        directories=expand("../results/{dataset}/assembly/quast", dataset=samples["dataset"])
+        directories=expand("../results/{dataset}/assembly/quast/{sample}_quast/report.html", zip, sample=samples["sample"], dataset=samples["dataset"])
     shell:
         """
         module load multiqc
-        multiqc --export {params.directories}
-        mv multiqc* {output.outDirMulti}
+        multiqc {params.directories}
+        mv multiqc_* {output.outDir}
         """

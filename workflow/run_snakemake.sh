@@ -1,8 +1,8 @@
 #! /bin/bash
 #SBATCH -A p31288
 #SBATCH --job-name="scheduler"
-#SBATCH -t 05:00:00
-#SBATCH -n 8
+#SBATCH -t 10:00:00
+#SBATCH -n 10
 #SBATCH -p normal
 #SBATCH --mem-per-cpu=3gb
 #SBATCH --mail-type=ALL
