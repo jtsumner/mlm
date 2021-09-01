@@ -1,9 +1,9 @@
 #! /bin/bash
 #SBATCH -A p31288
 #SBATCH --job-name="scheduler"
-#SBATCH -t 168:00:00
+#SBATCH -t 05:00:00
 #SBATCH -n 8
-#SBATCH -p long
+#SBATCH -p normal
 #SBATCH --mem-per-cpu=3gb
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=jacksumner2026@u.northwestern.edu
