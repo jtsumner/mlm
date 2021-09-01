@@ -44,9 +44,9 @@ rule all:
         "../results/allDatasets/single_sample_assemblies/megahit_g1000.bwt",
         expand("../results/allDatasets/single_sample_assemblies/mapped_reads/{dataset}/{sample}.mapped.sorted.bam",
             zip, sample=samples["sample"], dataset=samples["dataset"]), # mapped reads
-        #"allSamples.megahit_g1000.fa.depth.txt",      
+        "allSamples.megahit_g1000.fa.depth.txt",      
         "../results/allDatasets/metaphlan/abundance_heatmap_genus.allDatasets.png", # hclust genus 
-        #"../results/allDatasets/single_sample_assemblies/multiqc_data/report.html"
+        "../results/allDatasets/single_sample_assemblies/multiqc_data/report.html"
 # Make report for snakemake. 
 
 report: "report/workflow.rst"
