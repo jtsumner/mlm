@@ -21,7 +21,8 @@ rule index_sample_contigs:
 rule map_reads_to_assembly:
     input:
         cleanFastQ1 = "../results/{dataset}/bwa/{sample}.clean.R1.fastq",
-        cleanFastQ2 = "../results/{dataset}/bwa/{sample}.clean.R2.fastq"
+        cleanFastQ2 = "../results/{dataset}/bwa/{sample}.clean.R2.fastq",
+        index = "../results/allDatasets/single_sample_assemblies/megahit_g1000.bwt"
     output:
         sortedBam = "../results/allDatasets/single_sample_assemblies/mapped_reads/{dataset}/{sample}.mapped.sorted.bam"
     params:
