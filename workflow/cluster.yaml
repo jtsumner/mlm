@@ -67,4 +67,4 @@ bin_contigs:
   cpus: "{threads}"
   time: 05:00:00
   partition: "normal"
-  mem: "36g"
+  mem: "60g"

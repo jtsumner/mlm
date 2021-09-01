@@ -167,6 +167,18 @@ rule hclust:
         hclust2.py -i {input} -o {output} --f_dist_f braycurtis --s_dist_f braycurtis --cell_aspect_ratio 0.5 -l --flabel_size 10 --slabel_size 10 --max_flabel_len 100 --max_slabel_len 100 --minv 0.1 --dpi 300
         """
 
+rule hclust_genus:
+    input:
+        "../results/allDatasets/metaphlan/merged_abundance_table.genus.allDatasets.txt"
+    output:
+        report("../results/allDatasets/metaphlan/abundance_heatmap_genus.allDatasets.png", caption="../report/hclust_genus.rst", category="METAPHLAN")
+    conda:
+        "../envs/hclust.yml"
+    shell:
+        """
+        hclust2.py -i {input} -o {output} --f_dist_f braycurtis --s_dist_f braycurtis --cell_aspect_ratio 0.5 -l --flabel_size 10 --slabel_size 10 --max_flabel_len 100 --max_slabel_len 100 --minv 0.1 --dpi 300
+        """
+
 
 ### Co-assembly with megahit ###
 

@@ -63,14 +63,13 @@ rule bin_contigs:
             zip, sample=samples["sample"], dataset=samples["dataset"])
 
     output:
-        outDir = directory("../results/allDatasets/single_sample_assemblies/megahit_genomeBins"),
-        megahit_fi = "../results/allDatasets/single_sample_assemblies/megahit_genomeBins/membership.txt"
+        megahit_fi = "allSamples.megahit_g1000.fa.depth.txt"
     conda:
         "../envs/metabat2.yml"
-    threads: 12
+    threads: 20
     shell:
         """
-        runMetaBat.sh -t {threads} --outFile {output.outDir} --inFile {input.contigs} {input.sortedBam} 
+        runMetaBat.sh -t {threads} {input.contigs} {input.sortedBam} 
         """
     
 
