@@ -1,4 +1,4 @@
-name: genome_qc
+name: metabat2
 channels:
   - conda-forge
   - bioconda

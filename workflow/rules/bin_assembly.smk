@@ -54,6 +54,43 @@ rule index_bam:
         """
 
 
+rule metabat2_depth:
+    input:
+        sortedBam = expand("../results/allDatasets/single_sample_assemblies/mapped_reads/{dataset}/{sample}.mapped.sorted.bam",
+            zip, sample=samples["sample"], dataset=samples["dataset"]),
+        contigs = "../results/allDatasets/single_sample_assemblies/allSamples.megahit_g1000.fa",
+        bamIndex = expand("../results/allDatasets/single_sample_assemblies/mapped_reads/{dataset}/{sample}.mapped.sorted.bam.bai",
+            zip, sample=samples["sample"], dataset=samples["dataset"])
+    output:
+        depth_fi = "../results/allDatasets/single_sample_assemblies/metabat2/allSamples.megahit_g1000.fa.depth.txt"
+    shell:
+        """
+        jgi_summarize_bam_contig_depths \
+        --outputDepth {output.depth_fi} \
+        --percentIdentity 97 \
+        --minContigLength 1000 \
+        --minContigDepth 1.0  \
+        --referenceFasta {input.contigs} {input.sortedBam}
+        """
+
+rule metabat2_bin:
+    input:
+        contigs = "../results/allDatasets/single_sample_assemblies/allSamples.megahit_g1000.fa",
+        depth_fi = "../results/allDatasets/single_sample_assemblies/metabat2/allSamples.megahit_g1000.fa.depth.txt"
+    output:
+        bin_one = "../results/allDatasets/single_sample_assemblies/metabat2/bins/bin.1.fa",
+        bin_dir = directory("../results/allDatasets/single_sample_assemblies/metabat2/bins/")
+    conda:
+        "../envs/metabat2.yml"
+    threads: 20
+    shell:
+        """
+        metabat2 -t {threads} \
+        --inFile {input.contigs} \
+        --outFile {output.bin_dir}/bin \
+        --abdFile {input.depth_fi}
+        """
+    
 rule bin_contigs:
     input:
         sortedBam = expand("../results/allDatasets/single_sample_assemblies/mapped_reads/{dataset}/{sample}.mapped.sorted.bam",
@@ -61,7 +98,6 @@ rule bin_contigs:
         contigs = "../results/allDatasets/single_sample_assemblies/allSamples.megahit_g1000.fa",
         bamIndex = expand("../results/allDatasets/single_sample_assemblies/mapped_reads/{dataset}/{sample}.mapped.sorted.bam.bai",
             zip, sample=samples["sample"], dataset=samples["dataset"])
-
     output:
         megahit_fi = "allSamples.megahit_g1000.fa.depth.txt"
     conda:

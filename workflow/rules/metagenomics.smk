@@ -312,6 +312,5 @@ rule multiqc_quast:
     shell:
         """
         module load multiqc
-        multiqc {input.quast_reports}
-        mv multiqc_* {output.outDir}
+        multiqc --outdir {output.outDir} {input.quast_reports}
         """
