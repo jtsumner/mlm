@@ -15,4 +15,4 @@ cd $SLURM_SUBMIT_DIR
 
 #--max-jobs-per-second 5 --max-status-checks-per-second 5 
 mkdir -p logs_slurm
-snakemake --verbose --use-conda --cluster-config cluster.yaml --cluster "sbatch -A {cluster.allocation} -p {cluster.partition} -t {cluster.time} --mem={cluster.mem} -N {cluster.nodes} -n {cluster.cpus} -o {cluster.output} -e {cluster.error} --mail-type={cluster.email_type} --mail-user={cluster.email} --job-name={cluster.jobname}" -j 10
+snakemake --verbose --use-conda --cluster-config cluster.yaml --max-jobs-per-second 5 --max-status-checks-per-second 5 -j 10 --cluster "sbatch -A {cluster.allocation} -p {cluster.partition} -t {cluster.time} --mem={cluster.mem} -N {cluster.nodes} -n {cluster.cpus} -o {cluster.output} -e {cluster.error} --mail-type={cluster.email_type} --mail-user={cluster.email} --job-name={cluster.jobname}"
