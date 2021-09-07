@@ -106,10 +106,14 @@ rule checkm_analysis:
         """
         module load checkm/1.0.7
         checkm lineage_wf \
-        --threads 12 \
+        --threads {threads} \
         --extension 'fa' \
-        --file {output.checkm_fi}
+        --file {output.checkm_fi} \
         {input.bin_dir} {output.checkm_dir}
 
         """
 
+# to do: add config data for checkm
+# add checkm plots
+# add single sample binning
+# add mash 

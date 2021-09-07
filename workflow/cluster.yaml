@@ -76,3 +76,10 @@ metabat2_bin:
   time: 01:00:00
   partition: "short"
   mem: "60g"
+
+checkm_analysis:
+  nodes: "1"
+  cpus: "{threads}"
+  time: 01:00:00
+  partition: "short"
+  mem: "36g"
