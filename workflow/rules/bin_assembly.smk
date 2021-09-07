@@ -95,15 +95,21 @@ rule metabat2_bin:
         """
     
 
-rule checkm:
+rule checkm_analysis:
     input:
-        inDir = directory("../results/allDatasets/single_sample_assemblies/megahit_genomeBins")
+        bin_dir = directory("../results/allDatasets/single_sample_assemblies/metabat2/bins")
     output:
-        outDir = directory("../results/allDatasets/single_sample_assemblies/megahit_genomeBins/checkm")
+        checkm_dir = directory("../results/allDatasets/single_sample_assemblies/metabat2/checkm"),
+        checkm_fi = "../results/allDatasets/single_sample_assemblies/metabat2/checkm/checkm_output.txt"
     threads: 12
     shell:
         """
         module load checkm/1.0.7
-        checkm lineage_wf {input.inDir} -o 
+        checkm lineage_wf \
+        --threads 12 \
+        --extension 'fa' \
+        --file {output.checkm_fi}
+        {input.bin_dir} {output.checkm_dir}
+
         """
 

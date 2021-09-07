@@ -14,38 +14,16 @@ localrules: multiqc_trimmed
 
 rule all:
     input:
-        # expand("../results/{dataset}/filtered/{sample}.filtered.R1.fastq.gz",
-        #     zip, sample=samples["sample"], dataset=samples["dataset"]), #  FastP R2
-        # expand("../results/{dataset}/filtered/{sample}.filtered.R2.fastq.gz", 
-        #     zip, sample=samples["sample"], dataset=samples["dataset"]), #  FastP R2
-        # expand("../results/{dataset}/filtered/fastqc/{sample}.filtered.R1_fastqc.html",
-        #     zip, sample=samples["sample"], dataset=samples["dataset"]), #  FastQC
-        # expand("../results/{dataset}/bwa/{sample}.clean.R1.fastq",
-        #     zip, sample=samples["sample"], dataset=samples["dataset"]), #  BWA fastq R1
-        # expand("../results/{dataset}/bwa/{sample}.clean.R2.fastq",
-        #     zip, sample=samples["sample"], dataset=samples["dataset"]), #  BWA fastq R2
-        # directory("../resources/metaphlan_db"), #  Metaphlan setup/Database
-        # expand("../results/{dataset}/abundance/metaphlan/{sample}.metaphlan_profile.txt",
-        #     zip, sample=samples["sample"], dataset=samples["dataset"]), # Metaphlan profiles
-        # "../results/allDatasets/metaphlan/merged_abundance_table.allDatasets.txt", #  Metaphlan merged abundance table
-        # "../results/allDatasets/metaphlan/merged_abundance_table.species.allDatasets.txt", #  Metaphlan species abundance table
-        # "../results/allDatasets/metaphlan/merged_abundance_table.genus.allDatasets.txt", #  " " genus
         "../results/allDatasets/metaphlan/abundance_heatmap_species.allDatasets.png",
         "../results/allDatasets/metaphlan/abundance_heatmap_genus.allDatasets.png", # hclust genus 
-        # "../results/allDatasets/coassembly/concat_reads/concat_reads.clean.R1.fastq", # Concat R1
-        # "../results/allDatasets/coassembly/concat_reads/concat_reads.clean.R2.fastq", # Concat R2
-        # "../results/allDatasets/coassembly/megahit_result/final.contigs.fa", #  megahit coassembly
         "../results/allDatasets/coassembly/quast/report.html",
-        # expand("../results/{dataset}/assembly/{sample}/final.contigs.fa",
-        #     zip, sample=samples["sample"], dataset=samples["dataset"]), # Megahit monoassembly
         expand("../results/{dataset}/assembly/quast/{sample}_quast/report.html",
             zip, sample=samples["sample"], dataset=samples["dataset"]),
         "../results/allDatasets/single_sample_assemblies/allSamples.megahit_g1000.fa", # merged clean monoassemblies
         "../results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast/report.html",
-        # "../results/allDatasets/single_sample_assemblies/megahit_g1000.bwt",
-        # expand("../results/allDatasets/single_sample_assemblies/mapped_reads/{dataset}/{sample}.mapped.sorted.bam",
-        #     zip, sample=samples["sample"], dataset=samples["dataset"]), # mapped reads
-        "../results/allDatasets/single_sample_assemblies/metabat2/bins/bin.1.fa" # binned_contigs 
+        "../results/allDatasets/single_sample_assemblies/metabat2/bins/bin.1.fa", # binned_contigs 
+        "../results/allDatasets/single_sample_assemblies/metabat2/checkm/checkm_output.txt"
+
 
 # Make report for snakemake. 
 
