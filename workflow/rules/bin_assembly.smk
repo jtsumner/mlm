@@ -110,10 +110,25 @@ rule checkm_analysis:
         --extension 'fa' \
         --file {output.checkm_fi} \
         {input.bin_dir} {output.checkm_dir}
-
         """
 
 # to do: add config data for checkm
 # add checkm plots
+
+rule checkm_plots:
+    input:
+        checkm_dir = directory("../results/allDatasets/single_sample_assemblies/metabat2/checkm"),
+        bin_dir = directory("../results/allDatasets/single_sample_assemblies/metabat2/bins")
+    output:
+        plots_dir = directory("../results/allDatasets/single_sample_assemblies/metabat2/plots"),
+        qa_plot = "../results/allDatasets/single_sample_assemblies/metabat2/plots/bin_qa_plot.png"
+    shell:
+        """
+        module load checkm/1.0.7
+        checkm bin_qa_plot \
+        --extension 'fa' \
+        {input.checkm_dir} {input.bin_dir} {output.plots_dir}
+        """
+
 # add single sample binning
 # add mash 
