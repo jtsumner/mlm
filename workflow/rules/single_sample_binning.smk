@@ -10,12 +10,14 @@ rule SS_index_contigs:
         "../results/{dataset}/assembly/megahit_g1000/{sample}.megahit_g1000.fa"
     output:
         "../results/{dataset}/assembly/megahit_g1000/{sample}.megahit_g1000.bwt"
+    params:
+        prefix = "../results/{dataset}/assembly/megahit_g1000/{sample}.megahit_g1000"
     shell:
         """
         module load bwa/0.7.17
         module load samtools/1.10.1
 
-        bwa index -p ../results/allDatasets/single_sample_assemblies/megahit_g1000 {input}
+        bwa index -p {params.prefix} {input}
         """
 
 
@@ -27,7 +29,7 @@ rule SS_map_reads_to_contigs:
     output:
         sortedBam = "../results/{dataset}/assembly/megahit_g1000/mapped_reads/{sample}.mapped.sorted.bam"
     params:
-        genome = "../results/{dataset}/assembly/megahit_g1000/{sample}.megahit_g1000.fa",
+        genome = "../results/{dataset}/assembly/megahit_g1000/{sample}.megahit_g1000",
         sam = "../results/{dataset}/assembly/megahit_g1000/mapped_reads/{sample}.mapped.sam",
         bam = "../results/{dataset}/assembly/megahit_g1000/mapped_reads/{sample}.mapped.bam",
     threads: 20
