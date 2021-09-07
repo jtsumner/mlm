@@ -62,9 +62,17 @@ megahit_monoassemble:
   partition: "normal"
   mem: "100g"
 
-bin_contigs:
+metabat2_depth:
   nodes: "1"
   cpus: "{threads}"
-  time: 05:00:00
-  partition: "normal"
+  time: 01:00:00
+  partition: "short"
+  mem: "60g"
+
+
+metabat2_bin:
+  nodes: "1"
+  cpus: "{threads}"
+  time: 01:00:00
+  partition: "short"
   mem: "60g"

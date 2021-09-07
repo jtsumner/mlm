@@ -63,6 +63,9 @@ rule metabat2_depth:
             zip, sample=samples["sample"], dataset=samples["dataset"])
     output:
         depth_fi = "../results/allDatasets/single_sample_assemblies/metabat2/allSamples.megahit_g1000.fa.depth.txt"
+    conda:
+        "../envs/metabat2.yml"
+    threads: 20
     shell:
         """
         jgi_summarize_bam_contig_depths \
