@@ -94,23 +94,6 @@ rule metabat2_bin:
         --abdFile {input.depth_fi}
         """
     
-rule bin_contigs:
-    input:
-        sortedBam = expand("../results/allDatasets/single_sample_assemblies/mapped_reads/{dataset}/{sample}.mapped.sorted.bam",
-            zip, sample=samples["sample"], dataset=samples["dataset"]),
-        contigs = "../results/allDatasets/single_sample_assemblies/allSamples.megahit_g1000.fa",
-        bamIndex = expand("../results/allDatasets/single_sample_assemblies/mapped_reads/{dataset}/{sample}.mapped.sorted.bam.bai",
-            zip, sample=samples["sample"], dataset=samples["dataset"])
-    output:
-        megahit_fi = "allSamples.megahit_g1000.fa.depth.txt"
-    conda:
-        "../envs/metabat2.yml"
-    threads: 20
-    shell:
-        """
-        runMetaBat.sh -t {threads} {input.contigs} {input.sortedBam} 
-        """
-    
 
 rule checkm:
     input:
