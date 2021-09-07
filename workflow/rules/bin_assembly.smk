@@ -69,7 +69,7 @@ rule metabat2_depth:
         --outputDepth {output.depth_fi} \
         --percentIdentity 97 \
         --minContigLength 1000 \
-        --minContigDepth 1.0  \
+        --minContigDepth 1.0 \
         --referenceFasta {input.contigs} {input.sortedBam}
         """
 
