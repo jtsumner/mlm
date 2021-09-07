@@ -69,7 +69,6 @@ metabat2_depth:
   partition: "short"
   mem: "60g"
 
-
 metabat2_bin:
   nodes: "1"
   cpus: "{threads}"
@@ -83,3 +82,28 @@ checkm_analysis:
   time: 01:00:00
   partition: "short"
   mem: "36g"
+
+SS_map_reads_to_contigs:
+  cpus: "{threads}"
+  
+SS_metabat2_depth:
+  nodes: "1"
+  cpus: "{threads}"
+  time: 01:00:00
+  partition: "short"
+  mem: "60g"
+
+SS_metabat2_bin:
+  nodes: "1"
+  cpus: "{threads}"
+  time: 01:00:00
+  partition: "short"
+  mem: "60g"
+
+SS_checkm_analysis:
+  nodes: "1"
+  cpus: "{threads}"
+  time: 01:00:00
+  partition: "short"
+  mem: "36g"
+
