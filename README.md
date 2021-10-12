@@ -13,5 +13,11 @@ Execute to create a DAG visualization of the pipeline
 snakemake --forceall --dag | dot -Tpdf > dag.pdf
 ```
 
+Execute to create a rule graph visualization 
+
+```
+snakemake --forceall --rulegraph | dot -Tpdf > dag.pdf
+```
+
 calculate_unifrac.R from 
 https://github.com/biobakery/MetaPhlAn/blob/master/metaphlan/utils/calculate_unifrac.R

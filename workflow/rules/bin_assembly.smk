@@ -3,7 +3,7 @@ import glob
 import pandas as pd
 from snakemake.utils import validate
 
-### For single sample assemblies 
+### For co-assembled sample assemblies 
 
 rule index_sample_contigs:
     input:
