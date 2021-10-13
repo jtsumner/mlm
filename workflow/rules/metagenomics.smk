@@ -154,6 +154,20 @@ rule metaphlan_genus_abundance:
         | grep -v s__ |cut -f1,3- | sed -e 's/clade_name/sample/g' > {output}
         """
 
+rule metaphlan_unifrac:
+    input:
+        "../results/allDatasets/metaphlan/merged_abundance_table.allDatasets.txt"
+    output:
+        "../results/allDatasets/metaphlan/unifrac_matrix.allDatasets.txt"
+    params:
+        "/home/jsj3921/.conda/envs/snakemake/pkgs/metaphlan-3.0.13-pyhb7b1952_0/site-packages/metaphlan/utils/"
+    conda:
+        "../envs/metaphlan.yml"
+    shell:
+        """
+        module load R
+        Rscript {params}calculate_unifrac.R {input} {params}mpa_v30_CHOCOPhlAn_201901_species_tree.nwk {output}
+        """
 
 rule hclust:
     input:
