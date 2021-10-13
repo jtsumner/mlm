@@ -8,7 +8,7 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=jacksumner2026@u.northwestern.edu
 module load anaconda3
-conda activate snakemake
+source activate snakemake
 
 # Must be in microbiome-snakemake/workflow/ directory to execute
 cd $SLURM_SUBMIT_DIR
