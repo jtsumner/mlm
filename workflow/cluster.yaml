@@ -1,5 +1,5 @@
 __default__:
-  allocation: "p31288"
+  allocation: "p31588"
   partition: "short"
   cpus: "2"
   nodes: "1"
