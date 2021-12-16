@@ -165,7 +165,7 @@ rule metaphlan_unifrac:
         "../envs/metaphlan.yml"
     shell:
         """
-        module load R
+        module load R/4.1.1
         Rscript {params}calculate_unifrac.R {input} {params}mpa_v30_CHOCOPhlAn_201901_species_tree.nwk {output}
         """
 
