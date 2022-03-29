@@ -7,11 +7,11 @@ from snakemake.utils import validate
 
 rule SS_index_contigs:
     input:
-        "../results/{dataset}/assembly/megahit_g1000/{sample}.megahit_g1000.fa"
+        "results/{dataset}/assembly/megahit_g1000/{sample}.megahit_g1000.fa"
     output:
-        "../results/{dataset}/assembly/megahit_g1000/{sample}.megahit_g1000.bwt"
+        "results/{dataset}/assembly/megahit_g1000/{sample}.megahit_g1000.bwt"
     params:
-        prefix = "../results/{dataset}/assembly/megahit_g1000/{sample}.megahit_g1000"
+        prefix = "results/{dataset}/assembly/megahit_g1000/{sample}.megahit_g1000"
     shell:
         """
         module load bwa/0.7.17
@@ -23,15 +23,15 @@ rule SS_index_contigs:
 
 rule SS_map_reads_to_contigs:
     input:
-        cleanFastQ1 = "../results/{dataset}/bwa/{sample}.clean.R1.fastq",
-        cleanFastQ2 = "../results/{dataset}/bwa/{sample}.clean.R2.fastq",
-        index = "../results/{dataset}/assembly/megahit_g1000/{sample}.megahit_g1000.bwt"
+        cleanFastQ1 = "results/{dataset}/bwa/{sample}.clean.R1.fastq",
+        cleanFastQ2 = "results/{dataset}/bwa/{sample}.clean.R2.fastq",
+        index = "results/{dataset}/assembly/megahit_g1000/{sample}.megahit_g1000.bwt"
     output:
-        sortedBam = "../results/{dataset}/assembly/megahit_g1000/mapped_reads/{sample}.mapped.sorted.bam"
+        sortedBam = "results/{dataset}/assembly/megahit_g1000/mapped_reads/{sample}.mapped.sorted.bam"
     params:
-        genome = "../results/{dataset}/assembly/megahit_g1000/{sample}.megahit_g1000",
-        sam = "../results/{dataset}/assembly/megahit_g1000/mapped_reads/{sample}.mapped.sam",
-        bam = "../results/{dataset}/assembly/megahit_g1000/mapped_reads/{sample}.mapped.bam",
+        genome = "results/{dataset}/assembly/megahit_g1000/{sample}.megahit_g1000",
+        sam = "results/{dataset}/assembly/megahit_g1000/mapped_reads/{sample}.mapped.sam",
+        bam = "results/{dataset}/assembly/megahit_g1000/mapped_reads/{sample}.mapped.bam",
     threads: 20
     shell:
         """
@@ -46,9 +46,9 @@ rule SS_map_reads_to_contigs:
 
 rule SS_index_bam:
     input:
-        sortedBam = "../results/{dataset}/assembly/megahit_g1000/mapped_reads/{sample}.mapped.sorted.bam"
+        sortedBam = "results/{dataset}/assembly/megahit_g1000/mapped_reads/{sample}.mapped.sorted.bam"
     output:
-        bamIndex = "../results/{dataset}/assembly/megahit_g1000/mapped_reads/{sample}.mapped.sorted.bam.bai"
+        bamIndex = "results/{dataset}/assembly/megahit_g1000/mapped_reads/{sample}.mapped.sorted.bam.bai"
     shell:
         """
         module load samtools/1.10.1
@@ -58,13 +58,13 @@ rule SS_index_bam:
 
 rule SS_metabat2_depth:
     input:
-        sortedBam = "../results/{dataset}/assembly/megahit_g1000/mapped_reads/{sample}.mapped.sorted.bam",
-        contigs = "../results/{dataset}/assembly/megahit_g1000/{sample}.megahit_g1000.fa",
-        bamIndex = "../results/{dataset}/assembly/megahit_g1000/mapped_reads/{sample}.mapped.sorted.bam.bai"
+        sortedBam = "results/{dataset}/assembly/megahit_g1000/mapped_reads/{sample}.mapped.sorted.bam",
+        contigs = "results/{dataset}/assembly/megahit_g1000/{sample}.megahit_g1000.fa",
+        bamIndex = "results/{dataset}/assembly/megahit_g1000/mapped_reads/{sample}.mapped.sorted.bam.bai"
     output:
-        depth_fi = "../results/{dataset}/assembly/megahit_g1000/metabat2/{sample}/{sample}_depth.txt"
+        depth_fi = "results/{dataset}/assembly/megahit_g1000/metabat2/{sample}/{sample}_depth.txt"
     conda:
-        "../envs/metabat2.yml"
+        "envs/metabat2.yml"
     threads: 20
     shell:
         """
@@ -78,13 +78,13 @@ rule SS_metabat2_depth:
 
 rule SS_metabat2_bin:
     input:
-        contigs = "../results/{dataset}/assembly/megahit_g1000/{sample}.megahit_g1000.fa",
-        depth_fi = "../results/{dataset}/assembly/megahit_g1000/metabat2/{sample}/{sample}_depth.txt"
+        contigs = "results/{dataset}/assembly/megahit_g1000/{sample}.megahit_g1000.fa",
+        depth_fi = "results/{dataset}/assembly/megahit_g1000/metabat2/{sample}/{sample}_depth.txt"
     output:
-        bin_one = "../results/{dataset}/assembly/megahit_g1000/metabat2/{sample}/bins/bin.1.fa",
-        bin_dir = directory("../results/{dataset}/assembly/megahit_g1000/metabat2/{sample}/bins")
+        bin_one = "results/{dataset}/assembly/megahit_g1000/metabat2/{sample}/bins/bin.1.fa",
+        bin_dir = directory("results/{dataset}/assembly/megahit_g1000/metabat2/{sample}/bins")
     conda:
-        "../envs/metabat2.yml"
+        "envs/metabat2.yml"
     threads: 20
     shell:
         """
@@ -97,10 +97,10 @@ rule SS_metabat2_bin:
 
 rule SS_checkm_analysis:
     input:
-        bin_dir = directory("../results/{dataset}/assembly/megahit_g1000/metabat2/{sample}/bins")
+        bin_dir = directory("results/{dataset}/assembly/megahit_g1000/metabat2/{sample}/bins")
     output:
-        checkm_dir = directory("../results/{dataset}/assembly/megahit_g1000/metabat2/checkm/{sample}"),
-        checkm_fi = "../results/{dataset}/assembly/megahit_g1000/metabat2/checkm/{sample}/{sample}_checkm_output.txt"
+        checkm_dir = directory("results/{dataset}/assembly/megahit_g1000/metabat2/checkm/{sample}"),
+        checkm_fi = "results/{dataset}/assembly/megahit_g1000/metabat2/checkm/{sample}/{sample}_checkm_output.txt"
     threads: 12
     shell:
         """
@@ -117,11 +117,11 @@ rule SS_checkm_analysis:
 
 rule SS_checkm_plots:
     input:
-        checkm_dir = directory("../results/{dataset}/assembly/megahit_g1000/metabat2/checkm/{sample}"),
-        bin_dir = directory("../results/{dataset}/assembly/megahit_g1000/metabat2/{sample}/bins")
+        checkm_dir = directory("results/{dataset}/assembly/megahit_g1000/metabat2/checkm/{sample}"),
+        bin_dir = directory("results/{dataset}/assembly/megahit_g1000/metabat2/{sample}/bins")
     output:
-        plots_dir = directory("../results/{dataset}/assembly/megahit_g1000/metabat2/checkm/{sample}/plots"),
-        qa_plot = "../results/{dataset}/assembly/megahit_g1000/metabat2/checkm/{sample}/plots/bin_qa_plot.png"
+        plots_dir = directory("results/{dataset}/assembly/megahit_g1000/metabat2/checkm/{sample}/plots"),
+        qa_plot = "results/{dataset}/assembly/megahit_g1000/metabat2/checkm/{sample}/plots/bin_qa_plot.png"
     shell:
         """
         module load checkm/1.0.7

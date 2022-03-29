@@ -10,12 +10,12 @@ rule fastp_pe:
         r1 = get_r1,
         r2 = get_r2
     output:
-        r1Filtered = "../results/{dataset}/filtered/{sample}.filtered.R1.fastq.gz",
-        r2Filtered = "../results/{dataset}/filtered/{sample}.filtered.R2.fastq.gz",
-        json = "../results/{dataset}/filtered/{sample}_fastp.json",
-        html = "../results/{dataset}/filtered/{sample}_fastp.html"
+        r1Filtered = "results/{dataset}/filtered/{sample}.filtered.R1.fastq.gz",
+        r2Filtered = "results/{dataset}/filtered/{sample}.filtered.R2.fastq.gz",
+        json = "results/{dataset}/filtered/{sample}_fastp.json",
+        html = "results/{dataset}/filtered/{sample}_fastp.html"
     conda:
-        "../envs/seq_processing.yml"
+        "envs/seq_processing.yml"
     threads: 16
     shell: 
         "fastp -i {input.r1} -I {input.r2} --out1 {output.r1Filtered} --out2 {output.r2Filtered} --detect_adapter_for_pe --thread {threads} --length_required 50 -j {output.json} -h {output.html} -V"
@@ -23,13 +23,13 @@ rule fastp_pe:
 
 rule fastqc:
     input: 
-        "../results/{dataset}/filtered/{sample}.filtered.R1.fastq.gz",
-        "../results/{dataset}/filtered/{sample}.filtered.R2.fastq.gz"
+        "results/{dataset}/filtered/{sample}.filtered.R1.fastq.gz",
+        "results/{dataset}/filtered/{sample}.filtered.R2.fastq.gz"
     output:
-        "../results/{dataset}/filtered/fastqc/{sample}.filtered.R1_fastqc.html",
-        "../results/{dataset}/filtered/fastqc/{sample}.filtered.R2_fastqc.html"
+        "results/{dataset}/filtered/fastqc/{sample}.filtered.R1_fastqc.html",
+        "results/{dataset}/filtered/fastqc/{sample}.filtered.R2_fastqc.html"
     params:
-        outDir = "../results/{dataset}/filtered/fastqc"
+        outDir = "results/{dataset}/filtered/fastqc"
     threads: 12
     shell:
         "module load fastqc/0.11.5 ; fastqc -t {threads} {input} --outdir {params.outDir}"
@@ -39,17 +39,17 @@ rule fastqc:
 
 rule bwa_map:
     input:
-        r1Filtered = "../results/{dataset}/filtered/{sample}.filtered.R1.fastq.gz",
-        r2Filtered = "../results/{dataset}/filtered/{sample}.filtered.R2.fastq.gz"
+        r1Filtered = "results/{dataset}/filtered/{sample}.filtered.R1.fastq.gz",
+        r2Filtered = "results/{dataset}/filtered/{sample}.filtered.R2.fastq.gz"
     output:
-        cleanFastQ1 = "../results/{dataset}/bwa/{sample}.clean.R1.fastq",
-        cleanFastQ2 = "../results/{dataset}/bwa/{sample}.clean.R2.fastq"
+        cleanFastQ1 = "results/{dataset}/bwa/{sample}.clean.R1.fastq",
+        cleanFastQ2 = "results/{dataset}/bwa/{sample}.clean.R2.fastq"
     params:
         genome = "/projects/b1042/HartmannLab/jack/SCRIPT/expPipeline_v1/data/genome/hg38.fa.gz",
-        sam = "../results/{dataset}/bwa/{sample}.mapped.sam",
-        bam = "../results/{dataset}/bwa/{sample}.mapped.bam",
-        sortedBam = "../results/{dataset}/bwa/{sample}.mapped.sorted.bam",
-        unmappedBam = "../results/{dataset}/bwa/{sample}.unmapped.bam"
+        sam = "results/{dataset}/bwa/{sample}.mapped.sam",
+        bam = "results/{dataset}/bwa/{sample}.mapped.bam",
+        sortedBam = "results/{dataset}/bwa/{sample}.mapped.sorted.bam",
+        unmappedBam = "results/{dataset}/bwa/{sample}.unmapped.bam"
     threads: 20
     shell:
         """
@@ -69,16 +69,16 @@ rule bwa_map:
 ### Setup Metaphlan. Run Metaphlan on samples to make abundance tables ###
 
 def metaphlan_merge_inputs(wildcards):
-    files = expand("../results/{dataset}/abundance/metaphlan/{sample}.metaphlan_profile.txt",
+    files = expand("results/{dataset}/abundance/metaphlan/{sample}.metaphlan_profile.txt",
         zip, sample=samples["sample"], dataset=samples["dataset"])
     return files
 
 
 rule metaphlan_setup:
     output:
-        metaphlan_db = directory("../resources/metaphlan_db")
+        metaphlan_db = directory("resources/metaphlan_db")
     conda: 
-        "../envs/metaphlan.yml"
+        "envs/metaphlan.yml"
     params:
         metaphlan_idx = config["metaphlan_idx"] # Index for metaphlan
     threads: 10
@@ -91,13 +91,13 @@ rule metaphlan_setup:
 rule metaphlan:
     input:
         metaphlan_db = rules.metaphlan_setup.output.metaphlan_db,
-        cleanFastQ1 = "../results/{dataset}/bwa/{sample}.clean.R1.fastq",
-        cleanFastQ2 = "../results/{dataset}/bwa/{sample}.clean.R2.fastq"
+        cleanFastQ1 = "results/{dataset}/bwa/{sample}.clean.R1.fastq",
+        cleanFastQ2 = "results/{dataset}/bwa/{sample}.clean.R2.fastq"
     output:
-        profile = "../results/{dataset}/abundance/metaphlan/{sample}.metaphlan_profile.txt",
-        bowtie_out = "../results/{dataset}/abundance/metaphlan/{sample}.bowtie2.bz2"
+        profile = "results/{dataset}/abundance/metaphlan/{sample}.metaphlan_profile.txt",
+        bowtie_out = "results/{dataset}/abundance/metaphlan/{sample}.bowtie2.bz2"
     conda: 
-        "../envs/metaphlan.yml"
+        "envs/metaphlan.yml"
     params:
         metaphlan_idx = config["metaphlan_idx"] # Index for metaphlan
     threads: 20
@@ -118,9 +118,9 @@ rule metaphlan_merge:
     input:
         metaphlan_merge_inputs
     output:
-        "../results/allDatasets/metaphlan/merged_abundance_table.allDatasets.txt"
+        "results/allDatasets/metaphlan/merged_abundance_table.allDatasets.txt"
     conda:
-        "../envs/metaphlan.yml"
+        "envs/metaphlan.yml"
     shell:
         """
         merge_metaphlan_tables.py {input} > {output}
@@ -129,11 +129,11 @@ rule metaphlan_merge:
 
 rule metaphlan_species_abundance:
     input:
-        "../results/allDatasets/metaphlan/merged_abundance_table.allDatasets.txt"
+        "results/allDatasets/metaphlan/merged_abundance_table.allDatasets.txt"
     output:
-        "../results/allDatasets/metaphlan/merged_abundance_table.species.allDatasets.txt"
+        "results/allDatasets/metaphlan/merged_abundance_table.species.allDatasets.txt"
     conda:
-        "../envs/metaphlan.yml"
+        "envs/metaphlan.yml"
     shell:
         """
         grep -E "s__|clade|UNKNOWN" {input} | sed 's/^.*s__//g' \
@@ -143,11 +143,11 @@ rule metaphlan_species_abundance:
 
 rule metaphlan_genus_abundance:
     input:
-        "../results/allDatasets/metaphlan/merged_abundance_table.allDatasets.txt"
+        "results/allDatasets/metaphlan/merged_abundance_table.allDatasets.txt"
     output:
-        "../results/allDatasets/metaphlan/merged_abundance_table.genus.allDatasets.txt"
+        "results/allDatasets/metaphlan/merged_abundance_table.genus.allDatasets.txt"
     conda:
-        "../envs/metaphlan.yml"
+        "envs/metaphlan.yml"
     shell:
         """
         grep -E "g__|clade|UNKNOWN" {input} | sed 's/^.*g__//g' \
@@ -156,13 +156,13 @@ rule metaphlan_genus_abundance:
 
 rule metaphlan_unifrac:
     input:
-        "../results/allDatasets/metaphlan/merged_abundance_table.allDatasets.txt"
+        "results/allDatasets/metaphlan/merged_abundance_table.allDatasets.txt"
     output:
-        "../results/allDatasets/metaphlan/unifrac_matrix.allDatasets.txt"
+        "results/allDatasets/metaphlan/unifrac_matrix.allDatasets.txt"
     params:
         "/home/jsj3921/.conda/envs/snakemake/pkgs/metaphlan-3.0.13-pyhb7b1952_0/site-packages/metaphlan/utils/"
     conda:
-        "../envs/metaphlan.yml"
+        "envs/metaphlan.yml"
     shell:
         """
         module load R/4.1.1
@@ -171,11 +171,11 @@ rule metaphlan_unifrac:
 
 rule hclust:
     input:
-        "../results/allDatasets/metaphlan/merged_abundance_table.species.allDatasets.txt"
+        "results/allDatasets/metaphlan/merged_abundance_table.species.allDatasets.txt"
     output:
-        report("../results/allDatasets/metaphlan/abundance_heatmap_species.allDatasets.png", caption="../report/hclust.rst", category="METAPHLAN")
+        report("results/allDatasets/metaphlan/abundance_heatmap_species.allDatasets.png", caption="report/hclust.rst", category="METAPHLAN")
     conda:
-        "../envs/hclust.yml"
+        "envs/hclust.yml"
     shell:
         """
         hclust2.py -i {input} -o {output} --f_dist_f braycurtis --s_dist_f braycurtis --cell_aspect_ratio 0.5 -l --flabel_size 10 --slabel_size 10 --max_flabel_len 100 --max_slabel_len 100 --minv 0.1 --dpi 300
@@ -183,11 +183,11 @@ rule hclust:
 
 rule hclust_genus:
     input:
-        "../results/allDatasets/metaphlan/merged_abundance_table.genus.allDatasets.txt"
+        "results/allDatasets/metaphlan/merged_abundance_table.genus.allDatasets.txt"
     output:
-        report("../results/allDatasets/metaphlan/abundance_heatmap_genus.allDatasets.png", caption="../report/hclust_genus.rst", category="METAPHLAN")
+        report("results/allDatasets/metaphlan/abundance_heatmap_genus.allDatasets.png", caption="report/hclust_genus.rst", category="METAPHLAN")
     conda:
-        "../envs/hclust.yml"
+        "envs/hclust.yml"
     shell:
         """
         hclust2.py -i {input} -o {output} --f_dist_f braycurtis --s_dist_f braycurtis --cell_aspect_ratio 0.5 -l --flabel_size 10 --slabel_size 10 --max_flabel_len 100 --max_slabel_len 100 --minv 0.1 --dpi 300
@@ -198,11 +198,11 @@ rule hclust_genus:
 
 rule concat_reads:
     input:
-        cleanFastQ1 = expand("../results/{dataset}/bwa/{sample}.clean.R1.fastq", zip, sample=samples["sample"], dataset=samples["dataset"]),
-        cleanFastQ2 = expand("../results/{dataset}/bwa/{sample}.clean.R2.fastq", zip, sample=samples["sample"], dataset=samples["dataset"])
+        cleanFastQ1 = expand("results/{dataset}/bwa/{sample}.clean.R1.fastq", zip, sample=samples["sample"], dataset=samples["dataset"]),
+        cleanFastQ2 = expand("results/{dataset}/bwa/{sample}.clean.R2.fastq", zip, sample=samples["sample"], dataset=samples["dataset"])
     output:
-        concatR1 = "../results/allDatasets/coassembly/concat_reads/concat_reads.clean.R1.fastq",
-        concatR2 = "../results/allDatasets/coassembly/concat_reads/concat_reads.clean.R2.fastq"
+        concatR1 = "results/allDatasets/coassembly/concat_reads/concat_reads.clean.R1.fastq",
+        concatR2 = "results/allDatasets/coassembly/concat_reads/concat_reads.clean.R2.fastq"
     shell:
         """
         cat {input.cleanFastQ1} > {output.concatR1}
@@ -211,34 +211,34 @@ rule concat_reads:
 
 rule megahit_coassembly:
     input:
-        concatR1 = "../results/allDatasets/coassembly/concat_reads/concat_reads.clean.R1.fastq",
-        concatR2 = "../results/allDatasets/coassembly/concat_reads/concat_reads.clean.R2.fastq"
+        concatR1 = "results/allDatasets/coassembly/concat_reads/concat_reads.clean.R1.fastq",
+        concatR2 = "results/allDatasets/coassembly/concat_reads/concat_reads.clean.R2.fastq"
     output:
-        scaffolds = "../results/allDatasets/coassembly/megahit_result/final.contigs.fa"
+        scaffolds = "results/allDatasets/coassembly/megahit_result/final.contigs.fa"
     params:
-        outdir = "../results/allDatasets/coassembly/megahit_result/tmp"
+        outdir = "results/allDatasets/coassembly/megahit_result/tmp"
     threads: 100
     shell:
         """
         module load megahit/1.0.6.1
         megahit -t {threads} -m 520e9 -1 {input.concatR1} -2 {input.concatR2} -o {params.outdir}
-        mv {params.outdir} ../results/allDatasets/coassembly/
-        rmdir ../results/allDatasets/coassembly/megahit_result
-        mv ../results/allDatasets/coassembly/tmp ../results/allDatasets/coassembly/megahit_result
+        mv {params.outdir} results/allDatasets/coassembly/
+        rmdir results/allDatasets/coassembly/megahit_result
+        mv results/allDatasets/coassembly/tmp results/allDatasets/coassembly/megahit_result
         """
 
 rule quast_co:
     input:
-        "../results/allDatasets/coassembly/megahit_result/final.contigs.fa"
+        "results/allDatasets/coassembly/megahit_result/final.contigs.fa"
     output:
-        direc=directory("../results/allDatasets/coassembly/quast"),
-        report="../results/allDatasets/coassembly/quast/report.html",
-        table=report("../results/allDatasets/coassembly/quast/report.tsv", caption="../report/quast_co.rst", category="ASSEMBLY", subcategory="COASSEMBLY"),
-        pdf=report("../results/allDatasets/coassembly/quast/report.pdf", caption="../report/quast_co.rst", category="ASSEMBLY", subcategory="COASSEMBLY")
+        direc=directory("results/allDatasets/coassembly/quast"),
+        report="results/allDatasets/coassembly/quast/report.html",
+        table=report("results/allDatasets/coassembly/quast/report.tsv", caption="report/quast_co.rst", category="ASSEMBLY", subcategory="COASSEMBLY"),
+        pdf=report("results/allDatasets/coassembly/quast/report.pdf", caption="report/quast_co.rst", category="ASSEMBLY", subcategory="COASSEMBLY")
 
     threads: 1
     conda:
-        "../envs/genome_qc.yml"
+        "envs/genome_qc.yml"
     shell:
         "quast.py -o {output.direc} --threads {threads} {input}"
 
@@ -247,14 +247,14 @@ rule quast_co:
 
 rule megahit_monoassemble:
     input:
-        cleanR1 = "../results/{dataset}/bwa/{sample}.clean.R1.fastq",
-        cleanR2 = "../results/{dataset}/bwa/{sample}.clean.R2.fastq"
+        cleanR1 = "results/{dataset}/bwa/{sample}.clean.R1.fastq",
+        cleanR2 = "results/{dataset}/bwa/{sample}.clean.R2.fastq"
     output:
-        scaffolds = "../results/{dataset}/assembly/{sample}/final.contigs.fa"
+        scaffolds = "results/{dataset}/assembly/{sample}/final.contigs.fa"
     params:
-        outdir_base = "../results/{dataset}/assembly",
-        outdir_final = "../results/{dataset}/assembly/{sample}",
-        outdir_tmp = "../results/{dataset}/assembly/{sample}/{sample}_tmp"
+        outdir_base = "results/{dataset}/assembly",
+        outdir_final = "results/{dataset}/assembly/{sample}",
+        outdir_tmp = "results/{dataset}/assembly/{sample}/{sample}_tmp"
     threads: 20
     shell:
         """
@@ -268,34 +268,34 @@ rule megahit_monoassemble:
 
 rule quast_mono:
     input:
-        scaffolds = "../results/{dataset}/assembly/{sample}/final.contigs.fa"
+        scaffolds = "results/{dataset}/assembly/{sample}/final.contigs.fa"
     output:
-        direc=directory("../results/{dataset}/assembly/quast/{sample}_quast"),
-        report="../results/{dataset}/assembly/quast/{sample}_quast/report.html"
+        direc=directory("results/{dataset}/assembly/quast/{sample}_quast"),
+        report="results/{dataset}/assembly/quast/{sample}_quast/report.html"
     threads: 1
     conda:
-        "../envs/genome_qc.yml"
+        "envs/genome_qc.yml"
     shell:
         "quast.py -o {output.direc} --threads {threads} --min-contig 0 -L {input}"
 
 
 rule parse_assembly:
     input:
-        "../results/{dataset}/assembly/{sample}/final.contigs.fa"
+        "results/{dataset}/assembly/{sample}/final.contigs.fa"
     output:
-        "../results/{dataset}/assembly/megahit_g1000/{sample}.megahit_g1000.fa"
+        "results/{dataset}/assembly/megahit_g1000/{sample}.megahit_g1000.fa"
     conda:
-        "../envs/seq_processing.yml"
+        "envs/seq_processing.yml"
     script:
-        "../scripts/parse_contigs.py"
+        "scripts/parse_contigs.py"
 
 
 rule concat_monoassemblies:
     input:
-        expand("../results/{dataset}/assembly/megahit_g1000/{sample}.megahit_g1000.fa",
+        expand("results/{dataset}/assembly/megahit_g1000/{sample}.megahit_g1000.fa",
             zip, sample=samples["sample"], dataset=samples["dataset"])
     output:
-        "../results/allDatasets/single_sample_assemblies/allSamples.megahit_g1000.fa"
+        "results/allDatasets/single_sample_assemblies/allSamples.megahit_g1000.fa"
     shell:
         """
         cat {input} > {output}
@@ -303,26 +303,26 @@ rule concat_monoassemblies:
 
 rule quast_g1000:
     input:
-        scaffolds = "../results/allDatasets/single_sample_assemblies/allSamples.megahit_g1000.fa"
+        scaffolds = "results/allDatasets/single_sample_assemblies/allSamples.megahit_g1000.fa"
     output:
-        direc=directory("../results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast"),
-        report="../results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast/report.html",
-        tsv_report=report("../results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast/report.tsv", caption="../report/quast_g1000.rst", category="ASSEMBLY", subcategory="Single Sample"),
-        pdf_report=report("../results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast/report.pdf", caption="../report/quast_g1000.rst", category="ASSEMBLY", subcategory="Single Sample")
+        direc=directory("results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast"),
+        report="results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast/report.html",
+        tsv_report=report("results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast/report.tsv", caption="report/quast_g1000.rst", category="ASSEMBLY", subcategory="Single Sample"),
+        pdf_report=report("results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast/report.pdf", caption="report/quast_g1000.rst", category="ASSEMBLY", subcategory="Single Sample")
 
     threads: 1
     conda:
-        "../envs/genome_qc.yml"
+        "envs/genome_qc.yml"
     shell:
         "quast.py -o {output.direc} --threads {threads} --min-contig 0 -L {input}"
 
         
 rule multiqc_quast:
     input:
-        quast_reports=expand("../results/{dataset}/assembly/quast/{sample}_quast/report.html", zip, sample=samples["sample"], dataset=samples["dataset"])
+        quast_reports=expand("results/{dataset}/assembly/quast/{sample}_quast/report.html", zip, sample=samples["sample"], dataset=samples["dataset"])
     output:
-        outDir=directory("../results/allDatasets/single_sample_assemblies/multiqc_stats"),
-        multiqc_report = "../results/allDatasets/single_sample_assemblies/multiqc_stats/report.html"
+        outDir=directory("results/allDatasets/single_sample_assemblies/multiqc_stats"),
+        multiqc_report = "results/allDatasets/single_sample_assemblies/multiqc_stats/report.html"
     shell:
         """
         module load multiqc
