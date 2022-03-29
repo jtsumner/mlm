@@ -64,7 +64,7 @@ rule SS_metabat2_depth:
     output:
         depth_fi = "results/{dataset}/assembly/megahit_g1000/metabat2/{sample}/{sample}_depth.txt"
     conda:
-        "envs/metabat2.yml"
+        "../envs/metabat2.yml"
     threads: 20
     shell:
         """
@@ -84,7 +84,7 @@ rule SS_metabat2_bin:
         bin_one = "results/{dataset}/assembly/megahit_g1000/metabat2/{sample}/bins/bin.1.fa",
         bin_dir = directory("results/{dataset}/assembly/megahit_g1000/metabat2/{sample}/bins")
     conda:
-        "envs/metabat2.yml"
+        "../envs/metabat2.yml"
     threads: 20
     shell:
         """

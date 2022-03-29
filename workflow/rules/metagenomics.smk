@@ -15,7 +15,7 @@ rule fastp_pe:
         json = "results/{dataset}/filtered/{sample}_fastp.json",
         html = "results/{dataset}/filtered/{sample}_fastp.html"
     conda:
-        "envs/seq_processing.yml"
+        "../envs/seq_processing.yml"
     threads: 16
     shell: 
         "fastp -i {input.r1} -I {input.r2} --out1 {output.r1Filtered} --out2 {output.r2Filtered} --detect_adapter_for_pe --thread {threads} --length_required 50 -j {output.json} -h {output.html} -V"
@@ -100,7 +100,7 @@ rule metaphlan_setup:
     output:
         metaphlan_db = directory("resources/metaphlan_db")
     conda: 
-        "envs/metaphlan.yml"
+        "../envs/metaphlan.yml"
     params:
         metaphlan_idx = config["metaphlan_idx"] # Index for metaphlan
     threads: 10
@@ -119,7 +119,7 @@ rule metaphlan:
         profile = "results/{dataset}/abundance/metaphlan/{sample}.metaphlan_profile.txt",
         bowtie_out = "results/{dataset}/abundance/metaphlan/{sample}.bowtie2.bz2"
     conda: 
-        "envs/metaphlan.yml"
+        "../envs/metaphlan.yml"
     params:
         metaphlan_idx = config["metaphlan_idx"] # Index for metaphlan
     threads: 20
@@ -142,7 +142,7 @@ rule metaphlan_merge:
     output:
         "results/allDatasets/metaphlan/merged_abundance_table.allDatasets.txt"
     conda:
-        "envs/metaphlan.yml"
+        "../envs/metaphlan.yml"
     shell:
         """
         merge_metaphlan_tables.py {input} > {output}
@@ -155,7 +155,7 @@ rule metaphlan_species_abundance:
     output:
         "results/allDatasets/metaphlan/merged_abundance_table.species.allDatasets.txt"
     conda:
-        "envs/metaphlan.yml"
+        "../envs/metaphlan.yml"
     shell:
         """
         grep -E "s__|clade|UNKNOWN" {input} | sed 's/^.*s__//g' \
@@ -169,7 +169,7 @@ rule metaphlan_genus_abundance:
     output:
         "results/allDatasets/metaphlan/merged_abundance_table.genus.allDatasets.txt"
     conda:
-        "envs/metaphlan.yml"
+        "../envs/metaphlan.yml"
     shell:
         """
         grep -E "g__|clade|UNKNOWN" {input} | sed 's/^.*g__//g' \
@@ -184,7 +184,7 @@ rule metaphlan_unifrac:
     params:
         "/home/jsj3921/.conda/envs/snakemake/pkgs/metaphlan-3.0.13-pyhb7b1952_0/site-packages/metaphlan/utils/"
     conda:
-        "envs/metaphlan.yml"
+        "../envs/metaphlan.yml"
     shell:
         """
         module load R/4.1.1
@@ -197,7 +197,7 @@ rule hclust:
     output:
         report("results/allDatasets/metaphlan/abundance_heatmap_species.allDatasets.png", caption="report/hclust.rst", category="METAPHLAN")
     conda:
-        "envs/hclust.yml"
+        "../envs/hclust.yml"
     shell:
         """
         hclust2.py -i {input} -o {output} --f_dist_f braycurtis --s_dist_f braycurtis --cell_aspect_ratio 0.5 -l --flabel_size 10 --slabel_size 10 --max_flabel_len 100 --max_slabel_len 100 --minv 0.1 --dpi 300
@@ -209,7 +209,7 @@ rule hclust_genus:
     output:
         report("results/allDatasets/metaphlan/abundance_heatmap_genus.allDatasets.png", caption="report/hclust_genus.rst", category="METAPHLAN")
     conda:
-        "envs/hclust.yml"
+        "../envs/hclust.yml"
     shell:
         """
         hclust2.py -i {input} -o {output} --f_dist_f braycurtis --s_dist_f braycurtis --cell_aspect_ratio 0.5 -l --flabel_size 10 --slabel_size 10 --max_flabel_len 100 --max_slabel_len 100 --minv 0.1 --dpi 300
@@ -249,7 +249,7 @@ rule quast:
         report="results/{dataset}/assembly/quast/{sample}_quast/report.html"
     threads: 1
     conda:
-        "envs/genome_qc.yml"
+        "../envs/genome_qc.yml"
     shell:
         "quast.py -o {output.direc} --threads {threads} --min-contig 0 -L {input}"
 
@@ -260,7 +260,7 @@ rule drop_short_contigs:
     output:
         "results/{dataset}/assembly/megahit_g1000/{sample}.megahit_g1000.fa"
     conda:
-        "envs/seq_processing.yml"
+        "../envs/seq_processing.yml"
     script:
         "scripts/parse_contigs.py"
 
@@ -299,7 +299,7 @@ rule multiqc_quast:
 
 #     threads: 1
 #     conda:
-#         "envs/genome_qc.yml"
+#         "../envs/genome_qc.yml"
 #     shell:
 #         "quast.py -o {output.direc} --threads {threads} --min-contig 0 -L {input}"
 
