@@ -2,6 +2,7 @@
 *.fastq.gz
 .snakemake/
 .DS_Store
+dag.pdf 
 
 # Ignore contents of data directory but keep gitkeep
 data/*
