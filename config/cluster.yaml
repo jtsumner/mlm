@@ -4,7 +4,7 @@ __default__:
   cpus: "2"
   nodes: "1"
   time: 01:00:00
-  mem: "20g"
+  mem: 5g"
   jobname: "{rule}_{wildcards}"
   output: "logs_slurm/{rule}_{wildcards}.out"
   error: "logs_slurm/{rule}_{wildcards}.error"
