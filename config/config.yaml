@@ -7,4 +7,4 @@ samples: "config/samples_minimal_test.tsv"
 #samples: "../config/samples_minimal_test.tsv" #  Batches 0-3 
 
 metaphlan_idx: "mpa_v30_CHOCOPhlAn_201901"
-  
+human_genome: "https://hgdownload.cse.ucsc.edu/goldenpath/hg38/bigZips/hg38.fa.gz"

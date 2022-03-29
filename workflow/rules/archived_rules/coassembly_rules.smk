@@ -1,7 +1,50 @@
+### Co-assembly with megahit ###
 
-import glob
-import pandas as pd
-from snakemake.utils import validate
+rule concat_reads:
+    input:
+        cleanFastQ1 = expand("results/{dataset}/bwa/{sample}.clean.R1.fastq", zip, sample=samples["sample"], dataset=samples["dataset"]),
+        cleanFastQ2 = expand("results/{dataset}/bwa/{sample}.clean.R2.fastq", zip, sample=samples["sample"], dataset=samples["dataset"])
+    output:
+        concatR1 = "results/allDatasets/coassembly/concat_reads/concat_reads.clean.R1.fastq",
+        concatR2 = "results/allDatasets/coassembly/concat_reads/concat_reads.clean.R2.fastq"
+    shell:
+        """
+        cat {input.cleanFastQ1} > {output.concatR1}
+        cat {input.cleanFastQ2} > {output.concatR2}
+        """
+
+rule megahit_coassembly:
+    input:
+        concatR1 = "results/allDatasets/coassembly/concat_reads/concat_reads.clean.R1.fastq",
+        concatR2 = "results/allDatasets/coassembly/concat_reads/concat_reads.clean.R2.fastq"
+    output:
+        scaffolds = "results/allDatasets/coassembly/megahit_result/final.contigs.fa"
+    params:
+        outdir = "results/allDatasets/coassembly/megahit_result/tmp"
+    threads: 100
+    shell:
+        """
+        module load megahit/1.0.6.1
+        megahit -t {threads} -m 520e9 -1 {input.concatR1} -2 {input.concatR2} -o {params.outdir}
+        mv {params.outdir} results/allDatasets/coassembly/
+        rmdir results/allDatasets/coassembly/megahit_result
+        mv results/allDatasets/coassembly/tmp results/allDatasets/coassembly/megahit_result
+        """
+
+rule quast_co:
+    input:
+        "results/allDatasets/coassembly/megahit_result/final.contigs.fa"
+    output:
+        direc=directory("results/allDatasets/coassembly/quast"),
+        report="results/allDatasets/coassembly/quast/report.html",
+        table=report("results/allDatasets/coassembly/quast/report.tsv", caption="report/quast_co.rst", category="ASSEMBLY", subcategory="COASSEMBLY"),
+        pdf=report("results/allDatasets/coassembly/quast/report.pdf", caption="report/quast_co.rst", category="ASSEMBLY", subcategory="COASSEMBLY")
+
+    threads: 1
+    conda:
+        "envs/genome_qc.yml"
+    shell:
+        "quast.py -o {output.direc} --threads {threads} {input}"
 
 ### For co-assembled sample assemblies 
 

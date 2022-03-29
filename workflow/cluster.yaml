@@ -11,6 +11,11 @@ __default__:
   email: "jacksumner2026@u.northwestern.edu"
   email_type: "FAIL"
 
+index_human_genome:
+  cpus: "{threads}"
+  time: 04:00:00
+  mem: "20g"
+
 bwa_map:
   cpus: "{threads}"
 
@@ -27,61 +32,12 @@ metaphlan:
   time: 04:00:00
   mem: "50g"
 
-kaiju_setup:
-  cpus: "{threads}"
-  mem: "50g"
-
-kaiju_refseq:
-  cpus: "{threads}"
-  mem: "100g"
-
-kneaddata:
-  cpus: "{threads}"
-  mem: "100g"
-
-KD_metaphlan:
-  cpus: "{threads}"
-  time: 04:00:00
-  mem: "50g"
-
-kaiju_refseq_KD:
-  cpus: "{threads}"
-  mem: "70g"
-
-megahit_coassembly:
-  nodes: "5"
-  cpus: "{threads}"
-  time: 048:00:00
-  partition: "normal"
-  mem: "110g"
-
-megahit_monoassemble:
+meahit_monoassemble:
   nodes: "1"
   cpus: "{threads}"
   time: 05:00:00
-  partition: "normal"
+  partitgion: "normal"
   mem: "100g"
-
-metabat2_depth:
-  nodes: "1"
-  cpus: "{threads}"
-  time: 01:00:00
-  partition: "short"
-  mem: "60g"
-
-metabat2_bin:
-  nodes: "1"
-  cpus: "{threads}"
-  time: 01:00:00
-  partition: "short"
-  mem: "60g"
-
-checkm_analysis:
-  nodes: "1"
-  cpus: "{threads}"
-  time: 01:00:00
-  partition: "short"
-  mem: "36g"
 
 SS_map_reads_to_contigs:
   cpus: "{threads}"

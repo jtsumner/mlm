@@ -8,6 +8,54 @@
         # "../results/allDatasets/kaiju/kaiju_abundance_table.species.allDatasets.txt", # Kaiju refseq summary
 
 
+kaiju_setup:
+  cpus: "{threads}"
+  mem: "50g"
+
+kaiju_refseq:
+  cpus: "{threads}"
+  mem: "100g"
+
+kneaddata:
+  cpus: "{threads}"
+  mem: "100g"
+
+KD_metaphlan:
+  cpus: "{threads}"
+  time: 04:00:00
+  mem: "50g"
+
+kaiju_refseq_KD:
+  cpus: "{threads}"
+  mem: "70g"
+
+megahit_coassembly:
+  nodes: "5"
+  cpus: "{threads}"
+  time: 048:00:00
+  partition: "normal"
+  mem: "110g"
+
+  metabat2_depth:
+  nodes: "1"
+  cpus: "{threads}"
+  time: 01:00:00
+  partition: "short"
+  mem: "60g"
+
+metabat2_bin:
+  nodes: "1"
+  cpus: "{threads}"
+  time: 01:00:00
+  partition: "short"
+  mem: "60g"
+
+checkm_analysis:
+  nodes: "1"
+  cpus: "{threads}"
+  time: 01:00:00
+  partition: "short"
+  mem: "36g"
 ### Setup and Execute Kaiju ###
  
 rule kaiju_setup:

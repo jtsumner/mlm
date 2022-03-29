@@ -36,16 +36,38 @@ rule fastqc:
 
 
 ### Remove contaminant reads aligning to human reference genome ###
+rule get_human_genome:
+    output:
+        "resources/genome/{params.human_genome}"
+    params:
+        human_genome = config["human_genome"]
+    shell:
+        "wget {params.human_genome}"
+
+rule index_human_genome:
+    input:
+        "resources/genome/{params.human_genome}"
+    output:
+        "resources/genome/{params.human_genome}.ann"
+    params:
+        human_genome = config["human_genome"]
+    threads: 10
+    shell:
+        """
+        module load bwa/0.7.17
+        """
 
 rule bwa_map:
     input:
         r1Filtered = "results/{dataset}/filtered/{sample}.filtered.R1.fastq.gz",
-        r2Filtered = "results/{dataset}/filtered/{sample}.filtered.R2.fastq.gz"
+        r2Filtered = "results/{dataset}/filtered/{sample}.filtered.R2.fastq.gz",
+        genome = "resources/genome/{params.human_genome}.ann"
     output:
         cleanFastQ1 = "results/{dataset}/bwa/{sample}.clean.R1.fastq",
         cleanFastQ2 = "results/{dataset}/bwa/{sample}.clean.R2.fastq"
     params:
-        genome = "/projects/b1042/HartmannLab/jack/SCRIPT/expPipeline_v1/data/genome/hg38.fa.gz",
+        human_genome = config["human_genome"],
+        #genome = "resources/genome/{params.human_genome}.ann",
         sam = "results/{dataset}/bwa/{sample}.mapped.sam",
         bam = "results/{dataset}/bwa/{sample}.mapped.bam",
         sortedBam = "results/{dataset}/bwa/{sample}.mapped.sorted.bam",
@@ -57,7 +79,7 @@ rule bwa_map:
         module load bwa/0.7.17
         module load samtools/1.10.1
         module load bedtools/2.29.2
-        bwa mem -t {threads} {params.genome} {input.r1Filtered} {input.r2Filtered} > {params.sam}
+        bwa mem -t {threads} {input.genome} {input.r1Filtered} {input.r2Filtered} > {params.sam}
         samtools view -Subh -o {params.bam} {params.sam}
         samtools sort -o {params.sortedBam} {params.bam}
 
@@ -194,53 +216,6 @@ rule hclust_genus:
         """
 
 
-### Co-assembly with megahit ###
-
-rule concat_reads:
-    input:
-        cleanFastQ1 = expand("results/{dataset}/bwa/{sample}.clean.R1.fastq", zip, sample=samples["sample"], dataset=samples["dataset"]),
-        cleanFastQ2 = expand("results/{dataset}/bwa/{sample}.clean.R2.fastq", zip, sample=samples["sample"], dataset=samples["dataset"])
-    output:
-        concatR1 = "results/allDatasets/coassembly/concat_reads/concat_reads.clean.R1.fastq",
-        concatR2 = "results/allDatasets/coassembly/concat_reads/concat_reads.clean.R2.fastq"
-    shell:
-        """
-        cat {input.cleanFastQ1} > {output.concatR1}
-        cat {input.cleanFastQ2} > {output.concatR2}
-        """
-
-rule megahit_coassembly:
-    input:
-        concatR1 = "results/allDatasets/coassembly/concat_reads/concat_reads.clean.R1.fastq",
-        concatR2 = "results/allDatasets/coassembly/concat_reads/concat_reads.clean.R2.fastq"
-    output:
-        scaffolds = "results/allDatasets/coassembly/megahit_result/final.contigs.fa"
-    params:
-        outdir = "results/allDatasets/coassembly/megahit_result/tmp"
-    threads: 100
-    shell:
-        """
-        module load megahit/1.0.6.1
-        megahit -t {threads} -m 520e9 -1 {input.concatR1} -2 {input.concatR2} -o {params.outdir}
-        mv {params.outdir} results/allDatasets/coassembly/
-        rmdir results/allDatasets/coassembly/megahit_result
-        mv results/allDatasets/coassembly/tmp results/allDatasets/coassembly/megahit_result
-        """
-
-rule quast_co:
-    input:
-        "results/allDatasets/coassembly/megahit_result/final.contigs.fa"
-    output:
-        direc=directory("results/allDatasets/coassembly/quast"),
-        report="results/allDatasets/coassembly/quast/report.html",
-        table=report("results/allDatasets/coassembly/quast/report.tsv", caption="report/quast_co.rst", category="ASSEMBLY", subcategory="COASSEMBLY"),
-        pdf=report("results/allDatasets/coassembly/quast/report.pdf", caption="report/quast_co.rst", category="ASSEMBLY", subcategory="COASSEMBLY")
-
-    threads: 1
-    conda:
-        "envs/genome_qc.yml"
-    shell:
-        "quast.py -o {output.direc} --threads {threads} {input}"
 
 
 # Single samples assemblies 
@@ -266,7 +241,7 @@ rule megahit_monoassemble:
         mv {params.outdir_final}_tmp {params.outdir_final}
         """
 
-rule quast_mono:
+rule quast:
     input:
         scaffolds = "results/{dataset}/assembly/{sample}/final.contigs.fa"
     output:
@@ -279,7 +254,7 @@ rule quast_mono:
         "quast.py -o {output.direc} --threads {threads} --min-contig 0 -L {input}"
 
 
-rule parse_assembly:
+rule drop_short_contigs:
     input:
         "results/{dataset}/assembly/{sample}/final.contigs.fa"
     output:
@@ -290,33 +265,6 @@ rule parse_assembly:
         "scripts/parse_contigs.py"
 
 
-rule concat_monoassemblies:
-    input:
-        expand("results/{dataset}/assembly/megahit_g1000/{sample}.megahit_g1000.fa",
-            zip, sample=samples["sample"], dataset=samples["dataset"])
-    output:
-        "results/allDatasets/single_sample_assemblies/allSamples.megahit_g1000.fa"
-    shell:
-        """
-        cat {input} > {output}
-        """
-
-rule quast_g1000:
-    input:
-        scaffolds = "results/allDatasets/single_sample_assemblies/allSamples.megahit_g1000.fa"
-    output:
-        direc=directory("results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast"),
-        report="results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast/report.html",
-        tsv_report=report("results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast/report.tsv", caption="report/quast_g1000.rst", category="ASSEMBLY", subcategory="Single Sample"),
-        pdf_report=report("results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast/report.pdf", caption="report/quast_g1000.rst", category="ASSEMBLY", subcategory="Single Sample")
-
-    threads: 1
-    conda:
-        "envs/genome_qc.yml"
-    shell:
-        "quast.py -o {output.direc} --threads {threads} --min-contig 0 -L {input}"
-
-        
 rule multiqc_quast:
     input:
         quast_reports=expand("results/{dataset}/assembly/quast/{sample}_quast/report.html", zip, sample=samples["sample"], dataset=samples["dataset"])
@@ -328,3 +276,31 @@ rule multiqc_quast:
         module load multiqc
         multiqc --outdir {output.outDir} {input.quast_reports}
         """
+
+# rule concatenate_assemblies:
+#     input:
+#         expand("results/{dataset}/assembly/megahit_g1000/{sample}.megahit_g1000.fa",
+#             zip, sample=samples["sample"], dataset=samples["dataset"])
+#     output:
+#         "results/allDatasets/single_sample_assemblies/allSamples.megahit_g1000.fa"
+#     shell:
+#         """
+#         cat {input} > {output}
+#         """
+
+# rule quast_g1000:
+#     input:
+#         scaffolds = "results/allDatasets/single_sample_assemblies/allSamples.megahit_g1000.fa"
+#     output:
+#         direc=directory("results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast"),
+#         report="results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast/report.html",
+#         tsv_report=report("results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast/report.tsv", caption="report/quast_g1000.rst", category="ASSEMBLY", subcategory="Single Sample"),
+#         pdf_report=report("results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast/report.pdf", caption="report/quast_g1000.rst", category="ASSEMBLY", subcategory="Single Sample")
+
+#     threads: 1
+#     conda:
+#         "envs/genome_qc.yml"
+#     shell:
+#         "quast.py -o {output.direc} --threads {threads} --min-contig 0 -L {input}"
+
+        
