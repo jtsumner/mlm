@@ -11,8 +11,9 @@
 # source activate snakemake
 
 module purge all
-mamba activate mamba
-mamba activate updated_snakemake
+module load anaconda3
+source activate mamba
+source activate updated_snakemake
 
 # Must be in microbiome-snakemake/workflow/ directory to execute
 cd $SLURM_SUBMIT_DIR
@@ -21,9 +22,11 @@ cd $SLURM_SUBMIT_DIR
 mkdir -p logs_slurm
 # snakemake --verbose --use-conda --cluster-config cluster.yaml --max-jobs-per-second 1 --max-status-checks-per-second 1 -j 100 --cluster "sbatch -A {cluster.allocation} -p {cluster.partition} -t {cluster.time} --mem={cluster.mem} -N {cluster.nodes} -n {cluster.cpus} -o {cluster.output} -e {cluster.error} --mail-type={cluster.email_type} --mail-user={cluster.email} --job-name={cluster.jobname}"
 
+
+echo Starting snakemake on the cluster
 snakemake --verbose \
     --use-conda \
-    --cluster-config workflow/cluster.yaml \
+    --cluster-config config/cluster.yaml \
     --max-jobs-per-second 1 \
     --max-status-checks-per-second 1 \
     -j 100 \
