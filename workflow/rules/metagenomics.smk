@@ -42,7 +42,10 @@ rule get_human_genome:
     params:
         human_genome = config["human_genome"]
     shell:
-        "wget {params.human_genome}"
+        """
+        cd resources/genome/
+        wget {params.human_genome}
+        """
 
 rule index_human_genome:
     input:
