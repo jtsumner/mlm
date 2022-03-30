@@ -13,9 +13,10 @@
 
 module purge all
 module load anaconda3
-source activate mamba
+#source activate mamba
 #source activate updated_snakemake
-mamba activate updated_snakemake
+#mamba activate updated_snakemake
+source activate snakemake
 
 # Must be in microbiome-snakemake/workflow/ directory to execute
 cd $SLURM_SUBMIT_DIR
