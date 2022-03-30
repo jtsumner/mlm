@@ -98,7 +98,8 @@ def metaphlan_merge_inputs(wildcards):
 
 rule metaphlan_setup:
     output:
-        metaphlan_db = directory("resources/metaphlan_db")
+        #metaphlan_db = directory("resources/metaphlan_db")
+        metaphlan_db= "resources/metaphlan_db/{params.metaphlan_idx}.rev.1.bt2"
     conda: 
         "../envs/metaphlan.yml"
     params:
