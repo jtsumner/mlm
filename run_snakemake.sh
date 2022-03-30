@@ -1,10 +1,11 @@
 #! /bin/bash
 #SBATCH -A p31588
 #SBATCH --job-name="scheduler"
-#SBATCH -t 10:00:00
-#SBATCH -n 3
-#SBATCH -p normal
-#SBATCH --mem=3gb
+#SBATCH -t 04:00:00
+#SBATCH -N 1
+#SBATCH -n 2
+#SBATCH -p short
+#SBATCH --mem=5gb
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=jacksumner2026@u.northwestern.edu
 # module load anaconda3
@@ -13,7 +14,8 @@
 module purge all
 module load anaconda3
 source activate mamba
-source activate updated_snakemake
+#source activate updated_snakemake
+mamba activate updated_snakemake
 
 # Must be in microbiome-snakemake/workflow/ directory to execute
 cd $SLURM_SUBMIT_DIR
