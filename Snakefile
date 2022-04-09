@@ -19,12 +19,12 @@ rule all:
         # expand("../results/filtered/{dataset}/{sample}.filtered.R2.fastq.gz", 
         #     sample=samples["sample"], dataset=samples["dataset"])
         "results/allDatasets/metaphlan/abundance_heatmap_species.allDatasets.png",
-        "results/allDatasets/metaphlan/abundance_heatmap_genus.allDatasets.png", # hclust genus 
+        "results/allDatasets/metaphlan/abundance_heatmap_genus.allDatasets.png" # hclust genus 
         # #"results/allDatasets/coassembly/quast/report.html",
         # expand("results/{dataset}/assembly/quast/{sample}_quast/report.html",
         #     zip, sample=samples["sample"], dataset=samples["dataset"]),
         # "results/allDatasets/metaphlan/unifrac_matrix.allDatasets.txt",
-        "results/allDatasets/single_sample_assemblies/multiqc_stats/report.html"
+        # "results/allDatasets/single_sample_assemblies/multiqc_stats/report.html"
         # "results/allDatasets/single_sample_assemblies/allSamples.megahit_g1000.fa" # merged clean monoassemblies
         # "results/allDatasets/single_sample_assemblies/quast/monoassemblies_quast/report.html"
         # # "results/allDatasets/single_sample_assemblies/metabat2/bins/bin.1.fa", # binned_contigs 

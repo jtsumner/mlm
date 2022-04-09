@@ -38,7 +38,7 @@ rule fastqc:
 ### Remove contaminant reads aligning to human reference genome ###
 rule get_human_genome:
     output:
-        "resources/genome/{params.human_genome}"
+        "resources/genome/{}".format(config["genome_name"])
     params:
         human_genome = config["human_genome"]
     shell:
@@ -49,33 +49,37 @@ rule get_human_genome:
 
 rule index_human_genome:
     input:
-        "resources/genome/{params.human_genome}"
+        "resources/genome/{}".format(config["genome_name"])
     output:
-        "resources/genome/{params.human_genome}.ann"
+        "resources/genome/{}.ann".format(config["genome_name"])
     params:
-        human_genome = config["human_genome"]
+        genome_index = config["genome_name"]
     threads: 10
     shell:
         """
         module load bwa/0.7.17
+	bwa index -a bwtsw {input} {params.genome_index}
         """
 
 rule bwa_map:
     input:
         r1Filtered = "results/{dataset}/filtered/{sample}.filtered.R1.fastq.gz",
         r2Filtered = "results/{dataset}/filtered/{sample}.filtered.R2.fastq.gz",
-        genome = "resources/genome/{params.human_genome}.ann"
+        genome_idxed = "resources/genome/{}.ann".format(config["genome_name"]),
+        genome = "resources/genome/{}".format(config["genome_name"])
     output:
         cleanFastQ1 = "results/{dataset}/bwa/{sample}.clean.R1.fastq",
         cleanFastQ2 = "results/{dataset}/bwa/{sample}.clean.R2.fastq"
     params:
-        human_genome = config["human_genome"],
-        #genome = "resources/genome/{params.human_genome}.ann",
+        human_genome = config["genome_name"],
+        #genome = "resources/genome/{params.human_g}.ann",
         sam = "results/{dataset}/bwa/{sample}.mapped.sam",
         bam = "results/{dataset}/bwa/{sample}.mapped.bam",
         sortedBam = "results/{dataset}/bwa/{sample}.mapped.sorted.bam",
         unmappedBam = "results/{dataset}/bwa/{sample}.unmapped.bam"
     threads: 20
+    resources:
+        mem="50G"
     shell:
         """
         module purge all
