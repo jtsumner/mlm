@@ -1,9 +1,9 @@
 # ignore all .fastq.gz files
 *.fastq.gz
-.snakemake/
+.snakemake/*
 .DS_Store
 dag.pdf 
-
+workflow/.snakemake/*
 # Ignore contents of data directory but keep gitkeep
 data/*
 !data/.gitkeep
