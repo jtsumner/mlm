@@ -55,10 +55,13 @@ rule index_human_genome:
     params:
         genome_index = config["genome_name"]
     threads: 10
+    resources:
+        mem="20G",
+        time="04:00:00"
     shell:
         """
         module load bwa/0.7.17
-	bwa index -a bwtsw {input} {params.genome_index}
+	    bwa index -a bwtsw {input} {params.genome_index}
         """
 
 rule bwa_map:
@@ -79,7 +82,8 @@ rule bwa_map:
         unmappedBam = "results/{dataset}/bwa/{sample}.unmapped.bam"
     threads: 20
     resources:
-        mem="50G"
+        mem="50G",
+        time="08:00:00"
     shell:
         """
         module purge all
@@ -112,6 +116,9 @@ rule metaphlan_setup:
     params:
         metaphlan_idx = config["metaphlan_idx"] # Index for metaphlan
     threads: 10
+    resources:
+        mem="50g",
+        time="04:00:00"
     shell:
         """
         metaphlan --install --index {params.metaphlan_idx} --bowtie2db {output.metaphlan_db} --nproc {threads}
@@ -131,6 +138,9 @@ rule metaphlan:
     params:
         metaphlan_idx = config["metaphlan_idx"] # Index for metaphlan
     threads: 20
+    resources:
+        mem="50g",
+        time="04:00:00"
     shell:
         """
         metaphlan {input.cleanFastQ1},{input.cleanFastQ2} \
@@ -239,6 +249,9 @@ rule megahit_monoassemble:
         outdir_final = "results/{dataset}/assembly/{sample}",
         outdir_tmp = "results/{dataset}/assembly/{sample}/{sample}_tmp"
     threads: 20
+    resources:
+        mem="50g",
+        time="10:00:00"
     shell:
         """
         module load megahit/1.0.6.1
