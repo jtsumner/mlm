@@ -2,9 +2,8 @@
 # In case of sample based data, it should be complemented by a samples.tsv file that contains
 # one row per sample. It can be parsed easily via pandas.
 
-#samples: "../config/test_samples_minimal.tsv"
-samples: "config/samples_minimal_test.tsv"
-#samples: "../config/samples_minimal_test.tsv" #  Batches 0-3 
+#samples: "config/samples_minimal_test.tsv"
+samples: "config/samples_minimal.tsv"
 
 metaphlan_idx: "mpa_v30_CHOCOPhlAn_201901"
 human_genome: "https://hgdownload.cse.ucsc.edu/goldenpath/hg38/bigZips/hg38.fa.gz"
