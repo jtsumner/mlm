@@ -7,3 +7,4 @@ workflow/.snakemake/*
 # Ignore contents of data directory but keep gitkeep
 data/*
 !data/.gitkeep
+logs/
