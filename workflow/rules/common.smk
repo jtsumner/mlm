@@ -7,24 +7,16 @@ import pandas as pd
 samples = pd.read_csv(config["samples"], sep="\t").set_index("sample", drop=False)
 samples.index.names = ["sample"]
 
-# Call and define initial fastp analysis
-# def get_read_path(wildcards):
-#     tmp = samples.loc[wildcards.sample, ["sample", "dataset"]].dropna()
-#     samp = tmp["sample"]
-#     dt = tmp["dataset"]
-#     path = "./data  /{}/{}".format(dt, samp)
-#     return path
-
-# def get_r1(wildcards):
-#     tmp1 = get_read_path(wildcards)
-#     return "{}_R1_001.fastq.gz".format(tmp1)
- 
-# def get_r2(wildcards):
-#     tmp2 = get_read_path(wildcards)
-#     return "{}_R2_001.fastq.gz".format(tmp2)
 
 def get_rules(wildcards):
     all_rules = []
+    if config["TRIM_READS"]:
+        all_rules = all_rules + expand(
+            "results/{dataset}/filtered/fastqc/{sample}.filtered.R1_fastqc.html", 
+            zip, 
+            sample=samples["sample"], 
+            dataset=samples["dataset"]
+            )
     if config["METAPHLAN"]:
         all_rules.append("results/allDatasets/metaphlan/abundance_heatmap_species.allDatasets.png")
         all_rules.append("results/allDatasets/metaphlan/abundance_heatmap_genus.allDatasets.png")
@@ -39,17 +31,16 @@ def get_rules(wildcards):
     return all_rules
 
 
-def get_read_path(wildcards):
-    return samples.loc[wildcards.sample, ["sample", "dataset"]].dropna()
+def get_read_path_v2(wildcards):
+    return samples.loc[wildcards.sample, ["sample", "dataset", "forward_read", "reverse_read"]].dropna()
+
 
 def get_r1(wildcards):
-    tmp = get_read_path(wildcards)
-    if tmp["dataset"] == "Batch_04":
-        return "data/" + tmp["dataset"] + "/" + tmp["sample"] + "_R1.fastq.gz"
-    return "data/" + tmp["dataset"] + "/" + tmp["sample"] + "_R1_001.fastq.gz"
+    tmp = get_read_path_v2(wildcards)
+    return tmp["forward_read"]
+
 
 def get_r2(wildcards):
-    tmp = get_read_path(wildcards)
-    if tmp["dataset"] == "Batch_04":
-        return "data/" + tmp["dataset"] + "/" + tmp["sample"] + "_R2.fastq.gz"
-    return "data/" + tmp["dataset"] + "/" + tmp["sample"] + "_R2_001.fastq.gz"
+    tmp = get_read_path_v2(wildcards)
+    return tmp["reverse_read"]
+

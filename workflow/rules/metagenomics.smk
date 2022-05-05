@@ -7,8 +7,8 @@ from snakemake.utils import validate
 
 rule fastp_pe:
     input:
-        r1 = get_r1,
-        r2 = get_r2
+        r1 = get_r1_v2,
+        r2 = get_r2_v2
     output:
         r1Filtered = "results/{dataset}/filtered/{sample}.filtered.R1.fastq.gz",
         r2Filtered = "results/{dataset}/filtered/{sample}.filtered.R2.fastq.gz",

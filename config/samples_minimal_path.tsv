@@ -1,0 +1,2 @@
+sample	dataset	forward_read	reverse_read
+DNA_B01_01_S1_L001	Batch_01	data/Batch_01/DNA_B01_01_S1_L001_R1_001.fastq.gz	data/Batch_01/DNA_B01_01_S1_L001_R2_001.fastq.gz
