@@ -72,6 +72,13 @@ mv samples_minimal.tsv ../congfig/samples_minimal.tsv
 4. Configure the cluster config file. Adjust the `account` and `partition` setting under `default-resources` to fit your cluster.
 
 5. Open the Snakefile and adjust the rule all output to fit your desired output. 
+6. Configure the general snakemake config `config/config.yaml` so that rules you want to execute are set to `True` and rules you do not want to execute are set to `False`. E.g., The following lines will assemble, perform metaphlan read based analysis, and metabat2 binning
+
+```
+ASSEMBLE: True
+METAPHLAN: True
+METABAT2: True
+```
 
 ## Execute
 
