@@ -23,6 +23,22 @@ samples.index.names = ["sample"]
 #     tmp2 = get_read_path(wildcards)
 #     return "{}_R2_001.fastq.gz".format(tmp2)
 
+def get_rules(wildcards):
+    all_rules = []
+    if config["METAPHLAN"]:
+        all_rules.append("results/allDatasets/metaphlan/abundance_heatmap_species.allDatasets.png")
+        all_rules.append("results/allDatasets/metaphlan/abundance_heatmap_genus.allDatasets.png")
+        all_rules.append("results/allDatasets/metaphlan/unifrac_matrix.allDatasets.txt")
+    if config["ASSEMBLE"]:
+        megahit_results = expand("results/{dataset}/assembly/quast/{sample}_quast/report.html", zip, sample=samples["sample"], dataset=samples["dataset"])
+        all_rules = all_rules + megahit_results
+        all_rules.append("results/allDatasets/single_sample_assemblies/multiqc_stats/report.html")
+    if config["METABAT2"]:
+        metabat2_results = expand("results/{dataset}/assembly/megahit_g1000/metabat2/{sample}/bins/bin.1.fa", zip, sample=samples["sample"], dataset=samples["dataset"])
+        all_rules = all_rules + metabat2_results
+    return all_rules
+
+
 def get_read_path(wildcards):
     return samples.loc[wildcards.sample, ["sample", "dataset"]].dropna()
 

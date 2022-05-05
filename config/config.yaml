@@ -11,7 +11,7 @@ genome_name: "hg38.fa.gz"
 
 
 # Configuration for which rules to execute are listed below\
-ASSEMBLE: True
+ASSEMBLE: False
 METAPHLAN: True
-METABAT2: True
+METABAT2: False
 
