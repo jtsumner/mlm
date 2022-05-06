@@ -3,7 +3,7 @@
 rule megahit:
     input:
         r1_clean = "results/bwa_out/{sample}/{sample}.fastp_bwa.r1.fastq",
-        r2_clean = "results/bwa_out/{sample}/{sample}.fastp_bwa.r2.fastq",
+        r2_clean = "results/bwa_out/{sample}/{sample}.fastp_bwa.r2.fastq"
     output:
         scaffolds = "results/megahit_out/{sample}/final.contigs.fa",
         outdirec = directory("results/megahit_out/{sample}")
