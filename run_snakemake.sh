@@ -17,7 +17,7 @@ cd $SLURM_SUBMIT_DIR
 
 # Annotating the output file
 START_TIME=$(date)
-cat examples/ascii_art_flowers.txt
+cat workflow/examples/ascii_art_flowers.txt
 echo "
 NEW SNAKEMAKE EXECUTION :)
 Job Details
