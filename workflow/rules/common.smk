@@ -11,62 +11,52 @@ samples.index.names = ["sample"]
 def get_rules(wildcards):
     all_rules = []
     if config["FASTQC"]:
-        all_rules = all_rules = all_rules + expand(
-            "results/fastqc_out/raw_qc/{sample}/{sample}.raw.r1_fastqc.html", 
-            sample=samples["sample"], 
-            )
-        all_rules = all_rules = all_rules + expand(
-            "results/fastqc_out/raw_qc/{sample}/{sample}.raw.r2_fastqc.html", 
-            sample=samples["sample"], 
-            )
+        all_rules = all_rules = all_rules + directory(
+            expand(
+                "results/fastqc_out/raw_qc/{sample}", 
+                sample=samples["sample"] 
+                )
+        )
 
         if config["TRIM_READS"]:
             all_rules = all_rules = all_rules + expand(
                 "results/fastqc_out/fastp_qc/{sample}/{sample}.fastp.r1_fastqc.html", 
-                sample=samples["sample"], 
-                )
+                sample=samples["sample"]
+            )
             all_rules = all_rules = all_rules + expand(
                 "results/fastqc_out/fastp_qc/{sample}/{sample}.fastp.r2_fastqc.html", 
-                sample=samples["sample"], 
-                )
+                sample=samples["sample"]
+            )
 
         if config["ASSEMBLE"]:
             all_rules = all_rules = all_rules + expand(
                 "results/fastqc_out/bwa_qc/{sample}/{sample}.fastp_bwa.r1_fastqc.html", 
-                sample=samples["sample"], 
-                )
+                sample=samples["sample"]
+            )
             all_rules = all_rules = all_rules + expand(
                 "results/fastqc_out/bwa_qc/{sample}/{sample}.fastp_bwa.r2_fastqc.html", 
-                sample=samples["sample"], 
-                )
+                sample=samples["sample"]
+            )
 
     if config["TRIM_READS"]:
         all_rules = all_rules + expand(
             "results/fastp_out/{sample}/{sample}.fastp.r1.fastq.gz", 
-            zip, 
-            sample=samples["sample"], 
-            dataset=samples["dataset"]
-            )
+            sample=samples["sample"]
+        )
         all_rules = all_rules + expand(
             "results/fastp_out/{sample}/{sample}.fastp.r2.fastq.gz", 
-            zip, 
-            sample=samples["sample"], 
-            dataset=samples["dataset"]
-            )
+            sample=samples["sample"] 
+        )
 
     if config["DECONVOLUTE"]:
         all_rules = all_rules + expand(
             "results/bwa_out/{sample}/{sample}.fastp_bwa.r1.fastq", 
-            zip, 
-            sample=samples["sample"], 
-            dataset=samples["dataset"]
-            )
+            sample=samples["sample"]
+        )
         all_rules = all_rules + expand(
             "results/bwa_out/{sample}/{sample}.fastp_bwa.r2.fastq", 
-            zip, 
-            sample=samples["sample"], 
-            dataset=samples["dataset"]
-            )
+            sample=samples["sample"]
+        )
 
     if config["METAPHLAN"]:
         all_rules.append("results/metaphlan_merged/merged_metaphlan_hclust_species.png")
@@ -76,14 +66,15 @@ def get_rules(wildcards):
     if config["ASSEMBLE"]:
         all_rules = all_rules + expand(
             "results/megahit_out/{sample}/{sample}.contigs.fa", 
-            zip, 
-            sample=samples["sample"], 
-            dataset=samples["dataset"]
-            )
+            sample=samples["sample"]
+        )
         all_rules.append("results/quast_out/megahit/multiqc/report.html")
 
     if config["METABAT2"]:
-        metabat2_results = expand("results/{dataset}/assembly/megahit_g1000/metabat2/{sample}/bins/bin.1.fa", zip, sample=samples["sample"], dataset=samples["dataset"])
+        metabat2_results = expand(
+            "results/{dataset}/assembly/megahit_g1000/metabat2/{sample}/bins/bin.1.fa", 
+            sample=samples["sample"]
+        )
         all_rules = all_rules + metabat2_results
 
     return all_rules

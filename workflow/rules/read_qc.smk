@@ -3,8 +3,7 @@ rule fastqc_raw:
         r1 = get_r1,
         r2 = get_r2
     output:
-        "results/fastqc_out/raw_qc/{sample}/{sample}.raw.r1_fastqc.html",
-        "results/fastqc_out/raw_qc/{sample}/{sample}.raw.r2_fastqc.html"
+        directory("results/fastqc_out/raw_qc/{sample}")
     params:
         out_dir = "results/fastqc_out/raw_qc/{sample}"
     threads: 12
