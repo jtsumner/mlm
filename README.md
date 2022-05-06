@@ -2,7 +2,16 @@
 This is a snakemake pipeline is designed to automate common components of shotgun metagenomic data analysis. Briefly, reads are trimmed, deconvoluted (- human), taxnomically defined, assembled, binned, and annotated. Further optimization is neccessary and functional components of metagenomic analysis have yet to be integrated. 
 
 **UNDER ACTIVE DEVELOPMENT** :)
-* [Notes on snakemake]("../README.md#Notes on snakemake")
+- [microbiome-snakemake](#microbiome-snakemake)
+- [TODO](#todo)
+	- [Notes on snakemake](#notes-on-snakemake)
+	- [Installation](#installation)
+	- [Setup](#setup)
+	- [Execution](#execution)
+	- [Rules](#rules)
+	- [Software-versions](#software-versions)
+
+
 
 -------------
 # TODO
@@ -88,7 +97,7 @@ METAPHLAN: True
 METABAT2: True
 ```
 
-## Execute
+## Execution
 
 1. (Optional) Check that snakemake is correctly interpretting your sample spreadsheet by executing a dryrun or one of the commands in the notes above
 
@@ -208,3 +217,32 @@ metabat2 -t {threads} \
         --outFile {output.bin_dir}/bin \
         --abdFile {input.depth_fi}
 ```
+
+## Software-versions
+* bedtools v2.29.2
+* biopython v1.78
+* bowtie2 v2.4.4
+* bwa v0.7.17
+* checkm v1.0.7
+* fastp v0.20.1
+* fastqc v0.11.9
+* fastqc v0.11.5
+* hclust2 v1.0.0
+* kneaddata v0.10.00
+* megahit v1.0.6.1
+* metabat2 v2.15
+* metaphlan v3.0.13
+* python v2.7
+* python v3.7
+* quast v5.0.2
+* samtools v1.10.1
+
+to add and/or deprecated:
+* kaiju v1.8.0
+* vcontact2
+* blast
+* diamond
+* mcl
+* hmmer
+* cython v0.29.21
+* scikit-learn v0.21.3* prodigal
