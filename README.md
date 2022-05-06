@@ -23,7 +23,9 @@ Further optimization is neccessary and functional components of metagenomic anal
 -------------
 # Notes on snakemake 
 
-This pipeline has been tested using snakemake and mamba installed in a single conda environment. Software versions:
+This pipeline has been tested using snakemake and mamba installed in a single conda environment. For more information regarding snakemake, generally, please see the documentation [here](!https://snakemake.readthedocs.io/en/v7.3.8/index.html)
+
+Software versions:
 * snakemake version 7.3.8 
 * mamba 0.15.3
 * conda 4.10.3

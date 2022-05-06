@@ -1,7 +1,7 @@
 
 rule quast:
     input:
-        scaffolds = "results/megahit_out/{sample}/final.contigs.fa",
+        scaffolds = "results/megahit_out/{sample}/{sample}.contigs.fa",
     output:
         direc=directory("results/quast_out/megahit/{sample}"),
         report="results/quast_out/megahit/{sample}/report.html"
@@ -26,7 +26,7 @@ rule multiqc_quast:
 
 rule drop_short_contigs:
     input:
-        "results/megahit_out/{sample}/final.contigs.fa"
+        "results/megahit_out/{sample}/{sample}.contigs.fa"
     output:
         "results/megahit_out/megahit_g1000/{sample}.megahit_g1000.fa"
     conda:

@@ -81,7 +81,7 @@ def get_rules(wildcards):
 
     if config["ASSEMBLE"]:
         all_rules = all_rules + expand(
-            "results/megahit_out/{sample}/final.contigs.fa", 
+            "results/megahit_out/{sample}/{sample}.contigs.fa", 
             zip, 
             sample=samples["sample"], 
             dataset=samples["dataset"]
