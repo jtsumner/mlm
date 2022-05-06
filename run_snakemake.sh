@@ -8,8 +8,7 @@
 #SBATCH --mem=20gb
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=jacksumner2026@u.northwestern.edu
-#SBATCH --output="results/slurm_mlm.out"
-#SBATCH --open-mode=append
+#SBATCH --output="slurm_mlm.out"
 # module load anaconda3
 # source activate snakemake
 
