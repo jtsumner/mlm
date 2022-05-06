@@ -10,30 +10,88 @@ samples.index.names = ["sample"]
 
 def get_rules(wildcards):
     all_rules = []
+    if config["FASTQC"]:
+        all_rules = all_rules = all_rules + expand(
+            "results/fastqc_out/raw/{sample}.raw.r1_fastqc.html", 
+            zip, 
+            sample=samples["sample"], 
+            dataset=samples["dataset"]
+            )
+        all_rules = all_rules = all_rules + expand(
+            "results/fastqc_out/raw/{sample}.raw.r2_fastqc.html", 
+            zip, 
+            sample=samples["sample"], 
+            dataset=samples["dataset"]
+            )
+
+        if config["TRIM_READS"]:
+            all_rules = all_rules = all_rules + expand(
+                "results/fastp_out/{sample}/{sample}.fastp.r1.fastq.gz", 
+                zip, 
+                sample=samples["sample"], 
+                dataset=samples["dataset"]
+                )
+
+        if config["ASSEMBLE"]:
+            all_rules = all_rules = all_rules + expand(
+                "results/fastqc_out/bwa_out/{sample}.fastp_bwa.r1_fastqc.html", 
+                zip, 
+                sample=samples["sample"], 
+                dataset=samples["dataset"]
+                )
+            all_rules = all_rules = all_rules + expand(
+                "results/fastqc_out/bwa_out/{sample}.fastp_bwa.r2_fastqc.html", 
+                zip, 
+                sample=samples["sample"], 
+                dataset=samples["dataset"]
+                )
+
     if config["TRIM_READS"]:
         all_rules = all_rules + expand(
-            "results/fastqc_out/fastp_qc/{sample}.fastp.r2_fastqc.html", 
+            "results/fastp_out/{sample}/{sample}.fastp.r1.fastq.gz", 
             zip, 
             sample=samples["sample"], 
             dataset=samples["dataset"]
             )
+        all_rules = all_rules + expand(
+            "results/fastp_out/{sample}/{sample}.fastp.r2.fastq.gz", 
+            zip, 
+            sample=samples["sample"], 
+            dataset=samples["dataset"]
+            )
+
     if config["DECONVOLUTE"]:
-        all_rules = all_rules + expand("results/bwa_out/{sample}/{sample}.fastp_bwa.r1.fastq", 
+        all_rules = all_rules + expand(
+            "results/bwa_out/{sample}/{sample}.fastp_bwa.r1.fastq", 
             zip, 
             sample=samples["sample"], 
             dataset=samples["dataset"]
             )
+        all_rules = all_rules + expand(
+            "results/bwa_out/{sample}/{sample}.fastp_bwa.r2.fastq", 
+            zip, 
+            sample=samples["sample"], 
+            dataset=samples["dataset"]
+            )
+
     if config["METAPHLAN"]:
         all_rules.append("results/metaphlan_merged/merged_metaphlan_hclust_species.png")
         all_rules.append("results/metaphlan_merged/merged_metaphlan_hclust_genus.png")
         #all_rules.append("results/metaphlan_merged/merged_metaphlan_unifrac_matrix.txt")
+
     if config["ASSEMBLE"]:
-        megahit_results = expand("results/{dataset}/assembly/quast/{sample}_quast/report.html", zip, sample=samples["sample"], dataset=samples["dataset"])
-        all_rules = all_rules + megahit_results
-        all_rules.append("results/allDatasets/single_sample_assemblies/multiqc_stats/report.html")
+        all_rules = all_rules + expand(
+            "results/megahit_out/{sample}/final.contigs.fa", 
+            zip, 
+            sample=samples["sample"], 
+            dataset=samples["dataset"]
+            )
+        all_rules.append("results/quast_out/megahit/multiqc/report.html")
+
     if config["METABAT2"]:
         metabat2_results = expand("results/{dataset}/assembly/megahit_g1000/metabat2/{sample}/bins/bin.1.fa", zip, sample=samples["sample"], dataset=samples["dataset"])
         all_rules = all_rules + metabat2_results
+
     return all_rules
 
 

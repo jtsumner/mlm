@@ -236,20 +236,15 @@ from snakemake.utils import validate
 
 
 
-
-
 # Single samples assemblies 
 
-rule megahit_monoassemble:
+rule megahit:
     input:
-        cleanR1 = "results/{dataset}/bwa/{sample}.clean.R1.fastq",
-        cleanR2 = "results/{dataset}/bwa/{sample}.clean.R2.fastq"
+        r1_clean = "results/bwa_out/{sample}/{sample}.fastp_bwa.r1.fastq",
+        r2_clean = "results/bwa_out/{sample}/{sample}.fastp_bwa.r2.fastq",
     output:
-        scaffolds = "results/{dataset}/assembly/{sample}/final.contigs.fa"
-    params:
-        outdir_base = "results/{dataset}/assembly",
-        outdir_final = "results/{dataset}/assembly/{sample}",
-        outdir_tmp = "results/{dataset}/assembly/{sample}/{sample}_tmp"
+        scaffolds = "results/megahit_out/{sample}/final.contigs.fa",
+        outdirec = directory("results/megahit_out/{sample}")
     threads: 20
     resources:
         mem="50g",
@@ -257,48 +252,45 @@ rule megahit_monoassemble:
     shell:
         """
         module load megahit/1.0.6.1
-        megahit -t {threads} -m 0.9 -1 {input.cleanR1} -2 {input.cleanR1} -o {params.outdir_tmp}
-        
-        mv {params.outdir_tmp} {params.outdir_base}
-        rmdir {params.outdir_final}
-        mv {params.outdir_final}_tmp {params.outdir_final}
+        megahit -t {threads} -m 0.9 -1 {input.r1_clean} -2 {input.r2_clean} -o {output.outdirec}
         """
 
 rule quast:
     input:
-        scaffolds = "results/{dataset}/assembly/{sample}/final.contigs.fa"
+        scaffolds = "results/megahit_out/{sample}/final.contigs.fa",
     output:
-        direc=directory("results/{dataset}/assembly/quast/{sample}_quast"),
-        report="results/{dataset}/assembly/quast/{sample}_quast/report.html"
+        direc=directory("results/quast_out/megahit/{sample}"),
+        report="results/quast_out/megahit/{sample}/report.html"
     threads: 1
     conda:
         "../envs/genome_qc.yml"
     shell:
         "quast.py -o {output.direc} --threads {threads} --min-contig 0 -L {input}"
 
+rule multiqc_quast:
+    input:
+        quast_reports=expand("results/quast_out/megahit/{sample}/report.html", zip, sample=samples["sample"], dataset=samples["dataset"])
+    output:
+        outDir=directory("results/quast_out/megahit/multiqc"),
+        multiqc_report = "results/quast_out/megahit/multiqc/report.html"
+    shell:
+        """
+        module load multiqc
+        multiqc --outdir {output.outDir} {input.quast_reports}
+        """
 
 rule drop_short_contigs:
     input:
-        "results/{dataset}/assembly/{sample}/final.contigs.fa"
+        "results/megahit_out/{sample}/final.contigs.fa"
     output:
-        "results/{dataset}/assembly/megahit_g1000/{sample}.megahit_g1000.fa"
+        "results/megahit_out/megahit_g1000/{sample}.megahit_g1000.fa"
     conda:
         "../envs/seq_processing.yml"
     script:
         "scripts/parse_contigs.py"
 
 
-rule multiqc_quast:
-    input:
-        quast_reports=expand("results/{dataset}/assembly/quast/{sample}_quast/report.html", zip, sample=samples["sample"], dataset=samples["dataset"])
-    output:
-        outDir=directory("results/allDatasets/single_sample_assemblies/multiqc_stats"),
-        multiqc_report = "results/allDatasets/single_sample_assemblies/multiqc_stats/report.html"
-    shell:
-        """
-        module load multiqc
-        multiqc --outdir {output.outDir} {input.quast_reports}
-        """
+
 
 # rule concatenate_assemblies:
 #     input:

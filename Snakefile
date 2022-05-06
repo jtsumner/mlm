@@ -10,10 +10,13 @@ configfile: "config/config.yaml"
 include: "workflow/rules/common.smk"
 #include: "workflow/rules/metagenomics.smk"
 # include: "workflow/rules/bin_assembly.smk"
-# #include: "workflow/rules/single_sample_binning.smk"
+#include: "workflow/rules/single_sample_binning.smk"
 include: "workflow/rules/trim.smk"
+include: "workflow/rules/read_qc.smk"
 include: "workflow/rules/deconvolute.smk"
 include: "workflow/rules/metaphlan.smk"
+include: "workflow/rules/assemble.smk"
+include: "workflow/rules/assembly_qc.smk"
 
 rule all:
     input:
