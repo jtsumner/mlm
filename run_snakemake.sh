@@ -8,14 +8,15 @@
 #SBATCH --mem=20gb
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=jacksumner2026@u.northwestern.edu
-# SBATCH --output="results/slurm_mlm.out"
-# SBATCH --open-mode=append
+#SBATCH --output="results/slurm_mlm.out"
+#SBATCH --open-mode=append
 # module load anaconda3
 # source activate snakemake
 
 cd $SLURM_SUBMIT_DIR
 
 # Annotating the output file
+START_TIME=$(date)
 cat examples/ascii_art_flowers.txt
 echo "
 NEW SNAKEMAKE EXECUTION :)
