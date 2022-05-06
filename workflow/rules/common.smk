@@ -48,13 +48,13 @@ def get_rules(wildcards):
 
     if config["TRIM_READS"]:
         all_rules = all_rules + expand(
-            "results/fastp_out/{sample}/{sample}.fastp.r1.fastq.gz", 
+            "results/fastqc_out/fastp_qc/{sample}.fastp.r1_fastqc.html", 
             zip, 
             sample=samples["sample"], 
             dataset=samples["dataset"]
             )
         all_rules = all_rules + expand(
-            "results/fastp_out/{sample}/{sample}.fastp.r2.fastq.gz", 
+            "results/fastqc_out/fastp_qc/{sample}.fastp.r2_fastqc.html", 
             zip, 
             sample=samples["sample"], 
             dataset=samples["dataset"]

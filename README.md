@@ -1,10 +1,18 @@
 # microbiome-snakemake
-This is a microbiome snakemake workflow to identify and analyze viral contigs from the built miroenvironment
+This is a snakemake pipeline is designed to automate common components of shotgun metagenomic data analysis. Briefly, reads are trimmed, deconvoluted (- human), taxnomically defined, assembled, binned, and annotated. Further optimization is neccessary and functional components of metagenomic analysis have yet to be integrated. 
 
-Note: This repository was built using https://github.com/snakemake-workflows/cookiecutter-snakemake-workflow as a temlate
+**UNDER ACTIVE DEVELOPMENT** :)
+* [Notes on snakemake]("../README.md#Notes on snakemake")
 
 -------------
+# TODO
+* write new prep_sample_sheet helper script for updated path-based execution
+* re-test megahit + spades functionality
+* come up with fun name/acronym
+* probably more stuff 
 
+
+-------------
 ## Notes on snakemake 
 
 This pipeline has been tested using snakemake and mamba installed in a single conda environment. Software versions:
