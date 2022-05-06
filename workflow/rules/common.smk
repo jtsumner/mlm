@@ -12,13 +12,13 @@ def get_rules(wildcards):
     all_rules = []
     if config["FASTQC"]:
         all_rules = all_rules = all_rules + expand(
-            "results/fastqc_out/raw/{sample}.raw.r1_fastqc.html", 
+            "results/fastqc_out/raw_qc/{sample}/{sample}.raw.r1_fastqc.html", 
             zip, 
             sample=samples["sample"], 
             dataset=samples["dataset"]
             )
         all_rules = all_rules = all_rules + expand(
-            "results/fastqc_out/raw/{sample}.raw.r2_fastqc.html", 
+            "results/fastqc_out/raw_qc/{sample}/{sample}.raw.r2_fastqc.html", 
             zip, 
             sample=samples["sample"], 
             dataset=samples["dataset"]
@@ -26,7 +26,7 @@ def get_rules(wildcards):
 
         if config["TRIM_READS"]:
             all_rules = all_rules = all_rules + expand(
-                "results/fastp_out/{sample}/{sample}.fastp.r1.fastq.gz", 
+                "results/fastqc_out/fastp_qc/{sample}.fastp.r1_fastqc.html", 
                 zip, 
                 sample=samples["sample"], 
                 dataset=samples["dataset"]
@@ -34,13 +34,13 @@ def get_rules(wildcards):
 
         if config["ASSEMBLE"]:
             all_rules = all_rules = all_rules + expand(
-                "results/fastqc_out/bwa_out/{sample}.fastp_bwa.r1_fastqc.html", 
+                "results/fastqc_out/bwa_qc/{sample}/{sample}.fastp_bwa.r1_fastqc.html", 
                 zip, 
                 sample=samples["sample"], 
                 dataset=samples["dataset"]
                 )
             all_rules = all_rules = all_rules + expand(
-                "results/fastqc_out/bwa_out/{sample}.fastp_bwa.r2_fastqc.html", 
+                "results/fastqc_out/bwa_qc/{sample}/{sample}.fastp_bwa.r2_fastqc.html", 
                 zip, 
                 sample=samples["sample"], 
                 dataset=samples["dataset"]
