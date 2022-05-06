@@ -12,15 +12,21 @@ def get_rules(wildcards):
     all_rules = []
     if config["TRIM_READS"]:
         all_rules = all_rules + expand(
-            "results/{dataset}/filtered/fastqc/{sample}.filtered.R1_fastqc.html", 
+            "results/fastqc_out/fastp_qc/{sample}.fastp.r2_fastqc.html", 
+            zip, 
+            sample=samples["sample"], 
+            dataset=samples["dataset"]
+            )
+    if config["DECONVOLUTE"]:
+        all_rules = all_rules + expand("results/bwa_out/{sample}/{sample}.fastp_bwa.r1.fastq", 
             zip, 
             sample=samples["sample"], 
             dataset=samples["dataset"]
             )
     if config["METAPHLAN"]:
-        all_rules.append("results/allDatasets/metaphlan/abundance_heatmap_species.allDatasets.png")
-        all_rules.append("results/allDatasets/metaphlan/abundance_heatmap_genus.allDatasets.png")
-        all_rules.append("results/allDatasets/metaphlan/unifrac_matrix.allDatasets.txt")
+        all_rules.append("results/metaphlan_merged/merged_metaphlan_hclust_species.png")
+        all_rules.append("results/metaphlan_merged/merged_metaphlan_hclust_genus.png")
+        #all_rules.append("results/metaphlan_merged/merged_metaphlan_unifrac_matrix.txt")
     if config["ASSEMBLE"]:
         megahit_results = expand("results/{dataset}/assembly/quast/{sample}_quast/report.html", zip, sample=samples["sample"], dataset=samples["dataset"])
         all_rules = all_rules + megahit_results

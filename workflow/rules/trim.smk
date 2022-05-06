@@ -8,10 +8,10 @@ rule fastp_pe:
         r1 = get_r1,
         r2 = get_r2
     output:
-        r1Filtered = "results/{dataset}/filtered/{sample}.filtered.R1.fastq.gz",
-        r2Filtered = "results/{dataset}/filtered/{sample}.filtered.R2.fastq.gz",
-        json = "results/{dataset}/filtered/{sample}_fastp.json",
-        html = "results/{dataset}/filtered/{sample}_fastp.html"
+        r1Filtered = "results/fastp_out/{sample}/{sample}.fastp.r1.fastq.gz",
+        r2Filtered = "results/fastp_out/{sample}/{sample}.fastp.r2.fastq.gz",
+        json = "results/fastp_out/{sample}/{sample}_fastp.json",
+        html = "results/fastp_out/{sample}/{sample}_fastp.html"
     conda:
         "../envs/seq_processing.yml"
     threads: 16
@@ -21,13 +21,13 @@ rule fastp_pe:
 
 rule fastqc:
     input: 
-        "results/{dataset}/filtered/{sample}.filtered.R1.fastq.gz",
-        "results/{dataset}/filtered/{sample}.filtered.R2.fastq.gz"
+        "results/fastp_out/{sample}/{sample}.fastp.r1.fastq.gz",
+        "results/fastp_out/{sample}/{sample}.fastp.r2.fastq.gz"
     output:
-        "results/{dataset}/filtered/fastqc/{sample}.filtered.R1_fastqc.html",
-        "results/{dataset}/filtered/fastqc/{sample}.filtered.R2_fastqc.html"
+        "results/fastqc_out/fastp_qc/{sample}.fastp.r1_fastqc.html",
+        "results/fastqc_out/fastp_qc/{sample}.fastp.r2_fastqc.html"
     params:
-        outDir = "results/{dataset}/filtered/fastqc"
+        outDir = "results/fastqc_out/fastp_qc/"
     threads: 12
     shell:
         "module load fastqc/0.11.5 ; fastqc -t {threads} {input} --outdir {params.outDir}"

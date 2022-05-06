@@ -8,10 +8,12 @@ import pandas as pd
 
 configfile: "config/config.yaml"
 include: "workflow/rules/common.smk"
-#include: "workflow/rules/metagenomics.smk"
+include: "workflow/rules/metagenomics.smk"
 # include: "workflow/rules/bin_assembly.smk"
-#include: "workflow/rules/single_sample_binning.smk"
+# #include: "workflow/rules/single_sample_binning.smk"
 include: "workflow/rules/trim.smk"
+include: "workflow/rules/deconvolute.smk"
+include: "workflow/rules/metaphlan.smk"
 
 rule all:
     input:
