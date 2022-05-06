@@ -1,28 +1,23 @@
 # microbiome-snakemake
-This is a snakemake pipeline is designed to automate common components of shotgun metagenomic data analysis. Briefly, reads are trimmed, deconvoluted (- human), taxnomically defined, assembled, binned, and annotated. Further optimization is neccessary and functional components of metagenomic analysis have yet to be integrated. 
-
-**UNDER ACTIVE DEVELOPMENT** :)
 - [microbiome-snakemake](#microbiome-snakemake)
 - [TODO](#todo)
-	- [Notes on snakemake](#notes-on-snakemake)
-	- [Installation](#installation)
-	- [Setup](#setup)
-	- [Execution](#execution)
-	- [Rules](#rules)
-	- [Software-versions](#software-versions)
+- [Notes on snakemake](#notes-on-snakemake)
+- [Installation](#installation)
+- [Setup](#setup)
+- [Execution](#execution)
+- [Rules](#rules)
+- [Software-versions](#software-versions)
 
+This is a snakemake pipeline is designed to automate common components of shotgun metagenomic data analysis. Briefly, reads are trimmed, deconvoluted (- human), taxnomically defined, assembled, binned, and annotated. Further optimization is neccessary and functional components of metagenomic analysis have yet to be integrated. 
 
-
--------------
 # TODO
 * write new prep_sample_sheet helper script for updated path-based execution
 * re-test megahit + spades functionality
 * come up with fun name/acronym
 * probably more stuff 
 
-
 -------------
-## Notes on snakemake 
+# Notes on snakemake 
 
 This pipeline has been tested using snakemake and mamba installed in a single conda environment. Software versions:
 * snakemake version 7.3.8 
@@ -48,7 +43,7 @@ https://github.com/biobakery/MetaPhlAn/blob/master/metaphlan/utils/calculate_uni
 
 -------------
 
-## Installation
+# Installation
 
 1. Create a new environment to install mamba and snakemake into
 
@@ -69,7 +64,7 @@ mamba install -c bioconda -c conda-forge snakemake=7.3.8
 snakemake --version
 ```
 
-## Setup
+# Setup
 
 1. Move data into the data/ subdirectory in a folder named, e.g., Batch_01
 
@@ -97,7 +92,7 @@ METAPHLAN: True
 METABAT2: True
 ```
 
-## Execution
+# Execution
 
 1. (Optional) Check that snakemake is correctly interpretting your sample spreadsheet by executing a dryrun or one of the commands in the notes above
 
@@ -118,7 +113,7 @@ alternatively, you can run an interactive and execute the contents of the `run_s
 
 -------------
 
-## Rules 
+# Rules 
 
 Generalized commands + software used by this pipeline
 
@@ -218,7 +213,7 @@ metabat2 -t {threads} \
         --abdFile {input.depth_fi}
 ```
 
-## Software-versions
+# Software-versions
 * bedtools v2.29.2
 * biopython v1.78
 * bowtie2 v2.4.4
