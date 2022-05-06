@@ -1,6 +1,5 @@
 # microbiome-snakemake
 - [microbiome-snakemake](#microbiome-snakemake)
-- [TODO](#todo)
 - [Notes on snakemake](#notes-on-snakemake)
 - [Installation](#installation)
 - [Setup](#setup)
@@ -8,9 +7,14 @@
 - [Rules](#rules)
 - [Software-versions](#software-versions)
 
-This is a snakemake pipeline is designed to automate common components of shotgun metagenomic data analysis. Briefly, reads are trimmed, deconvoluted (- human), taxnomically defined, assembled, binned, and annotated. Further optimization is neccessary and functional components of metagenomic analysis have yet to be integrated. 
+**UNDER ACTIVE DEVELOPMENT** :)
+This is a snakemake pipeline is designed to automate common components of shotgun metagenomic data analysis. 
 
-# TODO
+Briefly, reads are trimmed, deconvoluted (- human), taxnomically defined, assembled, binned, and annotated. 
+
+Further optimization is neccessary and functional components of metagenomic analysis have yet to be integrated. 
+
+**TODO**
 * write new prep_sample_sheet helper script for updated path-based execution
 * re-test megahit + spades functionality
 * come up with fun name/acronym
