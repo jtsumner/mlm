@@ -13,48 +13,42 @@ def get_rules(wildcards):
     if config["FASTQC"]:
         all_rules = all_rules = all_rules + expand(
             "results/fastqc_out/raw_qc/{sample}/{sample}.raw.r1_fastqc.html", 
-            zip, 
             sample=samples["sample"], 
-            dataset=samples["dataset"]
             )
         all_rules = all_rules = all_rules + expand(
             "results/fastqc_out/raw_qc/{sample}/{sample}.raw.r2_fastqc.html", 
-            zip, 
             sample=samples["sample"], 
-            dataset=samples["dataset"]
             )
 
         if config["TRIM_READS"]:
             all_rules = all_rules = all_rules + expand(
-                "results/fastqc_out/fastp_qc/{sample}.fastp.r1_fastqc.html", 
-                zip, 
+                "results/fastqc_out/fastp_qc/{sample}/{sample}.fastp.r1_fastqc.html", 
                 sample=samples["sample"], 
-                dataset=samples["dataset"]
+                )
+            all_rules = all_rules = all_rules + expand(
+                "results/fastqc_out/fastp_qc/{sample}/{sample}.fastp.r2_fastqc.html", 
+                sample=samples["sample"], 
                 )
 
         if config["ASSEMBLE"]:
             all_rules = all_rules = all_rules + expand(
                 "results/fastqc_out/bwa_qc/{sample}/{sample}.fastp_bwa.r1_fastqc.html", 
-                zip, 
                 sample=samples["sample"], 
-                dataset=samples["dataset"]
                 )
             all_rules = all_rules = all_rules + expand(
                 "results/fastqc_out/bwa_qc/{sample}/{sample}.fastp_bwa.r2_fastqc.html", 
-                zip, 
                 sample=samples["sample"], 
-                dataset=samples["dataset"]
                 )
 
     if config["TRIM_READS"]:
         all_rules = all_rules + expand(
-            "results/fastqc_out/fastp_qc/{sample}.fastp.r1_fastqc.html", 
+            "results/fastp_out/{sample}/{sample}.fastp.r1.fastq.gz", 
             zip, 
             sample=samples["sample"], 
             dataset=samples["dataset"]
             )
         all_rules = all_rules + expand(
-            "results/fastqc_out/fastp_qc/{sample}.fastp.r2_fastqc.html", 
+            "results/fastp_out/{sample}/{sample}.fastp.r2.fastq.gz", 
             zip, 
             sample=samples["sample"], 
             dataset=samples["dataset"]

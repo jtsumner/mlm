@@ -1,0 +1,197 @@
+Building DAG of jobs...
+Job stats:
+job                            count    min threads    max threads
+---------------------------  -------  -------------  -------------
+all                                1              1              1
+bwa_map                            1              1              1
+fastp_pe                           1              1              1
+fastqc_deconvolute                 1              1              1
+fastqc_fastp                       1              1              1
+fastqc_raw                         1              1              1
+get_human_genome                   1              1              1
+hclust                             1              1              1
+hclust_genus                       1              1              1
+index_human_genome                 1              1              1
+megahit                            1              1              1
+metaphlan                          1              1              1
+metaphlan_genus_abundance          1              1              1
+metaphlan_merge                    1              1              1
+metaphlan_setup                    1              1              1
+metaphlan_species_abundance        1              1              1
+multiqc_quast                      1              1              1
+quast                              1              1              1
+total                             18              1              1
+
+
+[Fri May  6 17:47:50 2022]
+rule fastp_pe:
+    input: data/Batch_01/DNA_B01_01_S1_L001_R1_001.fastq.gz, data/Batch_01/DNA_B01_01_S1_L001_R2_001.fastq.gz
+    output: results/fastp_out/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.fastp.r1.fastq.gz, results/fastp_out/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.fastp.r2.fastq.gz, results/fastp_out/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001_fastp.json, results/fastp_out/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001_fastp.html
+    jobid: 3
+    wildcards: sample=DNA_B01_01_S1_L001
+    resources: tmpdir=/var/folders/fr/tjg65w794czf132dd3dlnf800000gn/T
+
+
+[Fri May  6 17:47:50 2022]
+rule metaphlan_setup:
+    output: resources/metaphlan_db, resources/metaphlan_db/mpa_v30_CHOCOPhlAn_201901.rev.1.bt2
+    jobid: 12
+    resources: tmpdir=/var/folders/fr/tjg65w794czf132dd3dlnf800000gn/T, mem=50g, time=04:00:00
+
+
+[Fri May  6 17:47:50 2022]
+rule get_human_genome:
+    output: resources/genome/hg38.fa.gz
+    jobid: 7
+    resources: tmpdir=/var/folders/fr/tjg65w794czf132dd3dlnf800000gn/T
+
+
+[Fri May  6 17:47:50 2022]
+rule fastqc_raw:
+    input: data/Batch_01/DNA_B01_01_S1_L001_R1_001.fastq.gz, data/Batch_01/DNA_B01_01_S1_L001_R2_001.fastq.gz
+    output: results/fastqc_out/raw_qc/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.raw.r1_fastqc.html, results/fastqc_out/raw_qc/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.raw.r2_fastqc.html
+    jobid: 1
+    wildcards: sample=DNA_B01_01_S1_L001
+    resources: tmpdir=/var/folders/fr/tjg65w794czf132dd3dlnf800000gn/T
+
+
+[Fri May  6 17:47:50 2022]
+rule index_human_genome:
+    input: resources/genome/hg38.fa.gz
+    output: resources/genome/hg38.fa.gz.ann
+    jobid: 6
+    resources: tmpdir=/var/folders/fr/tjg65w794czf132dd3dlnf800000gn/T, mem=20G, time=04:00:00
+
+
+[Fri May  6 17:47:50 2022]
+rule fastqc_fastp:
+    input: results/fastp_out/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.fastp.r1.fastq.gz, results/fastp_out/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.fastp.r2.fastq.gz
+    output: results/fastqc_out/fastp_qc/DNA_B01_01_S1_L001.fastp.r1_fastqc.html, results/fastqc_out/fastp_qc/DNA_B01_01_S1_L001.fastp.r2_fastqc.html
+    jobid: 2
+    wildcards: sample=DNA_B01_01_S1_L001
+    resources: tmpdir=/var/folders/fr/tjg65w794czf132dd3dlnf800000gn/T
+
+
+[Fri May  6 17:47:50 2022]
+rule bwa_map:
+    input: results/fastp_out/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.fastp.r1.fastq.gz, results/fastp_out/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.fastp.r2.fastq.gz, resources/genome/hg38.fa.gz.ann, resources/genome/hg38.fa.gz
+    output: results/bwa_out/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.fastp_bwa.r1.fastq, results/bwa_out/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.fastp_bwa.r2.fastq
+    jobid: 5
+    wildcards: sample=DNA_B01_01_S1_L001
+    resources: tmpdir=/var/folders/fr/tjg65w794czf132dd3dlnf800000gn/T, mem=50G, time=08:00:00
+
+
+[Fri May  6 17:47:50 2022]
+rule fastqc_deconvolute:
+    input: results/bwa_out/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.fastp_bwa.r1.fastq, results/bwa_out/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.fastp_bwa.r2.fastq
+    output: results/fastqc_out/bwa_qc/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.fastp_bwa.r1_fastqc.html, results/fastqc_out/bwa_qc/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.fastp_bwa.r2_fastqc.html
+    jobid: 4
+    wildcards: sample=DNA_B01_01_S1_L001
+    resources: tmpdir=/var/folders/fr/tjg65w794czf132dd3dlnf800000gn/T
+
+
+[Fri May  6 17:47:50 2022]
+rule metaphlan:
+    input: resources/metaphlan_db, results/bwa_out/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.fastp_bwa.r1.fastq, results/bwa_out/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.fastp_bwa.r2.fastq
+    output: results/metaphlan_out/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.metaphlan_profile.txt, results/metaphlan_out/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.bowtie2.bz2
+    jobid: 11
+    wildcards: sample=DNA_B01_01_S1_L001
+    resources: tmpdir=/var/folders/fr/tjg65w794czf132dd3dlnf800000gn/T, mem=50g, time=04:00:00
+
+
+[Fri May  6 17:47:50 2022]
+rule megahit:
+    input: results/bwa_out/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.fastp_bwa.r1.fastq, results/bwa_out/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.fastp_bwa.r2.fastq
+    output: results/megahit_out/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.contigs.fa
+    jobid: 15
+    wildcards: sample=DNA_B01_01_S1_L001
+    resources: tmpdir=/var/folders/fr/tjg65w794czf132dd3dlnf800000gn/T, mem=50g, time=10:00:00
+
+
+[Fri May  6 17:47:50 2022]
+rule metaphlan_merge:
+    input: results/metaphlan_out/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.metaphlan_profile.txt
+    output: results/metaphlan_merged/merged_metaphlan_profile.tsv
+    jobid: 10
+    resources: tmpdir=/var/folders/fr/tjg65w794czf132dd3dlnf800000gn/T
+
+
+[Fri May  6 17:47:50 2022]
+rule quast:
+    input: results/megahit_out/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.contigs.fa
+    output: results/quast_out/megahit/DNA_B01_01_S1_L001, results/quast_out/megahit/DNA_B01_01_S1_L001/report.html
+    jobid: 17
+    wildcards: sample=DNA_B01_01_S1_L001
+    resources: tmpdir=/var/folders/fr/tjg65w794czf132dd3dlnf800000gn/T
+
+
+[Fri May  6 17:47:50 2022]
+rule metaphlan_species_abundance:
+    input: results/metaphlan_merged/merged_metaphlan_profile.tsv
+    output: results/metaphlan_merged/merged_metaphlan_profile_species.tsv
+    jobid: 9
+    resources: tmpdir=/var/folders/fr/tjg65w794czf132dd3dlnf800000gn/T
+
+
+[Fri May  6 17:47:50 2022]
+rule metaphlan_genus_abundance:
+    input: results/metaphlan_merged/merged_metaphlan_profile.tsv
+    output: results/metaphlan_merged/merged_metaphlan_profile_genus.tsv
+    jobid: 14
+    resources: tmpdir=/var/folders/fr/tjg65w794czf132dd3dlnf800000gn/T
+
+
+[Fri May  6 17:47:50 2022]
+rule multiqc_quast:
+    input: results/quast_out/megahit/DNA_B01_01_S1_L001/report.html
+    output: results/quast_out/megahit/multiqc, results/quast_out/megahit/multiqc/report.html
+    jobid: 16
+    resources: tmpdir=/var/folders/fr/tjg65w794czf132dd3dlnf800000gn/T
+
+
+[Fri May  6 17:47:50 2022]
+rule hclust_genus:
+    input: results/metaphlan_merged/merged_metaphlan_profile_genus.tsv
+    output: results/metaphlan_merged/merged_metaphlan_hclust_genus.png
+    jobid: 13
+    resources: tmpdir=/var/folders/fr/tjg65w794czf132dd3dlnf800000gn/T
+
+
+[Fri May  6 17:47:50 2022]
+rule hclust:
+    input: results/metaphlan_merged/merged_metaphlan_profile_species.tsv
+    output: results/metaphlan_merged/merged_metaphlan_hclust_species.png
+    jobid: 8
+    resources: tmpdir=/var/folders/fr/tjg65w794czf132dd3dlnf800000gn/T
+
+
+[Fri May  6 17:47:50 2022]
+localrule all:
+    input: results/fastqc_out/raw_qc/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.raw.r1_fastqc.html, results/fastqc_out/raw_qc/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.raw.r2_fastqc.html, results/fastqc_out/fastp_qc/DNA_B01_01_S1_L001.fastp.r1_fastqc.html, results/fastqc_out/bwa_qc/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.fastp_bwa.r1_fastqc.html, results/fastqc_out/bwa_qc/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.fastp_bwa.r2_fastqc.html, results/fastqc_out/fastp_qc/DNA_B01_01_S1_L001.fastp.r1_fastqc.html, results/fastqc_out/fastp_qc/DNA_B01_01_S1_L001.fastp.r2_fastqc.html, results/bwa_out/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.fastp_bwa.r1.fastq, results/bwa_out/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.fastp_bwa.r2.fastq, results/metaphlan_merged/merged_metaphlan_hclust_species.png, results/metaphlan_merged/merged_metaphlan_hclust_genus.png, results/megahit_out/DNA_B01_01_S1_L001/DNA_B01_01_S1_L001.contigs.fa, results/quast_out/megahit/multiqc/report.html
+    jobid: 0
+    resources: tmpdir=/var/folders/fr/tjg65w794czf132dd3dlnf800000gn/T
+
+Job stats:
+job                            count    min threads    max threads
+---------------------------  -------  -------------  -------------
+all                                1              1              1
+bwa_map                            1              1              1
+fastp_pe                           1              1              1
+fastqc_deconvolute                 1              1              1
+fastqc_fastp                       1              1              1
+fastqc_raw                         1              1              1
+get_human_genome                   1              1              1
+hclust                             1              1              1
+hclust_genus                       1              1              1
+index_human_genome                 1              1              1
+megahit                            1              1              1
+metaphlan                          1              1              1
+metaphlan_genus_abundance          1              1              1
+metaphlan_merge                    1              1              1
+metaphlan_setup                    1              1              1
+metaphlan_species_abundance        1              1              1
+multiqc_quast                      1              1              1
+quast                              1              1              1
+total                             18              1              1
+
+This was a dry-run (flag -n). The order of jobs does not reflect the order of execution.
