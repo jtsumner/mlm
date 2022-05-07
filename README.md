@@ -1,11 +1,17 @@
-# microbiome-snakemake
-- [microbiome-snakemake](#microbiome-snakemake)
+# Multi-Level Metagenomics
+
+Is a user-friendly, automated metagenomics pipeline the key to making your life as a bioinformatician easier? Do you still want some choice in which tools you use for each analysis step rather a rigid selection of pre-determined tools that other pipelines use? Well look no further!
+
+Welcome to Muti-Level Metagenomics (not to be confused with Multi-Level Marketing), a flexible analysis pipeline designed to handle various metagenomics data types and analyses steps. Use MLM's flexible, low-free configuration settings to choose from multiple tools at each major step in the analysis. Yes, you heard that right: you can use the MLM pipeline to make your own pipeline. Answer the question closest to your heart. Like, is this a pipeline, or a pyramid scheme? 
+
+- [Multi-Level Metagenomics](#multi-level-metagenomics)
 - [Notes on snakemake](#notes-on-snakemake)
 - [Installation](#installation)
 - [Setup](#setup)
 - [Execution](#execution)
 - [Rules](#rules)
 - [Software-versions](#software-versions)
+- [Configuration settings](#configuration-settings)
 
 **UNDER ACTIVE DEVELOPMENT** :)
 This is a snakemake pipeline is designed to automate common components of shotgun metagenomic data analysis. 
@@ -247,3 +253,24 @@ to add and/or deprecated:
 * hmmer
 * cython v0.29.21
 * scikit-learn v0.21.3* prodigal
+
+-------------
+# Configuration settings
+
+So far there are six major steps in the analysis. Each of these can be turned on or off at your desire.
+
+```
+FASTQC: True
+TRIM_READS: True
+DECONVOLUTE: True
+METAPHLAN: True
+ASSEMBLE: True
+METABAT2: False
+```
+
+`FASTQC` employs fastqc on raw reads and, if selected to perform the analyses which generate them, trimmed and deconvoluted reads.
+`TRIM_READS` employs fastp to trim and QC raw reads.
+`DECONVOLUTE` employs bwa alignment to the human reference genome to remove probable human-derived reads
+`METAPHLAN` employs metaphlan3 to determine a relative abundance profile at the genus and species level
+`ASSEMBLE` employs megahit or metaspades to assemble metagenomes
+`METABAT2` uses the metabat algorithm to bin genomes into metagenome assembled genomes
