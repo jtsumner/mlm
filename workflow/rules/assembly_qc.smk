@@ -19,12 +19,12 @@ rule multiqc_quast:
             sample=samples["sample"]
         )
     output:
-        outDir=directory("results/quast_out/megahit/multiqc"),
+        out_dir=directory("results/quast_out/megahit/multiqc"),
         multiqc_report = "results/quast_out/megahit/multiqc/report.html"
     shell:
         """
         module load multiqc
-        multiqc --outdir {output.outDir} {input.quast_reports}
+        multiqc --outdir {output.out_dir} results/quast_out/
         """
 
 rule drop_short_contigs:
@@ -36,6 +36,3 @@ rule drop_short_contigs:
         "../envs/seq_processing.yml"
     script:
         "scripts/parse_contigs.py"
-
-
-
