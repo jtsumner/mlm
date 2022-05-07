@@ -14,7 +14,10 @@ rule quast:
 
 rule multiqc_quast:
     input:
-        quast_reports=expand("results/quast_out/megahit/{sample}/report.html", zip, sample=samples["sample"], dataset=samples["dataset"])
+        quast_reports=expand(
+            "results/quast_out/megahit/{sample}/report.html", 
+            sample=samples["sample"]
+        )
     output:
         outDir=directory("results/quast_out/megahit/multiqc"),
         multiqc_report = "results/quast_out/megahit/multiqc/report.html"
