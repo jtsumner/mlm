@@ -3,7 +3,7 @@
 Is a user-friendly, automated metagenomics pipeline the key to making your life as a bioinformatician easier? Do you still want some choice in which tools you use for each analysis step rather a rigid selection of pre-determined tools that other pipelines use? Well look no further!
 
 Welcome to Muti-Level Metagenomics (not to be confused with Multi-Level Marketing), a flexible analysis pipeline designed to handle various metagenomics data types and analyses steps. Use MLM's flexible, low-free configuration settings to choose from multiple tools at each major step in the analysis. Yes, you heard that right: you can use the MLM pipeline to make your own pipeline. Answer the question closest to your heart. Like, is this a pipeline, or a pyramid scheme?  **UNDER ACTIVE DEVELOPMENT** :)
-
+```text
 ,---.    ,---.  ___    _   .---. ,---------. .-./`)                .---.       .-''-.  ,---.  ,---.   .-''-.    .---.                              
 |    \  /    |.'   |  | |  | ,_| \          \\ .-.')               | ,_|     .'_ _   \ |   /  |   | .'_ _   \   | ,_|                              
 |  ,  \/  ,  ||   .'  | |,-./  )  `--.  ,---'/ `-' \             ,-./  )    / ( ` )   '|  |   |  .'/ ( ` )   ',-./  )                              
@@ -76,7 +76,7 @@ Welcome to Muti-Level Metagenomics (not to be confused with Multi-Level Marketin
   \        /   \       / |  |    |  |  '. \_/``".'  |  |      |  | |   |  `-'`-'     /  \       /  
    `'-...-'     `'-..-'  '--'    '--'    '-----'    '--'      '--' '---'    `._____.'    `-...-'   
                                                                                                    
-
+```
 - [Multi-Level Metagenomics](#multi-level-metagenomics)
 - [Notes on snakemake](#notes-on-snakemake)
 - [Installation](#installation)
