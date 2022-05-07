@@ -274,3 +274,16 @@ METABAT2: False
 `METAPHLAN` employs metaphlan3 to determine a relative abundance profile at the genus and species level
 `ASSEMBLE` employs megahit or metaspades to assemble metagenomes
 `METABAT2` uses the metabat algorithm to bin genomes into metagenome assembled genomes
+
+
+-------------
+ASCII art generated with following tool: http://patorjk.com/blog/software/
+
+![MLM](workflow/examples/ascii_art_flowers.txt)
+
+
+
+
+```{r engine='bash', comment=''}
+cat workflow/examples/ascii_art_flowers.txt
+```
