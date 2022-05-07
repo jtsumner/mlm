@@ -28,11 +28,7 @@ Welcome to Muti-Level Metagenomics (not to be confused with Multi-Level Marketin
 - [Software-versions](#software-versions)
 - [Configuration settings](#configuration-settings)
 
-This is a snakemake pipeline is designed to automate common components of shotgun metagenomic data analysis. 
-
-Briefly, reads are trimmed, deconvoluted (- human), taxnomically defined, assembled, binned, and annotated. 
-
-Further optimization is neccessary and functional components of metagenomic analysis have yet to be integrated. 
+This is a snakemake pipeline is designed to automate common components of shotgun metagenomic data analysis. Briefly, reads are trimmed, deconvoluted (- human), taxnomically defined, assembled, binned, and annotated. Further optimization is neccessary and functional components of metagenomic analysis have yet to be integrated. 
 
 **TODO**
 * write new prep_sample_sheet helper script for updated path-based execution
@@ -44,12 +40,6 @@ Further optimization is neccessary and functional components of metagenomic anal
 # Notes on snakemake 
 
 This pipeline has been tested using snakemake and mamba installed in a single conda environment. For more information regarding snakemake, generally, please see the documentation [here](https://snakemake.readthedocs.io/en/v7.3.8/index.html)
-
-Software versions:
-* snakemake version 7.3.8 
-* mamba 0.15.3
-* conda 4.10.3
-
 
 Execute to create a DAG visualization of the pipeline
 
@@ -70,6 +60,11 @@ https://github.com/biobakery/MetaPhlAn/blob/master/metaphlan/utils/calculate_uni
 -------------
 
 # Installation
+
+Tested versions for base conda software environment:
+* snakemake version 7.3.8 
+* mamba 0.15.3
+* conda 4.10.3
 
 1. Create a new environment to install mamba and snakemake into
 
@@ -282,12 +277,12 @@ ASSEMBLE: True
 METABAT2: False
 ```
 
-`FASTQC` employs fastqc on raw reads and, if selected to perform the analyses which generate them, trimmed and deconvoluted reads.
-`TRIM_READS` employs fastp to trim and QC raw reads.
-`DECONVOLUTE` employs bwa alignment to the human reference genome to remove probable human-derived reads
-`METAPHLAN` employs metaphlan3 to determine a relative abundance profile at the genus and species level
-`ASSEMBLE` employs megahit or metaspades to assemble metagenomes
-`METABAT2` uses the metabat algorithm to bin genomes into metagenome assembled genomes
+* `FASTQC` employs fastqc on raw reads and, if selected to perform the analyses which generate them, trimmed and deconvoluted reads.
+* `TRIM_READS` employs fastp to trim and QC raw reads.
+* `DECONVOLUTE` employs bwa alignment to the human reference genome to remove probable human-derived reads
+* `METAPHLAN` employs metaphlan3 to determine a relative abundance profile at the genus and species level
+* `ASSEMBLE` employs megahit or metaspades to assemble metagenomes
+* `METABAT2` uses the metabat algorithm to bin genomes into metagenome assembled genomes
 
 
 -------------
