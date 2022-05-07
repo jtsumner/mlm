@@ -2,7 +2,9 @@
 
 Is a user-friendly, automated metagenomics pipeline the key to making your life as a bioinformatician easier? Do you still want some choice in which tools you use for each analysis step rather a rigid selection of pre-determined tools that other pipelines use? Well look no further!
 
-Welcome to Muti-Level Metagenomics (not to be confused with Multi-Level Marketing), a flexible analysis pipeline designed to handle various metagenomics data types and analyses steps. Use MLM's flexible, low-free configuration settings to choose from multiple tools at each major step in the analysis. Yes, you heard that right: you can use the MLM pipeline to make your own pipeline. Answer the question closest to your heart. Like, is this a pipeline, or a pyramid scheme?  **UNDER ACTIVE DEVELOPMENT** :)
+Welcome to Muti-Level Metagenomics (not to be confused with Multi-Level Marketing), a flexible analysis pipeline designed to handle various metagenomics data types and analyses steps. Use MLM's flexible, low-free configuration settings to choose from multiple tools at each major step in the analysis. Yes, you heard that right: you can use the MLM pipeline to make your own pipeline. Answer the question closest to your heart. Like, is this a pipeline, or a pyramid scheme?  
+
+**UNDER ACTIVE DEVELOPMENT** :) Use at you own risk...
 
 
 - [Multi-Level Metagenomics](#multi-level-metagenomics)
@@ -14,7 +16,6 @@ Welcome to Muti-Level Metagenomics (not to be confused with Multi-Level Marketin
 - [Software-versions](#software-versions)
 - [Configuration settings](#configuration-settings)
 
-**UNDER ACTIVE DEVELOPMENT** :)
 This is a snakemake pipeline is designed to automate common components of shotgun metagenomic data analysis. 
 
 Briefly, reads are trimmed, deconvoluted (- human), taxnomically defined, assembled, binned, and annotated. 
@@ -30,7 +31,7 @@ Further optimization is neccessary and functional components of metagenomic anal
 -------------
 # Notes on snakemake 
 
-This pipeline has been tested using snakemake and mamba installed in a single conda environment. For more information regarding snakemake, generally, please see the documentation [here](!https://snakemake.readthedocs.io/en/v7.3.8/index.html)
+This pipeline has been tested using snakemake and mamba installed in a single conda environment. For more information regarding snakemake, generally, please see the documentation [here](https://snakemake.readthedocs.io/en/v7.3.8/index.html)
 
 Software versions:
 * snakemake version 7.3.8 
@@ -278,7 +279,7 @@ METABAT2: False
 
 
 -------------
-ASCII art generated with following tool: http://patorjk.com/blog/software/
+ASCII art generated with this [tool](http://patorjk.com/software/taag/#p=display&h=3&v=1&f=Flower%20Power&t=MULTI-LEVEL%0A%20%20%20META-%0A%20GENOMICS%0A)
 
 ```text
 ,---.    ,---. ___    _  .---.,---------..-./`)              .---.      .-''-. ,---.  ,---.  .-''-.   .---.      
