@@ -53,8 +53,9 @@ Execute to create a rule graph visualization
 snakemake --forceall --rulegraph | dot -Tpdf > dag.pdf
 ```
 -------------
+# Getting Started 
 
-# Installation
+## Installation
 
 Tested versions for base conda software environment:
 * snakemake version 7.3.8 
@@ -80,9 +81,9 @@ mamba install -c bioconda -c conda-forge snakemake=7.3.8
 snakemake --version
 ```
 
-# Setup
+## Setup
 
-1. Move data into the data/ subdirectory in a folder named, e.g., Batch_01
+1. Move data into the `data/` subdirectory
 
 2. Go into the data/ subdirectory and use the `prep_sample_sheet.sh` script to prepare a sample sheet
 
@@ -97,18 +98,21 @@ cd data/
 mv samples_minimal.tsv ../congfig/samples_minimal.tsv
 ```
 
-4. Configure the cluster config file. Adjust the `account` and `partition` setting under `default-resources` to fit your cluster.
+4. Configure the **cluster config** file. Adjust the `account` and `partition` setting under `default-resources` to fit your cluster. Note that the current cluster configurations is a basic setup for SLURM on Quest that's based on this [blog](https://fame.flinders.edu.au/blog/2021/08/02/snakemake-profiles-updated)
 
 5. Open the Snakefile and adjust the rule all output to fit your desired output. 
-6. Configure the general snakemake config `config/config.yaml` so that rules you want to execute are set to `True` and rules you do not want to execute are set to `False`. E.g., The following lines will assemble, perform metaphlan read based analysis, and metabat2 binning
+6. [Configure](#configuration-settings) the general snakemake config `config/config.yaml` so that rules you want to execute are set to `True` and rules you do not want to execute are set to `False`. E.g., The following lines will assembl and perform metaphlan read-based analysis, but won't execute metabat2 binning. 
 
 ```
-ASSEMBLE: True
+FASTQC: True
+TRIM_READS: True
+DECONVOLUTE: True
 METAPHLAN: True
-METABAT2: True
+ASSEMBLE: True
+METABAT2: False
 ```
 
-# Execution
+## Execution
 
 1. (Optional) Check that snakemake is correctly interpretting your sample spreadsheet by executing a dryrun or one of the commands in the notes above
 
@@ -128,8 +132,9 @@ alternatively, you can run an interactive and execute the contents of the `run_s
 (hopefully)
 
 -------------
+# Pipeline Contents
 
-# Rules 
+## Rules 
 
 Generalized commands + software used by this pipeline
 
@@ -229,7 +234,7 @@ metabat2 -t {threads} \
         --abdFile {input.depth_fi}
 ```
 
-# Software-versions
+## Software-versions
 * bedtools v2.29.2
 * biopython v1.78
 * bowtie2 v2.4.4
@@ -259,7 +264,7 @@ to add and/or deprecated:
 * scikit-learn v0.21.3* prodigal
 
 -------------
-# Configuration settings
+## Configuration settings
 
 So far there are six major steps in the analysis. Each of these can be turned on or off at your desire.
 
