@@ -70,6 +70,12 @@ def get_rules(wildcards):
         )
         all_rules.append("results/quast_out/megahit/multiqc/multiqc_report.html")
 
+        if config["SPADES"]:
+            all_rules = all_rules + expand(
+                "results/spades_out/{sample}/scaffolds.fasta", 
+                sample=samples["sample"]
+            )
+            
     if config["METABAT2"]:
         metabat2_results = expand(
             "results/{dataset}/assembly/megahit_g1000/metabat2/{sample}/bins/bin.1.fa", 
