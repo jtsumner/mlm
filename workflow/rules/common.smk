@@ -75,9 +75,8 @@ def get_rules(wildcards):
                 "results/spades_out/{sample}/scaffolds.fasta", 
                 sample=samples["sample"]
             )
-            "results/quast_out/quast/{sample}/report.html"
             all_rules = all_rules + expand(
-                "results/quast_out/quast/{sample}/report.html", 
+                "results/quast_out/spades/{sample}/report.html", 
                 sample=samples["sample"]
             )
     if config["METABAT2"]:
