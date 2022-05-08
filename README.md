@@ -6,8 +6,7 @@ Welcome to Muti-Level Metagenomics (not to be confused with Multi-Level Marketin
 
 **UNDER ACTIVE DEVELOPMENT** :) Use at you own risk...
 
-<p align="center">
-
+```text
 	,---.    ,---.  .---.     ,---.    ,---. 
 	|    \  /    |  | ,_|     |    \  /    | 
 	|  ,  \/  ,  |,-./  )     |  ,  \/  ,  | 
@@ -17,7 +16,7 @@ Welcome to Muti-Level Metagenomics (not to be confused with Multi-Level Marketin
 	|  (_,_)  |  | `-'`-'|___ |  (_,_)  |  | 
 	|  |      |  |  |        \|  |      |  | 
 	'--'      '--'  `--------`'--'      '--' 
-</p>
+```
 
 **Table of Contents**
 - [Multi-Level Metagenomics](#multi-level-metagenomics)
