@@ -31,17 +31,14 @@ rule quast_spades:
 
 rule multiqc_quast:
     input:
-        quast_reports=expand(
-            "results/quast_out/megahit/{sample}/report.html", 
-            sample=samples["sample"]
-        )
+        quast_reports = multiqc_quast_input
     output:
-        out_dir=directory("results/quast_out/megahit/multiqc"),
-        multiqc_report = "results/quast_out/megahit/multiqc/multiqc_report.html"
+        out_dir=directory("results/quast_out/multiqc"),
+        multiqc_report = "results/quast_out/multiqc/multiqc_report.html"
     shell:
         """
         module load multiqc
-        multiqc --outdir {output.out_dir} results/quast_out/
+        multiqc --outdir {output.out_dir} {input.quast_reports}
         """
 
 rule drop_short_contigs:

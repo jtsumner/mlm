@@ -64,21 +64,22 @@ def get_rules(wildcards):
         #all_rules.append("results/metaphlan_merged/merged_metaphlan_unifrac_matrix.txt")
 
     if config["ASSEMBLE"]:
-        all_rules = all_rules + expand(
-            "results/megahit_out/{sample}/{sample}.contigs.fa", 
-            sample=samples["sample"]
-        )
-        all_rules.append("results/quast_out/megahit/multiqc/multiqc_report.html")
+        if config["MEGAHIT"]:
+            all_rules = all_rules + expand(
+                "results/megahit_out/{sample}/{sample}.contigs.fa", 
+                sample=samples["sample"]
+            )
 
         if config["SPADES"]:
             all_rules = all_rules + expand(
                 "results/spades_out/{sample}/scaffolds.fasta", 
                 sample=samples["sample"]
             )
-            all_rules = all_rules + expand(
-                "results/quast_out/spades/{sample}/report.html", 
-                sample=samples["sample"]
-            )
+        if config["SPADES"] or config["MEGAHIT"]:
+            all_rules.append("results/quast_out/multiqc/multiqc_report.html")
+
+
+
     if config["METABAT2"]:
         metabat2_results = expand(
             "results/{dataset}/assembly/megahit_g1000/metabat2/{sample}/bins/bin.1.fa", 
@@ -102,3 +103,25 @@ def get_r2(wildcards):
     tmp = get_read_path_v2(wildcards)
     return tmp["reverse_read"]
 
+def multiqc_quast_input(wildcards):
+    if config["MEGAHIT"] and config["SPADES"]:
+        quast_reports = expand(
+            "results/quast_out/{assembler}/{sample}/report.html", 
+            sample=samples["sample"],
+            assembler=["megahit", "spades"]
+            )
+        return quast_reports
+    elif config["MEGAHIT"] ^ config["SPADES"]:
+        if config["MEGAHIT"]:
+            quast_reports=expand(
+                "results/quast_out/megahit/{sample}/report.html", 
+                sample=samples["sample"]
+                )
+        elif config["SPADES"]:
+            quast_reports=expand(
+                "results/quast_out/spades/{sample}/report.html", 
+                sample=samples["sample"]
+                )
+        return quast_reports
+    else:
+        print("CHECK that at least one assembler is set to True in config.yaml")
