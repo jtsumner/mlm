@@ -10,7 +10,7 @@ rule megahit:
         outdirec = "results/megahit_out/{sample}"
     threads: 20
     resources:
-        mem="50g",
+        mem="100g",
         time="10:00:00"
     shell:
         """

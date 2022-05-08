@@ -4,6 +4,8 @@ rule get_human_genome:
         "resources/genome/{}".format(config["genome_name"])
     params:
         human_genome = config["human_genome"]
+    resources:
+        time="02:00:00"
     shell:
         """
         cd resources/genome/
@@ -19,7 +21,7 @@ rule index_human_genome:
         genome_index = config["genome_name"]
     threads: 10
     resources:
-        mem="20G",
+        mem="10G",
         time="04:00:00"
     shell:
         """
@@ -45,7 +47,7 @@ rule bwa_map:
         unmapped_bam = "results/bwa_out/{sample}/{sample}.unmapped.bam"
     threads: 20
     resources:
-        mem="50G",
+        mem="15G",
         time="08:00:00"
     shell:
         """

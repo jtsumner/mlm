@@ -16,5 +16,7 @@ rule fastp_pe:
         "../envs/seq_processing.yml"
     threads: 16
     shell: 
-        "fastp -i {input.r1} -I {input.r2} --out1 {output.r1_filtered} --out2 {output.r2_filtered} --detect_adapter_for_pe --thread {threads} --length_required 50 -j {output.json} -h {output.html} -V"
+        """
+        fastp -i {input.r1} -I {input.r2} --out1 {output.r1_filtered} --out2 {output.r2_filtered} --detect_adapter_for_pe --thread {threads} --length_required 50 -j {output.json} -h {output.html} -V
+        """
 

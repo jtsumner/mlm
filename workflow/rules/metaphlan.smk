@@ -16,7 +16,7 @@ rule metaphlan_setup:
         metaphlan_idx = config["metaphlan_idx"] # Index for metaphlan
     threads: 10
     resources:
-        mem="50g",
+        mem="10g",
         time="04:00:00"
     shell:
         """
@@ -38,7 +38,7 @@ rule metaphlan:
         metaphlan_idx = config["metaphlan_idx"] # Index for metaphlan
     threads: 20
     resources:
-        mem="50g",
+        mem="10g",
         time="04:00:00"
     shell:
         """

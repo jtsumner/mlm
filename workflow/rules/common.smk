@@ -68,7 +68,7 @@ def get_rules(wildcards):
             "results/megahit_out/{sample}/{sample}.contigs.fa", 
             sample=samples["sample"]
         )
-        all_rules.append("results/quast_out/megahit/multiqc/report.html")
+        all_rules.append("results/quast_out/megahit/multiqc/multiqc_report.html")
 
     if config["METABAT2"]:
         metabat2_results = expand(

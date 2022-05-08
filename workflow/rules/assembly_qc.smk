@@ -20,7 +20,7 @@ rule multiqc_quast:
         )
     output:
         out_dir=directory("results/quast_out/megahit/multiqc"),
-        multiqc_report = "results/quast_out/megahit/multiqc/report.html"
+        multiqc_report = "results/quast_out/megahit/multiqc/multiqc_report.html"
     shell:
         """
         module load multiqc
