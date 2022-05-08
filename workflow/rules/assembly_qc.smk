@@ -1,15 +1,28 @@
 
-rule quast:
+rule quast_megahit:
     input:
-        scaffolds = "results/megahit_out/{sample}/{sample}.contigs.fa",
+        scaffolds = "results/megahit_out/{sample}/{sample}.contigs.fa"
     output:
-        direc=directory("results/quast_out/megahit/{sample}"),
+        out_dir=directory("results/quast_out/megahit/{sample}"),
         report="results/quast_out/megahit/{sample}/report.html"
     threads: 1
     conda:
         "../envs/genome_qc.yml"
     shell:
-        "quast.py -o {output.direc} --threads {threads} --min-contig 0 -L {input}"
+        "quast.py -o {output.out_dir} --threads {threads} --min-contig 0 -L {input}"
+
+
+rule quast_spades:
+    input:
+        scaffolds="results/spades_out/{sample}/scaffolds.fasta"
+    output:
+        out_dir=directory("results/quast_out/spades/{sample}"),
+        report="results/quast_out/quast/{sample}/report.html"
+    threads: 1
+    conda:
+        "../envs/genome_qc.yml"
+    shell:
+        "quast.py -o {output.out_dir} --threads {threads} --min-contig 0 -L {input}"
 
 
 rule multiqc_quast:
