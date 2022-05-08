@@ -9,7 +9,9 @@ rule quast_megahit:
     conda:
         "../envs/genome_qc.yml"
     shell:
-        "quast.py -o {output.out_dir} --threads {threads} --min-contig 0 -L {input}"
+        """
+        quast.py -o {output.out_dir} --threads {threads} --min-contig 0 -L {input}
+        """
 
 
 rule quast_spades:
@@ -17,12 +19,14 @@ rule quast_spades:
         scaffolds="results/spades_out/{sample}/scaffolds.fasta"
     output:
         out_dir=directory("results/quast_out/spades/{sample}"),
-        report="results/quast_out/quast/{sample}/report.html"
+        report="results/quast_out/spades/{sample}/report.html"
     threads: 1
     conda:
         "../envs/genome_qc.yml"
     shell:
-        "quast.py -o {output.out_dir} --threads {threads} --min-contig 0 -L {input}"
+        """
+        quast.py -o {output.out_dir} --threads {threads} --min-contig 0 -L {input}
+        """
 
 
 rule multiqc_quast:
