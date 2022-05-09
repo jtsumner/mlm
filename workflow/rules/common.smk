@@ -80,11 +80,11 @@ def get_rules(wildcards):
                 )
 
     if config["METABAT2"]:
-        metabat2_results = expand(
-            "results/metabat_{assembler}_out/{sample}/bins/bin.1.fa", 
+        metabat2_results = directory(expand(
+            "results/metabat_{assembler}_out/{sample}/bins/", 
             assembler=ASSEMBLER, #["megahit", "spades"]
             sample=samples["sample"]
-        )
+        ))
         all_rules = all_rules + metabat2_results
 
     return all_rules

@@ -80,8 +80,8 @@ rule metabat_bin:
         contigs = "results/{assembler}_parsed/{sample}/{sample}.parsed_assembly.fa",
         depth_fi = "results/metabat_{assembler}_out/{sample}/{sample}_depth.txt"
     output:
-        bin_dir = directory("results/metabat_{assembler}_out/{sample}/bins"),
-        bin_one = "results/metabat_{assembler}_out/{sample}/bins/bin.1.fa"
+        bin_dir = directory("results/metabat_{assembler}_out/{sample}/bins")
+        #bin_one = "results/metabat_{assembler}_out/{sample}/bins/bin.1.fa"
     conda:
         "../envs/metabat2.yml"
     threads: 20
