@@ -15,7 +15,7 @@ default-resources:
   - nodes=1
   - mem="5G"
   - time="01:00:00"
-jobs: 10
+jobs: 60
 restart-times: 1
 max-jobs-per-second: 10
 max-status-checks-per-second: 1

@@ -1,9 +1,9 @@
 #! /bin/bash
 #SBATCH -A b1042
 #SBATCH --job-name="scheduler"
-#SBATCH -t 04:00:00
+#SBATCH -t 20:00:00
 #SBATCH -N 1
-#SBATCH -n 1
+#SBATCH -n 2
 #SBATCH -p genomics
 #SBATCH --mem=8gb
 #SBATCH --mail-type=ALL
