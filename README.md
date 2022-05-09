@@ -89,23 +89,17 @@ snakemake --version
 
 1. Move data into the `data/` subdirectory
 
-2. Go into the data/ subdirectory and use the `prep_sample_sheet.sh` script to prepare a sample sheet
+2. From the mlm base directory (mlm or metagenomics-snsakemake), use the `prep_sample_sheet.py` script in the `workflow/scripts` subdirectory to prepare a sample sheet. It will automatically create a file called `sample_sheet.tsv` in the `config/` subdirect E.g.,
 
 ```
-cd data/
-../workflow/scripts/prep_sample_sheet.sh 
+python3 workflow/scripts/prep_sample_sheet.py --delimiter="_S"
 ```
 
-3. Move the output file into the config folder and confirm in config.yaml file that the samples option is correctly set to that file name
+3. Configure the **cluster config** file. Adjust the `account` and `partition` setting under `default-resources` to fit your cluster. Note that the current cluster configurations is a basic setup for SLURM on Quest that's based on this [blog](https://fame.flinders.edu.au/blog/2021/08/02/snakemake-profiles-updated)
 
-```
-mv samples_minimal.tsv ../congfig/samples_minimal.tsv
-```
-
-4. Configure the **cluster config** file. Adjust the `account` and `partition` setting under `default-resources` to fit your cluster. Note that the current cluster configurations is a basic setup for SLURM on Quest that's based on this [blog](https://fame.flinders.edu.au/blog/2021/08/02/snakemake-profiles-updated)
-
-5. Open the Snakefile and adjust the rule all output to fit your desired output. 
-6. [Configure](#configuration-settings) the general snakemake config `config/config.yaml` so that rules you want to execute are set to `True` and rules you do not want to execute are set to `False`. E.g., The following lines will assembl and perform metaphlan read-based analysis, but won't execute metabat2 binning. 
+4. Open the Snakefile and adjust the rule all output to fit your desired output. 
+   
+5. [Configure](#configuration-settings) the general snakemake config `config/config.yaml` so that rules you want to execute are set to `True` and rules you do not want to execute are set to `False`. E.g., The following lines will assembl and perform metaphlan read-based analysis, but won't execute metabat2 binning. 
 
 ```
 FASTQC: True

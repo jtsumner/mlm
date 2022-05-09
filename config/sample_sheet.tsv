@@ -1,0 +1,5 @@
+sample	dataset	forward_read	reverse_read
+DNA_B01_01	MGX_DATA	data/Batch_01/DNA_B01_01_S1_L001_R1_001.fastq.gz	data/Batch_01/DNA_B01_01_S1_L001_R2_001.fastq.gz
+DNA_B01_03	MGX_DATA	data/Batch_01/DNA_B01_03_S3_L001_R1_001.fastq.gz	data/Batch_01/DNA_B01_03_S3_L001_R2_001.fastq.gz
+B01_community_standard_10_ng	MGX_DATA	data/Batch_01/B01_community_standard_10_ng_S28_L001_R1_001.fastq.gz	data/Batch_01/B01_community_standard_10_ng_S28_L001_R2_001.fastq.gz
+DNA_B01_02	MGX_DATA	data/Batch_01/DNA_B01_02_S2_L001_R1_001.fastq.gz	data/Batch_01/DNA_B01_02_S2_L001_R2_001.fastq.gz
