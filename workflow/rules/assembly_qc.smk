@@ -33,12 +33,13 @@ rule multiqc_quast:
     input:
         quast_reports = multiqc_quast_input
     output:
-        out_dir=directory("results/quast_out/multiqc"),
-        multiqc_report = "results/quast_out/multiqc/multiqc_report.html"
+        multiqc_report = "results/quast_out/multiqc_report.html"
+    params:
+        out_dir="results/quast_out"
     shell:
         """
         module load multiqc
-        multiqc --outdir {output.out_dir} results/quast_out/
+        multiqc --outdir {params.out_dir} --dirs --dirs-depth 2 results/quast_out/
         """
 
 rule drop_short_contigs:

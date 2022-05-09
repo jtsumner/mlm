@@ -76,7 +76,7 @@ def get_rules(wildcards):
                 sample=samples["sample"]
             )
         if config["SPADES"] or config["MEGAHIT"]:
-            all_rules.append("results/quast_out/multiqc/multiqc_report.html")
+            all_rules.append("results/quast_out/multiqc_report.html")
 
 
 
