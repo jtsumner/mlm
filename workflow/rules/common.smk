@@ -81,12 +81,14 @@ def get_rules(wildcards):
 
     if config["METABAT2"]:
         metabat2_results = expand(
-            "results/{dataset}/assembly/megahit_g1000/metabat2/{sample}/bins/bin.1.fa", 
+            "results/metabat_{assembler}_out/{sample}/bins/bin.1.fa", 
+            assembler=ASSEMBLER, #["megahit", "spades"]
             sample=samples["sample"]
         )
         all_rules = all_rules + metabat2_results
 
     return all_rules
+
 
 # Helper functions for getting initial reads
 def get_read_path_v2(wildcards):
@@ -101,6 +103,7 @@ def get_r1(wildcards):
 def get_r2(wildcards):
     tmp = get_read_path_v2(wildcards)
     return tmp["reverse_read"]
+
 
 # Helper functions for configuring quast multiqc input 
 def get_multiqc_quast_input(wildcards):
