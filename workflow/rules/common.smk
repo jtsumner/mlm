@@ -64,10 +64,6 @@ def get_rules(wildcards):
                 "results/megahit_out/{sample}/{sample}.contigs.fa", 
                 sample=samples["sample"]
             )
-            all_rules = all_rules + expand(
-                "results/megahit_parsed/{sample}/{sample}.parsed_contigs.fa", 
-                sample=samples["sample"]
-            )
 
         if config["SPADES"]:
             all_rules = all_rules + expand(
@@ -77,6 +73,11 @@ def get_rules(wildcards):
             
         if config["SPADES"] or config["MEGAHIT"]:
             all_rules.append("results/quast_out/multiqc_report.html")
+            all_rules = all_rules + expand(
+                "results/{assembler}_parsed/{sample}/{sample}.parsed_assembly.fa", 
+                sample=samples["sample"],
+                assembler=ASSEMBLER #["megahit", "spades"]
+                )
 
     if config["METABAT2"]:
         metabat2_results = expand(
@@ -102,7 +103,7 @@ def get_r2(wildcards):
     return tmp["reverse_read"]
 
 # Helper functions for configuring quast multiqc input 
-def multiqc_quast_input(wildcards):
+def get_multiqc_quast_input(wildcards):
     if config["MEGAHIT"] and config["SPADES"]:
         quast_reports = expand(
             "results/quast_out/{assembler}/{sample}/report.html", 
@@ -124,7 +125,8 @@ def multiqc_quast_input(wildcards):
         return quast_reports
     else:
         print("CHECK that at least one assembler is set to True in config.yaml")
-    
+
+
 # Parse config file to set select assembler options as wildcard list
 def get_assemblers():
     if config["MEGAHIT"] and config["SPADES"]:

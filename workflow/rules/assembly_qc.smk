@@ -33,7 +33,7 @@ rule quast_spades:
 
 rule multiqc_quast:
     input:
-        quast_reports = multiqc_quast_input
+        quast_reports = get_multiqc_quast_input
     output:
         multiqc_report = "results/quast_out/multiqc_report.html"
     params:
@@ -45,11 +45,22 @@ rule multiqc_quast:
         """
 
 
-rule drop_short_contigs:
+rule drop_short_contigs_megahit:
     input:
         "results/megahit_out/{sample}/{sample}.contigs.fa"
     output:
-        "results/megahit_parsed/{sample}/{sample}.parsed_contigs.fa"
+        "results/megahit_parsed/{sample}/{sample}.parsed_assembly.fa"
+    conda:
+        "../envs/seq_processing.yml"
+    script:
+        "../scripts/parse_contigs.py"
+
+
+rule drop_short_contigs_spades:
+    input:
+        "results/spades_out/{sample}/scaffolds.fasta"
+    output:
+        "results/spades_parsed/{sample}/{sample}.parsed_assembly.fa"
     conda:
         "../envs/seq_processing.yml"
     script:
