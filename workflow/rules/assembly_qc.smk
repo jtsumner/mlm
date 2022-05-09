@@ -53,6 +53,4 @@ rule drop_short_contigs:
     conda:
         "../envs/seq_processing.yml"
     script:
-        """
-        ../scripts/parse_contigs.py
-        """
+        "../scripts/parse_contigs.py"
