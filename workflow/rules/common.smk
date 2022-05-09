@@ -65,14 +65,16 @@ def get_rules(wildcards):
                 sample=samples["sample"]
             )
             all_rules = all_rules + expand(
-                "results/megahit_parsed/{sample}.parsed_contigs.fa", 
+                "results/megahit_parsed/{sample}/{sample}.parsed_contigs.fa", 
                 sample=samples["sample"]
             )
+
         if config["SPADES"]:
             all_rules = all_rules + expand(
                 "results/spades_out/{sample}/scaffolds.fasta", 
                 sample=samples["sample"]
             )
+            
         if config["SPADES"] or config["MEGAHIT"]:
             all_rules.append("results/quast_out/multiqc_report.html")
 

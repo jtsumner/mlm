@@ -44,14 +44,15 @@ rule multiqc_quast:
         multiqc --outdir {params.out_dir} --dirs --dirs-depth 2 results/quast_out/
         """
 
+
 rule drop_short_contigs:
     input:
         "results/megahit_out/{sample}/{sample}.contigs.fa"
     output:
-        "results/megahit_parsed/{sample}.parsed_contigs.fa"
+        "results/megahit_parsed/{sample}/{sample}.parsed_contigs.fa"
     conda:
         "../envs/seq_processing.yml"
     script:
         """
-        scripts/parse_contigs.py
+        ../scripts/parse_contigs.py
         """
