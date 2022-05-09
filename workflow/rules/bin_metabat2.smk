@@ -9,7 +9,7 @@ rule index_contigs:
     input:
         "results/{assembler}_parsed/{sample}/{sample}.parsed_assembly.fa"
     output:
-        "results/{assembler}_parsed/{sample}/{sample}.parsed_assembly.bwt"
+        "results/{assembler}_parsed/{sample}/{sample}.parsed_assembly.fa.bwt"
     shell:
         """
         module load bwa/0.7.17
@@ -24,12 +24,12 @@ rule map2contigs:
         r1_clean = "results/bwa_out/{sample}/{sample}.fastp_bwa.r1.fastq",
         r2_clean = "results/bwa_out/{sample}/{sample}.fastp_bwa.r2.fastq",
         parsed_contigs = "results/{assembler}_parsed/{sample}/{sample}.parsed_assembly.fa",
-        index = "results/{assembler}_parsed/{sample}/{sample}.parsed_assembly.bwt"
+        index = "results/{assembler}_parsed/{sample}/{sample}.parsed_assembly.fa.bwt"
     output:
-        bam_sorted = "results/{assembler}_bams/{sample}/{sample}.mapped.sorted.bam"
+        bam_sorted = "results/{assembler}_bams/{sample}/{sample}.sorted.bam"
     params:
-        sam = "results/{assembler}_bams/{sample}/{sample}.mapped.sam",
-        bam_unsorted = "results/{assembler}_bams/{sample}/{sample}.mapped.bam",
+        sam = "results/{assembler}_bams/{sample}/{sample}.sam",
+        bam_unsorted = "results/{assembler}_bams/{sample}/{sample}.bam",
     threads: 20
     shell:
         """
@@ -44,9 +44,9 @@ rule map2contigs:
 
 rule index_bam:
     input:
-        bam_sorted = "results/{assembler}_bams/{sample}/{sample}.mapped.sorted.bam"
+        bam_sorted = "results/{assembler}_bams/{sample}/{sample}.sorted.bam"
     output:
-        bam_index = "results/{assembler}_bams/{sample}/{sample}.mapped.sorted.bam.bai"
+        bam_index = "results/{assembler}_bams/{sample}/{sample}.sorted.bam.bai"
     shell:
         """
         module load samtools/1.10.1
@@ -57,9 +57,9 @@ rule index_bam:
 
 rule metabat_depth:
     input:
-        bam_sorted = "results/{assembler}_bams/{sample}/{sample}.mapped.sorted.bam",
+        bam_sorted = "results/{assembler}_bams/{sample}/{sample}.sorted.bam",
         contigs = "results/{assembler}_parsed/{sample}/{sample}.parsed_assembly.fa",
-        bam_index = "results/{assembler}_bams/{sample}/{sample}.mapped.sorted.bam.bai"
+        bam_index = "results/{assembler}_bams/{sample}/{sample}.sorted.bam.bai"
     output:
         depth_fi = "results/metabat_{assembler}_out/{sample}/{sample}_depth.txt"
     conda:
