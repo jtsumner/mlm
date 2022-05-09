@@ -30,7 +30,7 @@ rule map2contigs:
     params:
         sam = "results/{assembler}_bams/{sample}/{sample}.sam",
         bam_unsorted = "results/{assembler}_bams/{sample}/{sample}.bam",
-    threads: 20
+    threads: 15
     shell:
         """
         module purge all
@@ -64,7 +64,7 @@ rule metabat_depth:
         depth_fi = "results/metabat_{assembler}_out/{sample}/{sample}_depth.txt"
     conda:
         "../envs/metabat2.yml"
-    threads: 20
+    threads: 10
     shell:
         """
         jgi_summarize_bam_contig_depths \
@@ -84,12 +84,15 @@ rule metabat_bin:
         #bin_one = "results/metabat_{assembler}_out/{sample}/bins/bin.1.fa"
     conda:
         "../envs/metabat2.yml"
-    threads: 20
+    threads: 10
+    resources:
+        mem="10g",
     shell:
         """
         metabat2 -t {threads} \
         --inFile {input.contigs} \
         --outFile {output.bin_dir}/bin \
+        --minContig 1000 \
         --abdFile {input.depth_fi}
         """
     
