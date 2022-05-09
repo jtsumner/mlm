@@ -1,0 +1,69 @@
+---
+title: "Stacked Barplot from Metaphlan Analysis on Metagenomics Data"
+output:
+  html_document:
+    df_print: paged
+---
+
+
+```{r}
+library(tidyverse)
+library(readxl)
+library(ggplot2)
+library(ggpubr)
+library(cowplot)
+library(ggbreak) 
+library(ggprism)
+```
+
+```{r}
+mpa <- read_tsv(
+  "../../results/metaphlan_merged/merged_metaphlan_profile_genus.tsv"
+  )
+```
+```{r}
+mpa_clean <- mpa %>% 
+  pivot_longer(cols = 2:last_col(), names_to="Sample", values_to="Abundance") %>%
+  rename(Genus = "sample") %>%
+  separate(Sample, into="Sample", sep=".metaphlan_profile", extra = "drop") %>%
+  group_by(Genus) %>% 
+  mutate(sum_gen = sum(Abundance)) %>%
+  filter(sum_gen > 0) %>%
+  select(!sum_gen) %>%
+  mutate(Genus = replace(Genus, Genus == "UNKNOWN", NA))
+
+mpa_clean %>% select(Genus) %>% unique()
+```
+
+```{r}
+p1 <- ggplot(mpa_clean, aes(x=Sample, y=Abundance, fill=Genus)) +
+  geom_bar(color="black", stat="identity", position="fill") +
+  ylab("Relative Abundance") +
+  ggtitle("Shotgun Metagenomics: Metaphlan Profile") + 
+  theme_pubclean() + 
+  rotate_x_text()
+
+
+p1 + theme(legend.position="none")
+```
+```{r}
+get_separate_legend <- function(a_ggplot){
+  a_legend <- cowplot::get_legend(p1)
+  as_ggplot(a_legend)
+}
+
+p1_legend <- get_separate_legend(p1)
+
+```
+
+```{r}
+ggsave("../../results/ggplot_out/mlm_boxplot.pdf", p1+ theme(legend.position="none"), 
+       width = 10, height=4, units = "in")
+
+ggsave("../../results/ggplot_out/mlm_boxplot_legend.pdf", p1_legend,
+       width = 15, height=15, units = "in")
+
+```
+
+
+
