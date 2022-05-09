@@ -35,8 +35,9 @@ This is a snakemake pipeline is designed to automate common components of shotgu
 
 **TODO**
 * write new prep_sample_sheet helper script for updated path-based execution
-* re-test megahit + spades functionality
-* come up with fun name/acronym
+* check metabat
+* integrate visualizations + comparisons
+* add 
 * probably more stuff 
 
 -------------
@@ -255,6 +256,7 @@ metabat2 -t {threads} \
 * python v3.7
 * quast v5.0.2
 * samtools v1.10.1
+* spades v3.14.1
 
 to add and/or deprecated:
 * kaiju v1.8.0

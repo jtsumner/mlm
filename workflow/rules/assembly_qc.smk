@@ -5,12 +5,14 @@ rule quast_megahit:
     output:
         out_dir=directory("results/quast_out/megahit/{sample}"),
         report="results/quast_out/megahit/{sample}/report.html"
+    params:
+        out_dir="results/quast_out/megahit/{sample}"
     threads: 1
     conda:
         "../envs/genome_qc.yml"
     shell:
         """
-        quast.py -o {output.out_dir} --threads {threads} --min-contig 0 -L {input}
+        quast.py -o {params.out_dir} --threads {threads} --min-contig 0 -L {input}
         """
 
 
@@ -18,16 +20,16 @@ rule quast_spades:
     input:
         scaffolds="results/spades_out/{sample}/scaffolds.fasta"
     output:
-        out_dir=directory("results/quast_out/spades/{sample}"),
         report="results/quast_out/spades/{sample}/report.html"
+    params:
+        out_dir="results/quast_out/spades/{sample}"
     threads: 1
     conda:
         "../envs/genome_qc.yml"
     shell:
         """
-        quast.py -o {output.out_dir} --threads {threads} --min-contig 0 -L {input}
+        quast.py -o {params.out_dir} --threads {threads} --min-contig 0 -L {input}
         """
-
 
 rule multiqc_quast:
     input:
@@ -46,8 +48,10 @@ rule drop_short_contigs:
     input:
         "results/megahit_out/{sample}/{sample}.contigs.fa"
     output:
-        "results/megahit_out/megahit_g1000/{sample}.megahit_g1000.fa"
+        "results/megahit_parsed/{sample}.parsed_contigs.fa"
     conda:
         "../envs/seq_processing.yml"
     script:
-        "scripts/parse_contigs.py"
+        """
+        scripts/parse_contigs.py
+        """

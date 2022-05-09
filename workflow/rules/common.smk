@@ -1,13 +1,8 @@
 from snakemake.utils import validate
 import pandas as pd
 
-# this container defines the underlying OS for each job when using the workflow
-# with --use-conda --use-singularity
 
-samples = pd.read_csv(config["samples"], sep="\t").set_index("sample", drop=False)
-samples.index.names = ["sample"]
-
-
+# Parse config file to determine output for rule all 
 def get_rules(wildcards):
     all_rules = []
     if config["FASTQC"]:
@@ -69,7 +64,10 @@ def get_rules(wildcards):
                 "results/megahit_out/{sample}/{sample}.contigs.fa", 
                 sample=samples["sample"]
             )
-
+            all_rules = all_rules + expand(
+                "results/megahit_parsed/{sample}.parsed_contigs.fa", 
+                sample=samples["sample"]
+            )
         if config["SPADES"]:
             all_rules = all_rules + expand(
                 "results/spades_out/{sample}/scaffolds.fasta", 
@@ -77,8 +75,6 @@ def get_rules(wildcards):
             )
         if config["SPADES"] or config["MEGAHIT"]:
             all_rules.append("results/quast_out/multiqc_report.html")
-
-
 
     if config["METABAT2"]:
         metabat2_results = expand(
@@ -89,7 +85,7 @@ def get_rules(wildcards):
 
     return all_rules
 
-
+# Helper functions for getting initial reads
 def get_read_path_v2(wildcards):
     return samples.loc[wildcards.sample, ["sample", "dataset", "forward_read", "reverse_read"]].dropna()
 
@@ -103,12 +99,13 @@ def get_r2(wildcards):
     tmp = get_read_path_v2(wildcards)
     return tmp["reverse_read"]
 
+# Helper functions for configuring quast multiqc input 
 def multiqc_quast_input(wildcards):
     if config["MEGAHIT"] and config["SPADES"]:
         quast_reports = expand(
             "results/quast_out/{assembler}/{sample}/report.html", 
             sample=samples["sample"],
-            assembler=["megahit", "spades"]
+            assembler=ASSEMBLER #["megahit", "spades"]
             )
         return quast_reports
     elif config["MEGAHIT"] ^ config["SPADES"]:
@@ -125,3 +122,22 @@ def multiqc_quast_input(wildcards):
         return quast_reports
     else:
         print("CHECK that at least one assembler is set to True in config.yaml")
+    
+# Parse config file to set select assembler options as wildcard list
+def get_assemblers():
+    if config["MEGAHIT"] and config["SPADES"]:
+        ASSEMBLER = ["megahit", "spades"]
+    elif config["MEGAHIT"] ^ config["SPADES"]:
+            if config["MEGAHIT"]:
+                ASSEMBLER = ["megahit"]
+            elif config["SPADES"]:
+                ASSEMBLER = ["megahit"]
+    return ASSEMBLER
+
+
+samples = pd.read_csv(config["samples"], sep="\t").set_index("sample", drop=False)
+samples.index.names = ["sample"]
+
+ASSEMBLER = get_assemblers()
+print("Pipeline set to use the following assmbler(s): {}". format(ASSEMBLER))
+print(samples)
