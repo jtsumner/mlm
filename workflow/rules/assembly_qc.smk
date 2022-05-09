@@ -38,7 +38,7 @@ rule multiqc_quast:
     shell:
         """
         module load multiqc
-        multiqc --outdir {output.out_dir} {input.quast_reports}
+        multiqc --outdir {output.out_dir} results/quast_out/
         """
 
 rule drop_short_contigs:
