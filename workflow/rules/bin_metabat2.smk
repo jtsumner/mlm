@@ -29,8 +29,12 @@ rule map2contigs:
         bam_sorted = "results/{assembler}_bams/{sample}/{sample}.sorted.bam"
     params:
         sam = "results/{assembler}_bams/{sample}/{sample}.sam",
-        bam_unsorted = "results/{assembler}_bams/{sample}/{sample}.bam",
+        bam_unsorted = "results/{assembler}_bams/{sample}/{sample}.bam"
+    benchmark:
+        "logs/benchmarks/{assembler}_{sample}.map2contigs_benchmark.txt"
     threads: 15
+    resources:
+        mem=""
     shell:
         """
         module purge all
@@ -84,16 +88,19 @@ rule metabat_bin:
         #bin_one = "results/metabat_{assembler}_out/{sample}/bins/bin.1.fa"
     conda:
         "../envs/metabat2.yml"
-    threads: 10
+    threads: 5
     resources:
         mem="10g",
+        time="00:30:00"
     shell:
         """
         metabat2 -t {threads} \
-        --inFile {input.contigs} \
-        --outFile {output.bin_dir}/bin \
-        --minContig 1000 \
-        --abdFile {input.depth_fi}
+            --inFile {input.contigs} \
+            --outFile {output.bin_dir}/bin \
+            --minContig 1500 \
+            --abdFile {input.depth_fi} \
+            --seed=100 \
+            --unbinned
         """
     
 
