@@ -37,12 +37,10 @@ parser.add_argument("--absolute_path",
                     choices=[True, False])
 parser.add_argument("--r1_common", 
                     help="Naming convention to distinguish between R1/R2 in PE fastq files. Typically 'R1_001' if raw reads from illumina",
-                    default="R1_001",
-                    choices=[True, False])
+                    default="R1_001")
 parser.add_argument("--r2_common", 
                     help="Naming convention to distinguish between R1/R2 in PE fastq files. Typically 'R2_001' if raw reads from illumina",
-                    default="R2_001",
-                    choices=[True, False])
+                    default="R2_001")
 parser.add_argument("--dataset", 
                     help="Dataset Name",
                     default="MGX_DATA"
