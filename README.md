@@ -34,10 +34,10 @@ Welcome to Muti-Level Metagenomics (not to be confused with Multi-Level Marketin
 This is a snakemake pipeline is designed to automate common components of shotgun metagenomic data analysis. Briefly, reads are trimmed, deconvoluted (- human), taxnomically defined, assembled, binned, and annotated. Further optimization is neccessary and functional components of metagenomic analysis have yet to be integrated. 
 
 **TODO**
-* write new prep_sample_sheet helper script for updated path-based execution
+* Update prep_sample_sheet.py so it sorts samples into alphanumeric order
 * check metabat
 * integrate visualizations + comparisons
-* add 
+* annas mamba2.yml file and update installation parameters 
 * probably more stuff 
 
 -------------
@@ -66,17 +66,21 @@ Tested versions for base conda software environment:
 * mamba 0.15.3
 * conda 4.10.3
 
-1. Create a new environment to install mamba and snakemake into
+1. If you have not already installed conda, install it hereCreate a new environment to install mamba and snakemake into.
 
 ```
-conda env create --name mamba -c conda-forge python3=3.8 mamba
+conda create --name mamba -c conda-forge  
+
 ```
 
 2. Activate the new conda environment and install snakemake using mamba
 
 ```
 conda activate mamba
-mamba install -c bioconda -c conda-forge snakemake=7.3.8
+conda install -c conda-forge python=3.9
+conda install -c conda-forge mamba=0.15.3
+conda install -c conda-forge -c bioconda ssnakemake=7.3.8
+#mamba install -c bioconda -c conda-forge snakemake=7.3.8
 ```
 
 3. Confirm that snakeake has installed.
