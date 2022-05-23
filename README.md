@@ -2,7 +2,7 @@
 
 Is a user-friendly, automated metagenomics pipeline the key to making your life as a bioinformatician easier? Do you still want some choice in which tools you use for each analysis step rather a rigid selection of pre-determined tools that other pipelines use? Well look no further!
 
-Welcome to Muti-Level Metagenomics (not to be confused with Multi-Level Marketing), a flexible analysis pipeline designed to handle various metagenomics data types and analyses steps. Use MLM's flexible, low-free configuration settings to choose from multiple tools at each major step in the analysis. Yes, you heard that right: you can use the MLM pipeline to make your own pipeline. Answer the question closest to your heart. Like, is this a pipeline, or a pyramid scheme?  
+Welcome to Muti-Level Metagenomics (not to be confused with Multi-Level Marketing), a flexible snakemake workflow designed to handle various metagenomics data types and analyses steps. Use MLM's flexible, high-level configuration settings to choose from multiple tools at each major step in the analysis. Yes, you heard that right: you can use the MLM pipeline to make your own pipeline that answers the questions closest to your heart. Like, is this a pipeline, or a pyramid scheme?  
 
 **UNDER ACTIVE DEVELOPMENT** :) Use at you own risk...
 
@@ -23,6 +23,9 @@ Welcome to Muti-Level Metagenomics (not to be confused with Multi-Level Marketin
 - [Notes on snakemake](#notes-on-snakemake)
 - [Getting Started](#getting-started)
 	- [Installation](#installation)
+		- [STEP 1: Clone Repository](#step-1-clone-repository)
+		- [STEP 2: (OPTION 1) Conda Install from .yaml file](#step-2-option-1-conda-install-from-yaml-file)
+		- [STEP 2: (OPTION 2) Manual Conda Install](#step-2-option-2-manual-conda-install)
 	- [Setup](#setup)
 	- [Execution](#execution)
 - [Pipeline Contents](#pipeline-contents)
@@ -64,30 +67,53 @@ snakemake --forceall --rulegraph | dot -Tpdf > dag.pdf
 Tested versions for base conda software environment:
 * snakemake version 7.3.8 
 * mamba 0.15.3
-* conda 4.10.3
+* anaconda 4.10.3
+### STEP 1: Clone Repository
+1. Clone the MLM repository and move into the freshly cloned directory
+	
+	```
+	git clone https://github.com/jtsumner/mlm.git
+	cd mlm
+	```
 
-1. If you have not already installed conda, install it hereCreate a new environment to install mamba and snakemake into.
+### STEP 2: (OPTION 1) Conda Install from .yaml file
+1. (Optional) if you are on an HPC (i.e., quest), load the anaconda or miniconda module
+   
+	```
+	module load python-miniconda3/4.12.0
+	```
 
-```
-conda create --name mamba -c conda-forge  
+2. Create a new conda environment based on the mamba yaml file located in `workflow/envs/mamba.yml`
 
-```
+	```
+	conda install -f workflow/envs/mamba.yml
+	```
+
+3. The base environment with snakemake and mamba should now be available using `source activate mamba`
+
+### STEP 2: (OPTION 2) Manual Conda Install
+
+1. Create a new conda environment to install mamba and snakemake. If you have not already installed conda, install it using the documentatio found [here](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html).
+
+	```
+	conda create --name mamba -c conda-forge -c bioconda
+	```
 
 2. Activate the new conda environment and install snakemake using mamba
 
-```
-conda activate mamba
-conda install -c conda-forge python=3.9
-conda install -c conda-forge mamba=0.15.3
-conda install -c conda-forge -c bioconda ssnakemake=7.3.8
-#mamba install -c bioconda -c conda-forge snakemake=7.3.8
-```
+	```
+	conda activate mamba
+	conda install -c conda-forge python=3.9
+	conda install -c conda-forge mamba=0.15.3
+	conda install -c conda-forge -c bioconda ssnakemake=7.3.8
+	#mamba install -c bioconda -c conda-forge snakemake=7.3.8
+	```
 
 3. Confirm that snakeake has installed.
 
-```
-snakemake --version
-```
+	```
+	snakemake --version
+	```
 
 ## Setup
 
@@ -95,9 +121,9 @@ snakemake --version
 
 2. From the mlm base directory (mlm or metagenomics-snsakemake), use the `prep_sample_sheet.py` script in the `workflow/scripts` subdirectory to prepare a sample sheet. It will automatically create a file called `sample_sheet.tsv` in the `config/` subdirect E.g.,
 
-```
-python3 workflow/scripts/prep_sample_sheet.py --delimiter="_S"
-```
+	```
+	python3 workflow/scripts/prep_sample_sheet.py --delimiter="_S"
+	```
 
 3. Configure the **cluster config** file. Adjust the `account` and `partition` setting under `default-resources` to fit your cluster. Note that the current cluster configurations is a basic setup for SLURM on Quest that's based on this [blog](https://fame.flinders.edu.au/blog/2021/08/02/snakemake-profiles-updated)
 
@@ -105,30 +131,28 @@ python3 workflow/scripts/prep_sample_sheet.py --delimiter="_S"
    
 5. [Configure](#configuration-settings) the general snakemake config `config/config.yaml` so that rules you want to execute are set to `True` and rules you do not want to execute are set to `False`. E.g., The following lines will assembl and perform metaphlan read-based analysis, but won't execute metabat2 binning. 
 
-```
-FASTQC: True
-TRIM_READS: True
-DECONVOLUTE: True
-METAPHLAN: True
-ASSEMBLE: True
-METABAT2: False
-```
+	```
+	FASTQC: True
+	TRIM_READS: True
+	DECONVOLUTE: True
+	METAPHLAN: True
+	ASSEMBLE: True
+	METABAT2: False
+	```
 
 ## Execution
 
 1. (Optional) Check that snakemake is correctly interpretting your sample spreadsheet by executing a dryrun or one of the commands in the notes above
 
-```
-snakemake --dry-run
-```
+	```
+	snakemake --dry-run
+	```
 
-2. In the base snakemake/project directory, use the `run_snakemake.sh` file to submit the snakemake scheduler as a job to slurm 
+2. In the base snakemake/project directory, use the `run_snakemake.sh` file to submit the snakemake scheduler as a job to slurm. (Alternatively, you can run an interactive job snakeake via command line for troubleshooting)
 
-```
-sbatch run_snakeake.sh
-```
-
-alternatively, you can run an interactive and execute the contents of the `run_snakemake.sh` file if you are running into challenges with slurm
+	```
+	sbatch run_snakeake.sh
+	```
 
 3. wait for data :)
 (hopefully)
