@@ -1,4 +1,4 @@
-name: mamba
+name: mamba_v2
 channels:
   - conda-forge
   - bioconda

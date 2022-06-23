@@ -86,7 +86,7 @@ Tested versions for base conda software environment:
 2. Create a new conda environment based on the mamba yaml file located in `workflow/envs/mamba.yml`
 
 	```
-	conda install -f workflow/envs/mamba.yml
+	conda create --file workflow/envs/mamba.yml
 	```
 
 3. The base environment with snakemake and mamba should now be available using `source activate mamba`

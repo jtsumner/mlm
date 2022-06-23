@@ -29,7 +29,7 @@ Loading conda...
 # Load Conda Environment with Snakemake
 module purge all
 module load anaconda3
-source activate mamba
+source activate mamba_v2
 
 # Execute snakemake
 echo "Starting snakemake on cluster..."
