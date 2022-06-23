@@ -1,4 +1,3 @@
 sample	dataset	forward_read	reverse_read
 NTM00644	MGX_DATA	data/NTM00644_S58_R1_001.fastq.gz	data/NTM00644_S58_R2_001.fastq.gz
 NTM00399	MGX_DATA	data/NTM00399_S73_R1_001.fastq.gz	data/NTM00399_S73_R2_001.fastq.gz
-NTM00014	MGX_DATA	data/NTM00014_S55_R1_001.fastq.gz	data/NTM00014_S55_R2_001.fastq.gz
