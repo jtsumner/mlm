@@ -28,8 +28,8 @@ Loading conda...
 
 # Load Conda Environment with Snakemake
 module purge all
-module load anaconda3
-source activate mamba_v2
+module load python-miniconda3/4.12.0
+source activate snakemamba
 
 # Execute snakemake
 echo "Starting snakemake on cluster..."
