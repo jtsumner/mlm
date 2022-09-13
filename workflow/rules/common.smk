@@ -146,5 +146,5 @@ samples = pd.read_csv(config["samples"], sep="\t").set_index("sample", drop=Fals
 samples.index.names = ["sample"]
 
 ASSEMBLER = get_assemblers()
-print("Pipeline set to use the following assmbler(s): {}". format(ASSEMBLER))
-print(samples)
+#print("Pipeline set to use the following assmbler(s): {}". format(ASSEMBLER))
+#print(samples)
