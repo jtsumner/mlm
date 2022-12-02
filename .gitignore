@@ -1,10 +1,15 @@
-# ignore all .fastq.gz files
+# ignore some file types
 *.fastq.gz
-.snakemake/*
+*.out
 .DS_Store
 dag.pdf 
-workflow/.snakemake/*
-# Ignore contents of data directory but keep gitkeep
+
+# Ignore directory or contents of directory
+.snakemake/
 data/*
-!data/.gitkeep
 logs/
+resources/*
+results/*
+
+# Exceptions
+!README.md
