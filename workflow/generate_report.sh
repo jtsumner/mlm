@@ -6,8 +6,9 @@
 #SBATCH -p short
 #SBATCH --mem-per-cpu=3gb
 
-module load anaconda3
-source activate snakemake
+module purge all
+module load python-miniconda3/4.12.0
+source activate snakemamba
 
 # Must be in microbiome-snakemake/workflow/ directory to execute
 cd $SLURM_SUBMIT_DIR
