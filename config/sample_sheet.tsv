@@ -54,7 +54,6 @@ NTM00995	MGX_DATA	/projects/p31750/cat_reads/NTM00995_cat_paired_1.fastq.gz	/pro
 SRR10744106	MGX_DATA	/projects/p31750/cat_reads/SRR10744106_1.fastq.gz	/projects/p31750/cat_reads/SRR10744106_2.fastq.gz
 SRR10744095	MGX_DATA	/projects/p31750/cat_reads/SRR10744095_1.fastq.gz	/projects/p31750/cat_reads/SRR10744095_2.fastq.gz
 NTM01460	MGX_DATA	/projects/p31750/cat_reads/NTM01460_cat_paired_1.fastq.gz	/projects/p31750/cat_reads/NTM01460_cat_paired_2.fastq.gz
-NTM01464	MGX_DATA	/projects/p31750/cat_reads/NTM01464_cat_paired_1.fastq.gz	/projects/p31750/cat_reads/NTM01464_cat_paired_2.fastq.gz
 SRR10744104	MGX_DATA	/projects/p31750/cat_reads/SRR10744104_1.fastq.gz	/projects/p31750/cat_reads/SRR10744104_2.fastq.gz
 NTM01163	MGX_DATA	/projects/p31750/cat_reads/NTM01163_cat_paired_1.fastq.gz	/projects/p31750/cat_reads/NTM01163_cat_paired_2.fastq.gz
 NTM00194	MGX_DATA	/projects/p31750/cat_reads/NTM00194_cat_paired_1.fastq.gz	/projects/p31750/cat_reads/NTM00194_cat_paired_2.fastq.gz
@@ -85,7 +84,6 @@ NTM00373	MGX_DATA	/projects/p31750/cat_reads/NTM00373_cat_paired_1.fastq.gz	/pro
 NTM00025	MGX_DATA	/projects/p31750/cat_reads/NTM00025_cat_paired_1.fastq.gz	/projects/p31750/cat_reads/NTM00025_cat_paired_2.fastq.gz
 NTM00175	MGX_DATA	/projects/p31750/cat_reads/NTM00175_cat_paired_1.fastq.gz	/projects/p31750/cat_reads/NTM00175_cat_paired_2.fastq.gz
 NTM00644	MGX_DATA	/projects/p31750/cat_reads/NTM00644_cat_paired_1.fastq.gz	/projects/p31750/cat_reads/NTM00644_cat_paired_2.fastq.gz
-NTM00067	MGX_DATA	/projects/p31750/cat_reads/NTM00067_cat_paired_1.fastq.gz	/projects/p31750/cat_reads/NTM00067_cat_paired_2.fastq.gz
 NTM00576	MGX_DATA	/projects/p31750/cat_reads/NTM00576_cat_paired_1.fastq.gz	/projects/p31750/cat_reads/NTM00576_cat_paired_2.fastq.gz
 NTM01029	MGX_DATA	/projects/p31750/cat_reads/NTM01029_cat_paired_1.fastq.gz	/projects/p31750/cat_reads/NTM01029_cat_paired_2.fastq.gz
 SRR10744121	MGX_DATA	/projects/p31750/cat_reads/SRR10744121_1.fastq.gz	/projects/p31750/cat_reads/SRR10744121_2.fastq.gz
@@ -125,3 +123,4 @@ NTM00978	MGX_DATA	/projects/p31750/cat_reads/NTM00978_cat_paired_1.fastq.gz	/pro
 NTM00436	MGX_DATA	/projects/p31750/cat_reads/NTM00436_cat_paired_1.fastq.gz	/projects/p31750/cat_reads/NTM00436_cat_paired_2.fastq.gz
 NTM00269	MGX_DATA	/projects/p31750/cat_reads/NTM00269_cat_paired_1.fastq.gz	/projects/p31750/cat_reads/NTM00269_cat_paired_2.fastq.gz
 NTM00281	MGX_DATA	/projects/p31750/cat_reads/NTM00281_cat_paired_1.fastq.gz	/projects/p31750/cat_reads/NTM00281_cat_paired_2.fastq.gz
+NTM01067	MGX_DATA	/projects/p31750/cat_reads/NTM01067_cat_paired_1.fastq.gz	/projects/p31750/cat_reads/NTM01067_cat_paired_2.fastq.gz

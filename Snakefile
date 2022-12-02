@@ -27,4 +27,4 @@ rule all:
 
 # Make report for snakemake. 
 
-report: "report/workflow.rst"
+report: "workflow/report/workflow.rst"
