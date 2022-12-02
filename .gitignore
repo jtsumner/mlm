@@ -3,6 +3,7 @@
 *.out
 .DS_Store
 dag.pdf 
+core.*
 
 # Ignore directory or contents of directory
 .snakemake/
