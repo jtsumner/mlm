@@ -34,7 +34,7 @@ rule map2contigs:
         "logs/benchmarks/{assembler}_{sample}.map2contigs_benchmark.txt"
     threads: 15
     resources:
-        mem="25G"
+        mem="40G"
     shell:
         """
         module purge all

@@ -4,6 +4,7 @@
 .DS_Store
 dag.pdf 
 core.*
+report.html
 
 # Ignore directory or contents of directory
 .snakemake/
