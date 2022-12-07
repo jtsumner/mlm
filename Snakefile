@@ -22,7 +22,10 @@ include: "workflow/rules/bin_metabat2.smk"
 
 rule all:
     input:
-        get_rules
+        get_rules,
+        "results/bowtie_out/B16_LyPMA/B16_LyPMA.fastp_bowtie.r1.fastq",
+        "results/bowtie_out/B16_LyPMA/B16_LyPMA.fastp_bowtie.r2.fastq"
+
 
 
 # Make report for snakemake. 

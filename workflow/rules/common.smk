@@ -6,12 +6,13 @@ import pandas as pd
 def get_rules(wildcards):
     all_rules = []
     if config["FASTQC"]:
-        all_rules = all_rules = all_rules + directory(
-            expand(
-                "results/fastqc_out/raw_qc/{sample}", 
-                sample=samples["sample"] 
-                )
-        )
+        pass
+#        all_rules = all_rules = all_rules + directory(
+#            expand(
+#                "results/fastqc_out/raw_qc/{sample}", 
+#                sample=samples["sample"] 
+#                )
+#        )
 
         if config["TRIM_READS"]:
             all_rules = all_rules = all_rules + expand(
@@ -23,7 +24,7 @@ def get_rules(wildcards):
                 sample=samples["sample"]
             )
 
-        if config["ASSEMBLE"]:
+        if config["DECONVOLUTE"]:
             all_rules = all_rules = all_rules + expand(
                 "results/fastqc_out/bwa_qc/{sample}/{sample}.fastp_bwa.r1_fastqc.html", 
                 sample=samples["sample"]
@@ -54,8 +55,10 @@ def get_rules(wildcards):
         )
 
     if config["METAPHLAN"]:
-        all_rules.append("results/metaphlan_merged/merged_metaphlan_hclust_species.png")
-        all_rules.append("results/metaphlan_merged/merged_metaphlan_hclust_genus.png")
+        all_rules.append("results/metaphlan_merged/merged_metaphlan_profile_species.tsv")
+        all_rules.append("results/metaphlan_merged/merged_metaphlan_profile_genus.tsv")
+        #all_rules.append("results/metaphlan_merged/merged_metaphlan_hclust_species.png")
+        #all_rules.append("results/metaphlan_merged/merged_metaphlan_hclust_genus.png")
         #all_rules.append("results/metaphlan_merged/merged_metaphlan_unifrac_matrix.txt")
 
     if config["ASSEMBLE"]:
