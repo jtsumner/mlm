@@ -92,11 +92,13 @@ rule qc_filter:
         sam = "results/bowtie_out/{sample}/{sample}.mapped.sam",
         bam = "results/bowtie_out/{sample}/{sample}.mapped.bam",
         sorted_bam = "results/bowtie_out/{sample}/{sample}.mapped.sorted.bam",
-        unmapped_bam = "results/bowtie_out/{sample}/{sample}.unmapped.bam"
-    threads: 20
+        unmapped_bam = "results/bowtie_out/{sample}/{sample}.unmapped.bam",
+        flagstat = "results/bowtie_out/{sample}/{sample}.flagstat.tsv"
+
+    threads: 40
     resources:
-        mem="25G",
-        time="08:00:00"
+        mem="60G",
+        time="02:00:00"
     shell:
         """
         module load bowtie2
@@ -105,10 +107,17 @@ rule qc_filter:
         module load pigz
         bowtie2 -p {threads} -x {params.filter_db} --very-sensitive-local -1 {input.r1} -2 {input.r2} > {params.sam} 
 
-        samtools view -Subh -o {params.bam} {params.sam}
-        samtools sort -o {params.sorted_bam} {params.bam}
+        samtools view -Subh -@ {threads} -o {params.bam} {params.sam}
+        samtools sort -@ {threads} -o {params.sorted_bam} {params.bam}
 
-        samtools view -b -f 12 -F 256 -o {params.unmapped_bam} {params.sorted_bam}
+        samtools view -@ {threads} -b -f 12 -F 256 -o {params.unmapped_bam} {params.sorted_bam}
         bedtools bamtofastq -i {params.unmapped_bam} -fq {output.r1_clean} -fq2 {output.r2_clean}
+        samtools flagstat -@ {threads} -O tsv {params.bam} > {params.flagstat}
         """
 
+
+
+#samtools view -bS -@ 20 B16_LyPMA.mapped.sam > B16_LyPMA.mappedtest.bam
+#samtools view -b -@ 20 -f 12 -F 256 B16_LyPMA.mappedtest.bam > B16_LyPMA.unmappedtest.bam
+#samtools sort -n -@ 20 B16_LyPMA.unmappedtest.bam -o B16_LyPMA.unmappedtest.sorted.bam
+#samtools fastq -@ 20 B16_LyPMA.unmappedtest.sorted.bam -1 B16_LyPMA.unmappedtest.r1.fastq -2 B16_LyPMA.unmappedtest.r2.fastq

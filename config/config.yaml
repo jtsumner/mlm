@@ -16,9 +16,9 @@ genome_name: "hg38.fa.gz"
 FASTQC: True
 TRIM_READS: True
 DECONVOLUTE: True
+BOWTIE2: True
 METAPHLAN: True
 ASSEMBLE: False
 MEGAHIT: True
 SPADES: True
 METABAT2: False
-

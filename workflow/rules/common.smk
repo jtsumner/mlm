@@ -53,6 +53,15 @@ def get_rules(wildcards):
             "results/bwa_out/{sample}/{sample}.fastp_bwa.r2.fastq", 
             sample=samples["sample"]
         )
+        if config["BOWTIE2"]:
+            all_rules = all_rules + expand(
+                "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r1.fastq", 
+                sample=samples["sample"]
+            )
+            all_rules = all_rules + expand(
+                "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r2.fastq", 
+                sample=samples["sample"]
+            )
 
     if config["METAPHLAN"]:
         all_rules.append("results/metaphlan_merged/merged_metaphlan_profile_species.tsv")

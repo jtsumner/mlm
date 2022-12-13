@@ -24,7 +24,9 @@ rule all:
     input:
         get_rules,
         "results/bowtie_out/B16_LyPMA/B16_LyPMA.fastp_bowtie.r1.fastq",
-        "results/bowtie_out/B16_LyPMA/B16_LyPMA.fastp_bowtie.r2.fastq"
+        "results/bowtie_out/B16_LyPMA/B16_LyPMA.fastp_bowtie.r2.fastq",
+        "results/metaphlan_bowtie_out/B16_LyPMA/B16_LyPMA.metaphlan_profile.txt",
+        "results/metaphlan_bowtie_out/merged_metaphlan_profile_genus.tsv"
 
 
 

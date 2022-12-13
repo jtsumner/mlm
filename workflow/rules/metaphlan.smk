@@ -52,7 +52,6 @@ rule metaphlan:
         -o {output.profile}
         """
 
-
 rule metaphlan_merge:
     input:
         metaphlan_merge_inputs
@@ -133,3 +132,24 @@ rule hclust_genus:
         """
 
 
+
+use rule metaphlan as metaphlan_bowtie with:
+    input:
+        metaphlan_db = rules.metaphlan_setup.output.metaphlan_db,
+        r1_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r1.fastq",
+        r2_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r2.fastq"
+    output:
+        profile = "results/metaphlan_bowtie_out/{sample}/{sample}.metaphlan_profile.txt",
+        bowtie_out = "results/metaphlan_bowtie_out/{sample}/{sample}.bowtie2.bz2"
+
+use rule metaphlan_merge as metaphlan_merge_bowtie with:
+    input:
+        expand("results/metaphlan_bowtie_out/{sample}/{sample}.metaphlan_profile.txt", zip, sample=samples["sample"], dataset=samples["dataset"])
+    output:
+        "results/metaphlan_bowtie_out/merged_metaphlan_profile.tsv"
+
+use rule metaphlan_genus_abundance as metaphlan_bowtie_genus_abundance with:
+    input:
+        "results/metaphlan_bowtie_out/merged_metaphlan_profile.tsv"
+    output:
+        "results/metaphlan_bowtie_out/merged_metaphlan_profile_genus.tsv"
