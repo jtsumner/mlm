@@ -25,14 +25,15 @@ def get_rules(wildcards):
             )
 
         if config["DECONVOLUTE"]:
-            all_rules = all_rules = all_rules + expand(
-                "results/fastqc_out/bwa_qc/{sample}/{sample}.fastp_bwa.r1_fastqc.html", 
-                sample=samples["sample"]
-            )
-            all_rules = all_rules = all_rules + expand(
-                "results/fastqc_out/bwa_qc/{sample}/{sample}.fastp_bwa.r2_fastqc.html", 
-                sample=samples["sample"]
-            )
+            pass
+            #all_rules = all_rules = all_rules + expand(
+            #    "results/fastqc_out/bwa_qc/{sample}/{sample}.fastp_bwa.r1_fastqc.html", 
+            #    sample=samples["sample"]
+            #)
+            #all_rules = all_rules = all_rules + expand(
+            #    "results/fastqc_out/bwa_qc/{sample}/{sample}.fastp_bwa.r2_fastqc.html", 
+            #    sample=samples["sample"]
+            #)
 
     if config["TRIM_READS"]:
         all_rules = all_rules + expand(
@@ -45,14 +46,14 @@ def get_rules(wildcards):
         )
 
     if config["DECONVOLUTE"]:
-        all_rules = all_rules + expand(
-            "results/bwa_out/{sample}/{sample}.fastp_bwa.r1.fastq", 
-            sample=samples["sample"]
-        )
-        all_rules = all_rules + expand(
-            "results/bwa_out/{sample}/{sample}.fastp_bwa.r2.fastq", 
-            sample=samples["sample"]
-        )
+#        all_rules = all_rules + expand(
+#            "results/bwa_out/{sample}/{sample}.fastp_bwa.r1.fastq", 
+#            sample=samples["sample"]
+#        )
+#        all_rules = all_rules + expand(
+#            "results/bwa_out/{sample}/{sample}.fastp_bwa.r2.fastq", 
+#            sample=samples["sample"]
+#        )
         if config["BOWTIE2"]:
             all_rules = all_rules + expand(
                 "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r1.fastq", 
@@ -64,11 +65,12 @@ def get_rules(wildcards):
             )
 
     if config["METAPHLAN"]:
-        all_rules.append("results/metaphlan_merged/merged_metaphlan_profile_species.tsv")
-        all_rules.append("results/metaphlan_merged/merged_metaphlan_profile_genus.tsv")
-        #all_rules.append("results/metaphlan_merged/merged_metaphlan_hclust_species.png")
-        #all_rules.append("results/metaphlan_merged/merged_metaphlan_hclust_genus.png")
-        #all_rules.append("results/metaphlan_merged/merged_metaphlan_unifrac_matrix.txt")
+        pass
+        #all_rules.append("results/metaphlan_merged/merged_metaphlan_profile_species.tsv")
+        #all_rules.append("results/metaphlan_merged/merged_metaphlan_profile_genus.tsv")
+        ##all_rules.append("results/metaphlan_merged/merged_metaphlan_hclust_species.png")
+        ##all_rules.append("results/metaphlan_merged/merged_metaphlan_hclust_genus.png")
+        ##all_rules.append("results/metaphlan_merged/merged_metaphlan_unifrac_matrix.txt")
 
     if config["ASSEMBLE"]:
         if config["MEGAHIT"]:
