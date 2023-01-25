@@ -1,0 +1,279 @@
+---
+title: "07_TreatmentScreeenShotgun"
+author: "Jack Sumner"
+date: '2022-12-06'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "../../results/") # Global setwd
+```
+
+```{r}
+library(tidyverse)
+library(ggprism)
+library(readxl)
+library(ggpubr)
+library(cowplot)
+library(rstatix)
+library(extrafont)
+library("RColorBrewer")
+
+#font_import("Arial")
+#loadfonts()
+```
+
+# Metaphlan from Bowtie2 out
+
+
+## Set Helper Functions
+```{r}
+clean_mpa4bar <- function(mpa){
+    mpa_tmp <- mpa %>% 
+      pivot_longer(cols = 2:last_col(), names_to="Sample", values_to="Abundance") %>%
+      rename(Genus = "sample") %>%
+      separate(Sample, into="Sample", sep=".metaphlan_profile", extra = "drop")
+
+    mpa_tmp_grouped <- mpa_tmp %>%
+      group_by(Genus) %>% 
+      mutate(sum_gen = sum(Abundance)) %>%
+      filter(sum_gen > 0) %>%
+      select(!sum_gen) %>%
+      mutate(meanGeneraAbundancePerSample = mean(Abundance))
+  
+  top_genera <- mpa_tmp_grouped %>% filter(meanGeneraAbundancePerSample > 0) %>% 
+        select(Genus) %>% 
+        unique() %>% 
+        pluck(1)
+  top_genera
+  
+  
+  top_abund <- mpa_tmp %>% 
+        filter(Genus %in% top_genera)
+    
+    
+  low_abund <- mpa_tmp %>% filter(!Genus %in% top_genera) %>% mutate(Genus = "Z_RareTaxa")
+  
+  low_abund_melt <- low_abund %>% 
+      group_by(Sample) %>% 
+      mutate(AbundanceOtherTotal = sum(Abundance)) %>% 
+      ungroup() %>% 
+      select(!Abundance) %>%
+      unique() %>%
+      rename(Abundance = AbundanceOtherTotal) %>%
+      relocate(Sample)
+    
+    
+  mpa_clean <- rbind(top_abund, low_abund_melt) 
+  return(mpa_clean)
+}
+```
+
+## Read in Table
+```{r}
+mpa <- read_tsv("../../results/metaphlan_bowtie_out/merged_metaphlan_profile_genus.tsv")
+#mpa <- read_tsv("../01_data/BMOE006_TreatmentScreen/mlm_out/merged_metaphlan_profile_genus.tsv")
+mpa_clean<-clean_mpa4bar(mpa)
+
+```
+
+```{r}
+# Prep Color Pallete
+c25 <- c(
+  "dodgerblue2", "#E31A1C", # red
+  "green4",
+  "#6A3D9A", # purple
+  "#FF7F00", # orange
+  "black", "gold1",
+  "skyblue2", "#FB9A99", # lt pink
+  "palegreen2",
+  "#CAB2D6", # lt purple
+  "#FDBF6F", # lt orange
+  "gray70", "khaki2",
+  "maroon", "orchid1", "deeppink1", "blue1", "steelblue4",
+  "darkturquoise", "green1", "yellow4", "yellow3",
+  "darkorange4", "brown"
+)
+```
+
+## Final Clean Up + Plot
+```{r}
+
+# Remove Control Samples to Facet by BAL
+mpa_tmp <- mpa_clean %>% 
+  separate(Sample, c("BAL", "Treatment"), remove = F, sep="_") %>% 
+  filter(!is.na(BAL)) %>%
+  filter(!is.na(Treatment)) %>%
+  filter(!Treatment == "Zymo") %>%
+  filter(!Genus %in% c("UNKNOWN", "Cutibacterium", "Lysobacter")) 
+
+colourCount = length(unique(mpa_tmp$Genus))
+getPalette = colorRampPalette(c25)
+
+
+p1 <- mpa_tmp %>%
+  ggplot(., aes(x=Treatment, y=Abundance, fill=Genus)) +
+  geom_bar(color="black", stat="identity", position="fill") +
+  ylab("Relative Abundance") +
+  ggtitle("Shotgun Metagenomics: Metaphlan Profile") + 
+  theme_pubclean() + 
+  rotate_x_text() + 
+  #scale_shape_manual(values=c(21, 22)) +
+  guides(fill=guide_legend(override.aes=list(shape=21)))  +
+    scale_fill_manual(values = getPalette(colourCount)) + facet_grid(cols=vars(BAL))
+
+p1 #+ facet_grid(cols=vars())
+```
+## Thoughts
+get more genera when using bowtie, suggesting bwa has high false negative rate for alignment
+
+# Calculating Reads Mapped to Human
+
+
+## Percentage Human Reads Bowtie, FlagStat
+
+```{r}
+flagstat<-read_tsv("../01_data/BMOE006_TreatmentScreen/mlm_out/flagstat_mappedpercent.tsv", col_names = FALSE) %>%
+  rename(Sample = "X1") %>%
+  rename(PercentHuman = "X2") %>%
+  separate(Sample, into = c("bal_id", "treatment_method")) %>%
+  separate(PercentHuman, into=c("PercentHuman"), sep = "%", convert = TRUE) %>%
+  filter(!treatment_method == "Zymo") %>%
+  drop_na(treatment_method) %>%
+  select(!c("X3", "X4"))
+
+flagstat$treatment_method <- 
+  factor(flagstat$treatment_method, levels = c("NaNa", "ReNa", "LyNa", "NaDNase", "ReDNase", "LyDNase", "NaPMA","RePMA","LyPMA"))
+```
+
+```{r}
+pb <- ggplot(flagstat, aes(x = treatment_method, y = PercentHuman)) +
+  geom_boxplot(outlier.shape = NA) +
+  scale_x_discrete(labels=c("Baseline", "Pellet Baseline", "Osmolysis Baseline", "Baseline DNase", "Pellet DNase", "Osmolysis DNase", "Baseline PMA","Pellet PMA","Osomolysis PMA")) + 
+  theme_prism(axis_text_angle = 0,
+              base_size = 14,
+              base_line_size = 1,
+              base_rect_size = 2, 
+              #base_family = "Arial", 
+              base_fontface = "bold") +
+  geom_jitter(aes(fill=as_factor(bal_id)),
+            colour="black",
+            pch=21,
+            size=2,
+            alpha=1,
+            width = 0.3) +
+  ylab("Proportion Human Reads") +
+  xlab("Treatment") +
+  ggtitle("Human Read Abundance (Bowtie2)") + 
+  scale_fill_brewer(guide="legend", palette="Spectral") +
+  #scale_y_continuous(limits=c(75, 100)) +
+  guides(fill = guide_legend(
+    override.aes = list(shape=21))) + 
+  #theme(legend.position = "none") + 
+  theme(panel.grid.major.y = element_line(color = "grey", 
+                                          size = 0.5, 
+                                          linetype = 2)) +
+
+  rotate_x_text(45, vjust = 1)  #+ scale_y_continuous(trans='log10',limits = c(0.1,10))
+pb 
+
+ggsave("../05_figures/19_Bowtie2HumanReadAbundance.pdf", units="in", width = 6, height=6)
+```
+
+
+# Duplications 
+
+```{r}
+fastqc_dup<- read_tsv("../01_data/BMOE006_TreatmentScreen/mlm_out/multiqc_general_stats.txt")  %>% 
+  separate(Sample, into=c("Pipeline", "Sample", "Filename"), sep = " [|] ") %>% # create distinct rows
+  filter(!Pipeline=="bwa_qc") %>%
+  separate(Sample, into=c("bal_id", "treatment_method") ) %>%
+  drop_na("treatment_method") %>%
+  filter(!treatment_method=="Zymo") %>%
+  rename(duplicate_percent = "FastQC_mqc-generalstats-fastqc-percent_duplicates")
+
+fastqc_dup$treatment_method <- 
+  factor(fastqc_dup$treatment_method, levels = c("NaNa", "ReNa", "LyNa", "NaDNase", "ReDNase", "LyDNase", "NaPMA","RePMA","LyPMA"))
+fastqc_dup$bal_id <- 
+  factor(fastqc_dup$bal_id, levels = c("B16", "B17", "B18", "B19", "B20", "B21", "B23"))
+pd <- ggplot(fastqc_dup, aes(x = treatment_method, y = duplicate_percent)) +
+  geom_boxplot(outlier.shape = NA) +
+  scale_x_discrete(labels=c("Baseline", "Pellet Baseline", "Osmolysis Baseline", "Baseline DNase", "Pellet DNase", "Osmolysis DNase", "Baseline PMA","Pellet PMA","Osomolysis PMA")) + 
+  theme_prism(axis_text_angle = 0,
+              base_size = 14,
+              base_line_size = 1,
+              base_rect_size = 2, 
+              #base_family = "Arial", 
+              base_fontface = "bold") +
+  geom_jitter(aes(fill=bal_id),
+            colour="black",
+            pch=21,
+            size=2,
+            alpha=1,
+            width = 0.3) +
+  ylab("Percentage Duplicate Reads") +
+  xlab("Treatment") +
+  ggtitle("Read Duplication Rate (FastP Trimmed)") + 
+  scale_fill_brewer(guide="legend", palette="Spectral") +
+  #scale_y_continuous(limits=c(75, 100)) +
+  guides(fill = guide_legend(
+    override.aes = list(shape=21))) + 
+  #theme(legend.position = "none") + 
+  theme(panel.grid.major.y = element_line(color = "grey", 
+                                          size = 0.5, 
+                                          linetype = 2)) +
+
+  rotate_x_text(45, vjust = 1)  #+ scale_y_continuous(trans='log10',limits = c(0.1,10))
+pd
+ggsave("../05_figures/20_PercentageDuplicates.pdf", units="in", width = 6, height=6)
+
+```
+
+#Distance
+## Prepare matrix for distance matrix from Metaphlan Data
+
+
+```{r}
+
+weird_unknown <- c("B18_LyDNase",
+"B17_ReDNase",
+"B17_NaNa")
+
+mpa <- read_table("../../results/metaphlan_bowtie_out/merged_metaphlan_profile_genus.tsv") %>% 
+    filter(!B18_LyDNase.metaphlan_profile == 100) %>%
+    pivot_longer(cols = 2:last_col(), names_to = "Samples", values_to="Abundance") %>%
+    separate(Samples, into="Samples", sep=".meta", extra = "drop") %>%
+    pivot_wider(names_from=sample, values_from=Abundance) %>% 
+    arrange(Samples) %>%
+    filter(!Samples %in% weird_unknown) %>%
+    column_to_rownames("Samples") %>% 
+    as.matrix()
+head(mpa)
+
+```
+
+```{r}
+# Prepare bray distance for shotgun
+mpa_bray <- vegdist(mpa, method="bray")
+add <-!(is.euclid(mpa_bray))
+pcoa.mpa <- cmdscale(mpa_bray, k = nrow(mpa)-1, eig = TRUE, add = add)
+ordiplot(pcoa.mpa, type = "text", main = "PCoA for Species Data, Bray Distances")
+pcoa.mpa_df <- pcoa.mpa$points %>% as.data.frame()
+pcoa.mpa_df["Sample"] <- rownames(pcoa.mpa_df)
+pcoa.mpa_df$Samples <- rownames(pcoa.mpa_df) 
+pcoa.mpa_df <- pcoa.mpa_df %>%
+  separate(Sample, c("BAL", "Treatment"), remove = F, sep="_")
+
+p10 <- ggplot(pcoa.mpa_df, aes(x=V1, y=V2, fill=BAL)) +
+  geom_point(shape=21, size=5, alpha=0.7) +
+  #geom_text_repel(aes(label=Treatment)) +
+  xlab("Dimension 1") +
+  ylab("Dimension 2") +
+  ggtitle("PCoA for Shotgun Sequencing Data (Genus), Bray Curtis") +
+  scale_fill_brewer(guide="legend", palette="Spectral")
+  #scale_shape_manual(values=c(21)) +
+  #guides(fill=guide_legend(override.aes=list(shape=21))) +
+p10
+```
+

@@ -105,7 +105,7 @@ rule qc_filter:
         module load samtools/1.10.1
         module load bedtools/2.29.2
         module load pigz
-        bowtie2 -p {threads} -x {params.filter_db} --very-sensitive-local -1 {input.r1} -2 {input.r2} > {params.sam} 
+        bowtie2 -p {threads} -x {params.filter_db} --very-sensitive -1 {input.r1} -2 {input.r2} > {params.sam} 
 
         samtools view -Subh -@ {threads} -o {params.bam} {params.sam}
         samtools sort -@ {threads} -o {params.sorted_bam} {params.bam}
