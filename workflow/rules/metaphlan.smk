@@ -153,3 +153,9 @@ use rule metaphlan_genus_abundance as metaphlan_bowtie_genus_abundance with:
         "results/metaphlan_bowtie_out/merged_metaphlan_profile.tsv"
     output:
         "results/metaphlan_bowtie_out/merged_metaphlan_profile_genus.tsv"
+
+use rule metaphlan_species_abundance as metaphlan_bowtie_species_abundance with:
+    input:
+        "results/metaphlan_bowtie_out/merged_metaphlan_profile.tsv"
+    output:
+        "results/metaphlan_bowtie_out/merged_metaphlan_profile_species.tsv"

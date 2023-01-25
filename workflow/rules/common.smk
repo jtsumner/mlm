@@ -65,9 +65,11 @@ def get_rules(wildcards):
             )
 
     if config["METAPHLAN"]:
-        pass
+        
         #all_rules.append("results/metaphlan_merged/merged_metaphlan_profile_species.tsv")
-        #all_rules.append("results/metaphlan_merged/merged_metaphlan_profile_genus.tsv")
+        all_rules.append("results/metaphlan_bowtie_out/merged_metaphlan_profile_genus.tsv")
+        all_rules.append("results/metaphlan_bowtie_out/merged_metaphlan_profile_species.tsv")
+
         ##all_rules.append("results/metaphlan_merged/merged_metaphlan_hclust_species.png")
         ##all_rules.append("results/metaphlan_merged/merged_metaphlan_hclust_genus.png")
         ##all_rules.append("results/metaphlan_merged/merged_metaphlan_unifrac_matrix.txt")

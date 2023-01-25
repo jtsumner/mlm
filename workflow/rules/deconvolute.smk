@@ -87,8 +87,8 @@ rule qc_filter:
         r1_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r1.fastq",
         r2_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r2.fastq"
     params:
-        filter_db = "resources/bowtie_human/GRCh38_noalt_as/GRCh38_noalt_as",
-        #genome = "resources/genome/{params.human_g}.ann",
+        #filter_db = "resources/bowtie_human/GRCh38_noalt_as/GRCh38_noalt_as",
+        filter_db = "/projects/b1042/HartmannLab/jack/mlm/resources/bowtie_mouse/GRCm39/GRCm39",
         sam = "results/bowtie_out/{sample}/{sample}.mapped.sam",
         bam = "results/bowtie_out/{sample}/{sample}.mapped.bam",
         sorted_bam = "results/bowtie_out/{sample}/{sample}.mapped.sorted.bam",
