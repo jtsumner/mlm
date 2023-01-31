@@ -115,6 +115,16 @@ rule qc_filter:
         samtools flagstat -@ {threads} -O tsv {params.bam} > {params.flagstat}
         """
 
+rule flagstat_summarize:
+    input:
+        "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r1.fastq"
+    output:
+        "results/bowtie_out/flagstat_summary.txt"
+    shell:
+        """
+        cd results/bowtie_out/
+        for i in $(ls -d *) ; do sed -e "s/^/$i\t/" ${i}/*.flagstat.tsv >> flagstat_summary.txt ; done
+        """
 
 
 #samtools view -bS -@ 20 B16_LyPMA.mapped.sam > B16_LyPMA.mappedtest.bam

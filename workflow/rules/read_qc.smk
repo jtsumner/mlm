@@ -47,3 +47,21 @@ rule fastqc_deconvolute:
         fastqc -t {threads} {input.r1_clean} {input.r2_clean} --outdir {params.out_dir}
         """
 
+rule nonpareil:
+    input:
+        r1_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r1.fastq",
+        r2_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r2.fastq"
+    output:
+        summary = "results/nonpareil_out/{sample}/{sample}.npo"
+    threads: 16
+    resources:
+        mem="5G",
+        partition="short"
+    shell:
+        """
+        module load nonpareil/3.4.1
+        nonpareil -s {input.r1_clean} \
+        -T kmer -f fastq \
+        -b results/nonpareil_out/{wildcards.sample}/{wildcards.sample} \
+        -t {threads}
+        """

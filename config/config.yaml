@@ -14,6 +14,7 @@ genome_name: "hg38.fa.gz"
 
 # Configuration for which rules to execute are listed below\
 FASTQC: True
+NONPAREIL: True
 TRIM_READS: True
 DECONVOLUTE: True
 BOWTIE2: True

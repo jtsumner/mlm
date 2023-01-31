@@ -97,7 +97,7 @@ c25 <- c(
 )
 ```
 
-## Final Clean Up + Plot
+## Mouse
 ```{r}
 
 # Remove Control Samples to Facet by BAL
@@ -112,7 +112,7 @@ colourCount = length(unique(mpa_tmp$Genus))
 getPalette = colorRampPalette(c25)
 
 
-p1 <- mpa_tmp %>%
+p1 <- mpa_clean %>%
   ggplot(., aes(x=Treatment, y=Abundance, fill=Genus)) +
   geom_bar(color="black", stat="identity", position="fill") +
   ylab("Relative Abundance") +
@@ -122,6 +122,35 @@ p1 <- mpa_tmp %>%
   #scale_shape_manual(values=c(21, 22)) +
   guides(fill=guide_legend(override.aes=list(shape=21)))  +
     scale_fill_manual(values = getPalette(colourCount)) + facet_grid(cols=vars(BAL))
+
+p1 #+ facet_grid(cols=vars())s
+```
+
+## Final Clean Up + Plot
+```{r}
+
+# Remove Control Samples to Facet by BAL
+mpa_tmp <- mpa_clean %>% 
+  separate(Sample, c("BAL", "Treatment"), remove = F, sep="_") %>% 
+  filter(!is.na(BAL)) %>%
+  filter(!is.na(Treatment)) %>%
+  filter(!Treatment == "Zymo") #%>%
+  #filter(!Genus %in% c("UNKNOWN", "Cutibacterium", "Lysobacter")) 
+
+colourCount = length(unique(mpa_tmp$Genus))
+getPalette = colorRampPalette(c25)
+
+
+p1 <- mpa_tmp %>%
+  ggplot(., aes(x=Treatment, y=Abundance, fill=Genus)) +
+  geom_bar(color="black", stat="identity", position="fill") +
+  ylab("Relative Abundance") +
+  ggtitle("Shotgun Metagenomics: Metaphlan Profile") + 
+  theme_pubclean() + 
+  rotate_x_text() + 
+  #scale_shape_manual(values=c(21, 22)) +
+  guides(fill=guide_legend(override.aes=list(shape=21)))  +
+    scale_fill_manual(values = getPalette(colourCount)) #+ facet_grid(cols=vars(BAL))
 
 p1 #+ facet_grid(cols=vars())
 ```
@@ -134,7 +163,7 @@ get more genera when using bowtie, suggesting bwa has high false negative rate f
 ## Percentage Human Reads Bowtie, FlagStat
 
 ```{r}
-flagstat<-read_tsv("../01_data/BMOE006_TreatmentScreen/mlm_out/flagstat_mappedpercent.tsv", col_names = FALSE) %>%
+flagstat<-read_tsv("../../results/bowtie_out/flagstat.tmp", col_names = FALSE) %>%
   rename(Sample = "X1") %>%
   rename(PercentHuman = "X2") %>%
   separate(Sample, into = c("bal_id", "treatment_method")) %>%
@@ -165,7 +194,7 @@ pb <- ggplot(flagstat, aes(x = treatment_method, y = PercentHuman)) +
             width = 0.3) +
   ylab("Proportion Human Reads") +
   xlab("Treatment") +
-  ggtitle("Human Read Abundance (Bowtie2)") + 
+  ggtitle("Human Read Abundance (Bowtie2, very-sensitive)") + 
   scale_fill_brewer(guide="legend", palette="Spectral") +
   #scale_y_continuous(limits=c(75, 100)) +
   guides(fill = guide_legend(
@@ -178,11 +207,71 @@ pb <- ggplot(flagstat, aes(x = treatment_method, y = PercentHuman)) +
   rotate_x_text(45, vjust = 1)  #+ scale_y_continuous(trans='log10',limits = c(0.1,10))
 pb 
 
-ggsave("../05_figures/19_Bowtie2HumanReadAbundance.pdf", units="in", width = 6, height=6)
+ggsave("19_Bowtie2HumanReadAbundance.pdf", units="in", width = 6, height=6)
+```
+What about if we look at it w/ fold change
+```{r}
+calculate_difference <- function(flagstat_data){
+
+  fc_baseline = "diff_baseline"
+
+  processed_flagstat <- flagstat_data %>% 
+    filter(treatment_method == "NaNa") %>%
+    select(PercentHuman, bal_id) %>%
+    rename(quantity_native = PercentHuman) %>% 
+    full_join(flagstat_data, by = "bal_id") %>%
+    mutate(fc := PercentHuman - quantity_native) %>% 
+    select(!quantity_native) %>%
+    rename({{fc_baseline}} := "fc") %>%
+  return(processed_flagstat)
+}
+```
+
+```{r}
+flagstat_fc <- calculate_difference(flagstat) %>% filter(!bal_id %in% c("B21", "B20"))
+
+
+pfc <- ggplot(flagstat_fc, aes(x = treatment_method, y = diff_baseline)) +
+  geom_boxplot(outlier.shape = NA) +
+  scale_x_discrete(labels=c("Baseline", "Pellet Baseline", "Osmolysis Baseline", "Baseline DNase", "Pellet DNase", "Osmolysis DNase", "Baseline PMA","Pellet PMA","Osomolysis PMA")) + 
+  theme_prism(axis_text_angle = 0,
+              base_size = 14,
+              base_line_size = 1,
+              base_rect_size = 2, 
+              #base_family = "Arial", 
+              base_fontface = "bold") +
+  geom_jitter(aes(fill=as_factor(bal_id)),
+            colour="black",
+            pch=21,
+            size=2,
+            alpha=1,
+            width = 0.3) +
+  ylab("Proportion Human Reads") +
+  xlab("Treatment") +
+  ggtitle("Human Read Abundance (Bowtie2, very-sensitive)") + 
+  scale_fill_brewer(guide="legend", palette="Spectral") +
+  #scale_y_continuous(limits=c(75, 100)) +
+  guides(fill = guide_legend(
+    override.aes = list(shape=21))) + 
+  #theme(legend.position = "none") + 
+  theme(panel.grid.major.y = element_line(color = "grey", 
+                                          size = 0.5, 
+                                          linetype = 2)) +
+
+  rotate_x_text(45, vjust = 1)  #+ scale_y_continuous(trans='log10',limits = c(0.1,10)) + 
+  xlim(-20, 10)
+pfc 
 ```
 
 
-# Duplications 
+## Thoughts: 
+Bowtie2 with very-sensitive-local alignment give more consistent measurements 
+of human DNA across treatments and better parallels qPCR results.
+
+Consistency suggests accuracy, though not necessarily precision. 
+
+
+##Duplications 
 
 ```{r}
 fastqc_dup<- read_tsv("../01_data/BMOE006_TreatmentScreen/mlm_out/multiqc_general_stats.txt")  %>% 

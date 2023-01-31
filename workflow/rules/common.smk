@@ -63,6 +63,11 @@ def get_rules(wildcards):
                 "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r2.fastq", 
                 sample=samples["sample"]
             )
+        if config["NONPAREIL"]:
+            all_rules = all_rules + expand(
+                "results/nonpareil_out/{sample}/{sample}.npo", 
+                sample=samples["sample"]
+            )
 
     if config["METAPHLAN"]:
         

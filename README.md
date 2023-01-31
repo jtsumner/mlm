@@ -40,8 +40,15 @@ This is a snakemake pipeline is designed to automate common components of shotgu
 * Update prep_sample_sheet.py so it sorts samples into alphanumeric order
 * check metabat
 * integrate visualizations + comparisons
-* annas mamba2.yml file and update installation parameters 
+* move logs to results folder
+* clean up bowtie2 code to reduce used disk space + gzip files
+* add bioconda biopython=1.78  to snakemamba base install
 * probably more stuff 
+
+**MaybeTODO**
+* full setup/install script
+* singularity
+* test cases?
 
 -------------
 # Notes on snakemake 
@@ -59,6 +66,20 @@ Execute to create a rule graph visualization
 ```
 snakemake --forceall --rulegraph | dot -Tpdf > dag.pdf
 ```
+
+## Use interactive jobs on SLURM for debugging
+Start interactive job on slurm
+
+```
+srun -A b1042 --partition=genomics -N 1 -n 24 --mem=64G --time=12:00:00 --pty bash -i
+```
+
+Start interactive job on slurm with salloc 
+ssh onto the qnode it outputs
+```
+salloc -A p31648 --partition=long -N 1 -n 24 --mem=64G --time=12:00:00 bash -i
+```
+
 -------------
 # Getting Started 
 
