@@ -56,11 +56,11 @@ def get_rules(wildcards):
 #        )
         if config["BOWTIE2"]:
             all_rules = all_rules + expand(
-                "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r1.fastq", 
+                "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r1.fastq.gz", 
                 sample=samples["sample"]
             )
             all_rules = all_rules + expand(
-                "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r2.fastq", 
+                "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r2.fastq.gz", 
                 sample=samples["sample"]
             )
         if config["NONPAREIL"]:

@@ -106,7 +106,10 @@ for i in files:
                         print("{} in sample sheet already".format)
                     else:
                         sample_sheet[i_sample] = [i_sample, args.dataset, i, j]
-                        #print("{}\t{}\t{}\t{}".format(i_sample, args.dataset, i, j))
 
+# Sort dictionary by alphabetical order of keys (sample names)
+sorted_samples = list(sample_sheet.keys())
+sorted_samples.sort()
+sample_sheet = {i: sample_sheet[i] for i in sorted_samples}
 
 write_sample_sheet(sample_sheet, args.out)

@@ -4,5 +4,5 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - conda-forge::mamba=0.15.3
-  - bioconda::snakemake=7.3.8
+  - conda-forge::mamba
+  - bioconda::snakemake

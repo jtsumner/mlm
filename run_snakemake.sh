@@ -1,10 +1,10 @@
 #! /bin/bash
-#SBATCH -A p31648
+#SBATCH -A b1042
 #SBATCH --job-name="scheduler"
 #SBATCH -t 20:00:00
 #SBATCH -N 1
 #SBATCH -n 2
-#SBATCH -p long
+#SBATCH -p genomics
 #SBATCH --mem=8gb
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=jacksumner2026@u.northwestern.edu
@@ -28,8 +28,9 @@ Loading conda...
 
 # Load Conda Environment with Snakemake
 module purge all
-module load python-miniconda3/4.12.0
-source activate snakemamba
+module load mamba
+conda activate snakemake
+#source activate snakemamba
 
 # Execute snakemake
 echo "Starting snakemake on cluster..."

@@ -17,7 +17,7 @@ include: "workflow/rules/deconvolute.smk"
 include: "workflow/rules/metaphlan.smk"
 include: "workflow/rules/assemble.smk"
 include: "workflow/rules/assembly_qc.smk"
-include: "workflow/rules/spades.smk"
+#include: "workflow/rules/spades.smk"
 include: "workflow/rules/bin_metabat2.smk"
 
 rule all:

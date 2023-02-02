@@ -136,8 +136,8 @@ rule hclust_genus:
 use rule metaphlan as metaphlan_bowtie with:
     input:
         metaphlan_db = rules.metaphlan_setup.output.metaphlan_db,
-        r1_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r1.fastq",
-        r2_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r2.fastq"
+        r1_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r1.fastq.gz",
+        r2_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r2.fastq.gz"
     output:
         profile = "results/metaphlan_bowtie_out/{sample}/{sample}.metaphlan_profile.txt",
         bowtie_out = "results/metaphlan_bowtie_out/{sample}/{sample}.bowtie2.bz2"

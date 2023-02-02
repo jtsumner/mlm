@@ -63,6 +63,7 @@ rule bwa_map:
         bedtools bamtofastq -i {params.unmapped_bam} -fq {output.r1_clean} -fq2 {output.r2_clean}
         """
 
+
 rule qc_filter:
     """
     Performs host read filtering on paired end data using Bowtie and Samtools/
@@ -77,43 +78,48 @@ rule qc_filter:
 
     Unpaired forward and reverse reads are simply run through Bowtie and
     non-mapping gzipped reads output.
-
-    All piped output first written to localscratch to avoid tying up filesystem.
     """
     input:
         r1 = "results/fastp_out/{sample}/{sample}.fastp.r1.fastq.gz",
         r2 = "results/fastp_out/{sample}/{sample}.fastp.r2.fastq.gz",
     output:
-        r1_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r1.fastq",
-        r2_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r2.fastq"
-    params:
-        #filter_db = "resources/bowtie_human/GRCh38_noalt_as/GRCh38_noalt_as",
-        filter_db = "/projects/b1042/HartmannLab/jack/mlm/resources/bowtie_mouse/GRCm39/GRCm39",
-        sam = "results/bowtie_out/{sample}/{sample}.mapped.sam",
-        bam = "results/bowtie_out/{sample}/{sample}.mapped.bam",
+        r1_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r1.fastq.gz",
+        r2_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r2.fastq.gz",
         sorted_bam = "results/bowtie_out/{sample}/{sample}.mapped.sorted.bam",
-        unmapped_bam = "results/bowtie_out/{sample}/{sample}.unmapped.bam",
         flagstat = "results/bowtie_out/{sample}/{sample}.flagstat.tsv"
-
-    threads: 40
+    params:
+        filter_db = "resources/bowtie_human/GRCh38_noalt_as/GRCh38_noalt_as",
+        #filter_db = "/projects/b1042/HartmannLab/jack/mlm/resources/bowtie_mouse/GRCm39/GRCm39",
+    threads: 15
     resources:
-        mem="60G",
+        mem="25G",
         time="02:00:00"
     shell:
         """
         module load bowtie2
         module load samtools/1.10.1
-        module load bedtools/2.29.2
-        module load pigz
-        bowtie2 -p {threads} -x {params.filter_db} --very-sensitive -1 {input.r1} -2 {input.r2} > {params.sam} 
 
-        samtools view -Subh -@ {threads} -o {params.bam} {params.sam}
-        samtools sort -@ {threads} -o {params.sorted_bam} {params.bam}
+        bowtie2 -p {threads} \
+        -x {params.filter_db} \
+        --very-sensitive \
+        -1 {input.r1} \
+        -2 {input.r2}| \
+        samtools view -bS -@ {threads}| \
+        samtools sort -@ {threads} -n -o {output.sorted_bam}
 
-        samtools view -@ {threads} -b -f 12 -F 256 -o {params.unmapped_bam} {params.sorted_bam}
-        bedtools bamtofastq -i {params.unmapped_bam} -fq {output.r1_clean} -fq2 {output.r2_clean}
-        samtools flagstat -@ {threads} -O tsv {params.bam} > {params.flagstat}
+        samtools fastq \
+        -1 {output.r1_clean} \
+        -2 {output.r2_clean} \
+        -@ {threads} \
+        -f 12 \
+        -F 256 \
+        {output.sorted_bam}
+
+        samtools flagstat \
+        -@ {threads} \
+        -O tsv {output.sorted_bam} > {output.flagstat}
         """
+
 
 rule flagstat_summarize:
     input:
