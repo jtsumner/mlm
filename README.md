@@ -67,19 +67,6 @@ Execute to create a rule graph visualization
 snakemake --forceall --rulegraph | dot -Tpdf > dag.pdf
 ```
 
-## Use interactive jobs on SLURM for debugging
-Start interactive job on slurm
-
-```
-srun -A b1042 --partition=genomics -N 1 -n 24 --mem=64G --time=12:00:00 --pty bash -i
-```
-
-Start interactive job on slurm with salloc 
-ssh onto the qnode it outputs
-```
-salloc -A p31648 --partition=long -N 1 -n 24 --mem=64G --time=12:00:00 bash -i
-```
-
 -------------
 # Getting Started 
 
@@ -101,7 +88,7 @@ Tested versions for base conda software environment:
 1. (Optional) if you are on an HPC (i.e., quest), load the anaconda or miniconda module
    
 	```
-	module load python-miniconda3/4.12.0
+	module load mamba
 	```
 
 2. Create a new conda environment based on the mamba yaml file located in `workflow/envs/mamba.yml`
@@ -123,11 +110,7 @@ Tested versions for base conda software environment:
 2. Activate the new conda environment and install snakemake using mamba
 
 	```
-	conda activate mamba
-	conda install -c conda-forge python=3.9
-	conda install -c conda-forge mamba=0.15.3
-	conda install -c conda-forge -c bioconda ssnakemake=7.3.8
-	#mamba install -c bioconda -c conda-forge snakemake=7.3.8
+	mamba create -c conda-forge -c bioconda -n snakemake snakemake
 	```
 
 3. Confirm that snakeake has installed.
@@ -153,13 +136,24 @@ Tested versions for base conda software environment:
 5. [Configure](#configuration-settings) the general snakemake config `config/config.yaml` so that rules you want to execute are set to `True` and rules you do not want to execute are set to `False`. E.g., The following lines will assembl and perform metaphlan read-based analysis, but won't execute metabat2 binning. 
 
 	```
-	FASTQC: True
+	FASTQC: False
+	NONPAREIL: False
 	TRIM_READS: True
 	DECONVOLUTE: True
-	METAPHLAN: True
-	ASSEMBLE: True
+	BOWTIE2: True
+	METAPHLAN: False
+	ASSEMBLE: False
+	MEGAHIT: True
+	SPADES: True
 	METABAT2: False
 	```
+6. Download Bowtie2 index for human reference genome
+```
+mkdir resources/bowtie_human
+cd resources/bowtie_human
+wget https://genome-idx.s3.amazonaws.com/bt/GRCh38_noalt_as.zip
+unzip GRCh38_noalt_as.zip
+```
 
 ## Execution
 
@@ -178,6 +172,19 @@ Tested versions for base conda software environment:
 3. wait for data :)
 (hopefully)
 
+### Use interactive jobs on SLURM for debugging
+Start interactive job on slurm
+
+```
+srun -A b1042 --partition=genomics -N 1 -n 24 --mem=64G --time=12:00:00 --pty bash -i
+```
+
+Start interactive job on slurm with salloc 
+ssh onto the qnode it outputs
+```
+salloc -A p31648 --partition=long -N 1 -n 24 --mem=64G --time=12:00:00 bash -i
+```
+
 -------------
 # Pipeline Contents
 
@@ -188,17 +195,17 @@ Generalized commands + software used by this pipeline
 **FastP** 
 
 ```
-fastp \
-	-i {input.r1} \
-	-I {input.r2} \
-	--out1 {output.r1Filtered} \
-	--out2 {output.r2Filtered} \
-	--detect_adapter_for_pe \
-	--thread {threads} \
-	--length_required 50 \
-	-j {output.json} \
-	-h {output.html} \
-	-V
+fastp -i {input.r1} \
+        -I {input.r2} \
+        --out1 {output.r1_filtered} \
+        --out2 {output.r2_filtered} \
+        --detect_adapter_for_pe \
+        --dedup \
+        --thread {threads} \
+        --length_required 50 \
+        -j {output.json} \
+        -h {output.html} \
+        -V 
 ```
 
 **FastQC**
@@ -218,6 +225,18 @@ samtools sort -o {params.sortedBam} {params.bam}
 samtools view -b -f 12 -F 256 -o {params.unmappedBam} {params.sortedBam}
 bedtools bamtofastq -i {params.unmappedBam} -fq {output.cleanFastQ1} -fq2 {output.cleanFastQ2}
 ```
+
+**Bowtie2 - Remove human-derived reads**
+```
+        bowtie2 -p {threads} -x {params.filter_db} --very-sensitive -1 {input.r1} -2 {input.r2}| \
+        samtools view -bS -@ {threads}| \
+        samtools sort -@ {threads} -n -o {output.sorted_bam}
+
+        samtools fastq -1 {output.r1_clean} -2 {output.r2_clean} -@ {threads} -f 12 -F 256 {output.sorted_bam}
+
+        samtools flagstat -@ {threads} -O tsv {output.sorted_bam} > {output.flagstat}
+```
+
 
 **Metaphlan**
 

@@ -99,25 +99,13 @@ rule qc_filter:
         module load bowtie2
         module load samtools/1.10.1
 
-        bowtie2 -p {threads} \
-        -x {params.filter_db} \
-        --very-sensitive \
-        -1 {input.r1} \
-        -2 {input.r2}| \
+        bowtie2 -p {threads} -x {params.filter_db} --very-sensitive -1 {input.r1} -2 {input.r2}| \
         samtools view -bS -@ {threads}| \
         samtools sort -@ {threads} -n -o {output.sorted_bam}
 
-        samtools fastq \
-        -1 {output.r1_clean} \
-        -2 {output.r2_clean} \
-        -@ {threads} \
-        -f 12 \
-        -F 256 \
-        {output.sorted_bam}
+        samtools fastq -1 {output.r1_clean} -2 {output.r2_clean} -@ {threads} -f 12 -F 256 {output.sorted_bam}
 
-        samtools flagstat \
-        -@ {threads} \
-        -O tsv {output.sorted_bam} > {output.flagstat}
+        samtools flagstat -@ {threads} -O tsv {output.sorted_bam} > {output.flagstat}
         """
 
 
