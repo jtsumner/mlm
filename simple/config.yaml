@@ -10,8 +10,8 @@ cluster:
     --job-name=smk-{rule}-{wildcards}
     --output=logs/{rule}/smk-{rule}-{wildcards}-{jobid}.out
 default-resources:
-  - account="p31648"
-  - partition="normal"
+  - account="b1042"
+  - partition="genomics"
   - nodes=1
   - mem="5G"
   - time="01:00:00"

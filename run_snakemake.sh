@@ -29,7 +29,9 @@ Loading conda...
 # Load Conda Environment with Snakemake
 module purge all
 module load mamba
-conda activate snakemake
+which mamba
+which conda
+source activate snakemake
 #source activate snakemamba
 
 # Execute snakemake

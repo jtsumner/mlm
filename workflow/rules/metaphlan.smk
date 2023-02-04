@@ -1,8 +1,13 @@
+
+############################
+### PART 1A: METAPHLAN3  ###
+############################
+
 ### Setup Metaphlan. Run Metaphlan on samples to make abundance tables ###
 
 def metaphlan_merge_inputs(wildcards):
     files = expand("results/metaphlan_out/{sample}/{sample}.metaphlan_profile.txt",
-        zip, sample=samples["sample"], dataset=samples["dataset"])
+        sample=samples["sample"])
     return files
 
 
@@ -159,3 +164,63 @@ use rule metaphlan_species_abundance as metaphlan_bowtie_species_abundance with:
         "results/metaphlan_bowtie_out/merged_metaphlan_profile.tsv"
     output:
         "results/metaphlan_bowtie_out/merged_metaphlan_profile_species.tsv"
+
+
+############################
+###  PART 1A: KRACKEN2   ###
+############################
+
+# Because such high memory DB, consider finding a way to call all input files in one rule
+
+rule kraken2:
+    input: 
+        r1_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r1.fastq.gz",
+        r2_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r2.fastq.gz"
+    output:
+        table = "results/kraken/{sample}/{sample}_kraken2table.tsv",
+        reads_class = "results/kraken/{sample}/{sample}_kraken2out.txt"        
+    threads: 20
+    resources:
+        mem="180G",
+        time="0:10:00"
+    shell:
+        """
+        module load kraken/2
+        kraken2 --threads {threads} \
+            --use-names \
+            --output {output.reads_class} \
+            --report {output.table} \
+            --use-mpa-style \
+            --report-zero-counts \
+            --confidence 0.5 \
+            --gzip-compressed \
+            --paired {input.r1_clean} {input.r2_clean}
+        """
+
+
+rule metaxa2:
+    input:
+        r1_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r1.fastq.gz",
+        r2_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r2.fastq.gz"
+    output:
+        out = "results/metaxa2/{sample}/{sample}_metaxa2.summary.txt"
+    params:
+        base_out = "results/metaxa2/{sample}/{sample}_metaxa2"
+    threads: 25
+    resources:
+        mem="30G",
+    shell:
+        """
+        module load hmmer/3.1b2 blast/2.7.1 mafft/7.407 python/anaconda3 metaxa2/2.2
+
+        metaxa2 -1 {input.r1_clean} \
+            -2 {input.r1_clean} \
+            --mode metagenome \
+            -f fastq \
+            -g ssu \
+            -p /software/metaxa2/2.2/metaxa2_db/SSU/HMMs/ \
+            -o {params.base_out} \
+            --cpu 24 \
+            --multi_thread T \
+            --plus T
+        """

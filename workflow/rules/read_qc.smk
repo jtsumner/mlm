@@ -48,20 +48,25 @@ rule fastqc_deconvolute:
         """
 
 rule nonpareil:
+    """
+    Takes fastq.gz files from bowtie2 output 
+    Decompresses reads and pipes stdout to a tmp file in nonpareil folder
+    Kmer based nonpareil executed on tmp file and them tmp file is deleted
+    """
     input:
-        r1_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r1.fastq",
-        r2_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r2.fastq"
+        r1_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r1.fastq.gz",
+        r2_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r2.fastq.gz",
+
     output:
+        tmp_fastq = temp("results/nonpareil_out/{sample}/{sample}.tmp"),
         summary = "results/nonpareil_out/{sample}/{sample}.npo"
     threads: 16
     resources:
-        mem="5G",
+        mem="15G",
         partition="short"
     shell:
         """
         module load nonpareil/3.4.1
-        nonpareil -s {input.r1_clean} \
-        -T kmer -f fastq \
-        -b results/nonpareil_out/{wildcards.sample}/{wildcards.sample} \
-        -t {threads}
+        gunzip -c {input.r1_clean} > {output.tmp_fastq}
+        nonpareil -s {output.tmp_fastq} -T kmer -f fastq -b results/nonpareil_out/{wildcards.sample}/{wildcards.sample} -t {threads}
         """

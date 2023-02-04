@@ -13,7 +13,6 @@ def get_rules(wildcards):
 #                sample=samples["sample"] 
 #                )
 #        )
-
         if config["TRIM_READS"]:
             all_rules = all_rules = all_rules + expand(
                 "results/fastqc_out/fastp_qc/{sample}/{sample}.fastp.r1_fastqc.html", 
@@ -46,14 +45,15 @@ def get_rules(wildcards):
         )
 
     if config["DECONVOLUTE"]:
-#        all_rules = all_rules + expand(
-#            "results/bwa_out/{sample}/{sample}.fastp_bwa.r1.fastq", 
-#            sample=samples["sample"]
-#        )
-#        all_rules = all_rules + expand(
-#            "results/bwa_out/{sample}/{sample}.fastp_bwa.r2.fastq", 
-#            sample=samples["sample"]
-#        )
+        if config["BWA"]:
+            all_rules = all_rules + expand(
+                "results/bwa_out/{sample}/{sample}.fastp_bwa.r1.fastq", 
+                sample=samples["sample"]
+            )
+            all_rules = all_rules + expand(
+                "results/bwa_out/{sample}/{sample}.fastp_bwa.r2.fastq", 
+                sample=samples["sample"]
+              )
         if config["BOWTIE2"]:
             all_rules = all_rules + expand(
                 "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r1.fastq.gz", 
@@ -62,7 +62,10 @@ def get_rules(wildcards):
             all_rules = all_rules + expand(
                 "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r2.fastq.gz", 
                 sample=samples["sample"]
-            )
+            ) 
+
+            all_rules.append("results/bowtie_out/flagstat_summary.txt")
+            
         if config["NONPAREIL"]:
             all_rules = all_rules + expand(
                 "results/nonpareil_out/{sample}/{sample}.npo", 
@@ -78,6 +81,11 @@ def get_rules(wildcards):
         ##all_rules.append("results/metaphlan_merged/merged_metaphlan_hclust_species.png")
         ##all_rules.append("results/metaphlan_merged/merged_metaphlan_hclust_genus.png")
         ##all_rules.append("results/metaphlan_merged/merged_metaphlan_unifrac_matrix.txt")
+    if config["KRAKEN2"]:
+        all_rules = all_rules + expand("results/kraken/{sample}/{sample}_kraken2out.txt", sample=samples["sample"])
+
+    if config["METAXA2"]:
+        all_rules = all_rules + expand("results/metaxa2/{sample}/{sample}_metaxa2.summary.txt", sample=samples["sample"])
 
     if config["ASSEMBLE"]:
         if config["MEGAHIT"]:
@@ -107,7 +115,6 @@ def get_rules(wildcards):
             sample=samples["sample"]
         ))
         all_rules = all_rules + metabat2_results
-
     return all_rules
 
 

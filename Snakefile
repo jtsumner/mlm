@@ -25,7 +25,6 @@ rule all:
         get_rules
 
 
-
 # Make report for snakemake. 
 
 report: "workflow/report/workflow.rst"

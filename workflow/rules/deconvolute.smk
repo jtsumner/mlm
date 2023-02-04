@@ -111,13 +111,14 @@ rule qc_filter:
 
 rule flagstat_summarize:
     input:
-        "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r1.fastq"
+        expand("results/bowtie_out/{sample}/{sample}.flagstat.tsv",
+        sample=samples["sample"])
     output:
         "results/bowtie_out/flagstat_summary.txt"
     shell:
         """
         cd results/bowtie_out/
-        for i in $(ls -d *) ; do sed -e "s/^/$i\t/" ${i}/*.flagstat.tsv >> flagstat_summary.txt ; done
+        for i in $(ls -d *) ; do sed -e "s/^/$i\t/" $i/*.flagstat.tsv >> flagstat_summary.txt ; done
         """
 
 
