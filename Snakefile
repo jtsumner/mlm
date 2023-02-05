@@ -22,8 +22,8 @@ include: "workflow/rules/bin_metabat2.smk"
 
 rule all:
     input:
-        get_rules
-
+        get_rules,
+        "results/kraken/merged_kraken_report_profile.tsv"
 
 # Make report for snakemake. 
 

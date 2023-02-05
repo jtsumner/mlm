@@ -167,18 +167,22 @@ use rule metaphlan_species_abundance as metaphlan_bowtie_species_abundance with:
 
 
 ############################
-###  PART 1A: KRACKEN2   ###
+###  PART 1B: KRACKEN2   ###
 ############################
 
-# Because such high memory DB, consider finding a way to call all input files in one rule
-
 rule kraken2:
+    """
+    Performs taxnomic classification with Kraken2 
+
+    Outputs a kraken2-style report and metaphlan-style report with a
+    script from KrakenTools
+    """
     input: 
         r1_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r1.fastq.gz",
         r2_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r2.fastq.gz"
     output:
-        table = "results/kraken/{sample}/{sample}_kraken2table.tsv",
-        reads_class = "results/kraken/{sample}/{sample}_kraken2out.txt"        
+        kraken_out = "results/kraken/{sample}/{sample}_kraken2out.txt",
+        kraken_report = "results/kraken/{sample}/{sample}_kraken2report.txt"
     threads: 20
     resources:
         mem="180G",
@@ -187,23 +191,72 @@ rule kraken2:
         """
         module load kraken/2
         kraken2 --threads {threads} \
-            --use-names \
-            --output {output.reads_class} \
-            --report {output.table} \
-            --use-mpa-style \
-            --report-zero-counts \
+            --output {output.kraken_out} \
+            --report {output.kraken_report} \
             --confidence 0.5 \
             --gzip-compressed \
+            --minimum-hit-groups 3 \
             --paired {input.r1_clean} {input.r2_clean}
-        """
+        """ 
+#            --use-names \
+#            --use-mpa-style \
 
+
+rule kraken_mpa:
+    """
+    Outputs a metaphlan-style report with a script from KrakenTools
+    """
+    input: 
+        kraken_report = "results/kraken/{sample}/{sample}_kraken2report.txt"
+    output:
+        kraken_mpa = "results/kraken/{sample}/{sample}_mpa.tsv"
+    threads: 1
+    resources:
+        mem="3G",
+        time="0:10:00"
+    shell:
+        """
+        workflow/scripts/kreport2mpa.py -r {input.kraken_report} \
+            -o {output.kraken_mpa} \
+            --display-header \
+            --no-intermediate-ranks
+        """ 
+
+rule merge_kraken:
+    """
+    Outputs a metaphlan-style report with a script from KrakenTools
+    """
+    input: 
+        kraken_reports = expand("results/kraken/{sample}/{sample}_kraken2report.txt", sample=samples["sample"]),
+        kraken_mpas = expand("results/kraken/{sample}/{sample}_mpa.tsv", sample=samples["sample"])
+    output:
+        merged_reports = "results/kraken/merged_kraken_report_profile.tsv",
+        merged_mpa = "results/kraken/merged_kraken_mpa_profile.tsv"
+    threads: 1
+    resources:
+        mem="5G",
+        time="0:10:00"
+    shell:
+        """
+        workflow/scripts/combine_kreports.py -r {input.kraken_reports} \
+            -o {output.merged_reports} \
+            --display-headers
+        
+        workflow/scripts/combine_mpa.py -i {input.kraken_mpas} \
+            -o {output.merged_mpa} \
+        """ 
+    
+
+############################
+###   PART 1C: METAXA2   ###
+############################
 
 rule metaxa2:
     input:
         r1_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r1.fastq.gz",
         r2_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r2.fastq.gz"
     output:
-        out = "results/metaxa2/{sample}/{sample}_metaxa2.summary.txt"
+        out = "results/metaxa2/{sample}/{sample}_metaxa2.taxonomy.txt"
     params:
         base_out = "results/metaxa2/{sample}/{sample}_metaxa2"
     threads: 25
@@ -217,10 +270,17 @@ rule metaxa2:
             -2 {input.r1_clean} \
             --mode metagenome \
             -f fastq \
+            -z gzip \
             -g ssu \
             -p /software/metaxa2/2.2/metaxa2_db/SSU/HMMs/ \
             -o {params.base_out} \
             --cpu 24 \
             --multi_thread T \
-            --plus T
+            --plus T \
+            --graphical F \
+            --fasta F \
+
         """
+
+#  metaxa2_ttt -i 20221221-Comunal-Zymo_metaxa2.taxonomy.txt -o test -t A,b 
+# --cpu 24 --multi_thread T --unknown T -r 1 --distance=0

@@ -85,7 +85,7 @@ def get_rules(wildcards):
         all_rules = all_rules + expand("results/kraken/{sample}/{sample}_kraken2out.txt", sample=samples["sample"])
 
     if config["METAXA2"]:
-        all_rules = all_rules + expand("results/metaxa2/{sample}/{sample}_metaxa2.summary.txt", sample=samples["sample"])
+        all_rules = all_rules + expand("results/metaxa2/{sample}/{sample}_metaxa2.taxonomy.txt", sample=samples["sample"])
 
     if config["ASSEMBLE"]:
         if config["MEGAHIT"]:

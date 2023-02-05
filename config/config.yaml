@@ -21,7 +21,7 @@ BWA: False
 BOWTIE2: True
 METAPHLAN: True
 KRAKEN2: True
-METAXA2: True
+METAXA2: False
 ASSEMBLE: False
 MEGAHIT: True
 SPADES: True
