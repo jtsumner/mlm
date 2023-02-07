@@ -1,0 +1,197 @@
+---
+title: "02A_MetaPhlanTaxonomicAnalysis"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(ggpubr)
+library(cowplot)
+library(vegan)
+
+```
+
+# Read in and Prep-process data
+## Read in Taxa Tables
+```{r}
+
+taxa_table = read_table('../../results/metaphlan_bowtie_out/merged_metaphlan_profile.tsv', skip = 1) %>%
+                        select(!NCBI_tax_id)
+
+# Remove .metaphlan_profile from ends of files 
+colnames(taxa_table) <- sapply(strsplit(names(taxa_table), ".metaphlan_profile"), `[[`, 1)
+
+genus_table <- taxa_table %>% filter(grepl("g__", clade_name), !grepl("s__", clade_name))
+genus_table <- genus_table %>% column_to_rownames(var = c("clade_name"))
+
+species_table <- taxa_table %>% filter(grepl("s__", clade_name))
+species_table <- species_table %>% column_to_rownames(var = c("clade_name"))
+```
+## Read in mapping table
+```{r}
+map_table <- read_table('../../config/map_table.tsv') %>% arrange(sample) %>%
+                        column_to_rownames(var = c("sample"))
+```
+
+
+## remove neg controls; set sample.type factor
+```{r}
+species_table <- species_table[,rownames(map_table)] # reorder to match metadata
+species_table <- species_table[,-c(grep("Control", map_table$sample.type))] # remove control samples
+
+genus_table <- genus_table[,rownames(map_table)]
+genus_table <- genus_table[,-c(grep("Control", map_table$sample.type))]
+
+map_table <- map_table[-c(grep("Control", map_table$sample.type)),]
+map_table$sample.type = factor(map_table$sample.type)
+```
+
+####################################
+# Alpha diversity by sample type 
+####################################
+
+## compute shannon and simpson diversity metrics
+```{r}
+diversity_vec = matrix(nrow = dim(species_table)[2], ncol = 2)
+diversity_vec = as.data.frame(diversity_vec)
+for (a in 1:dim(species_table)[2]) {
+  diversity_vec[a,1] = diversity(species_table[,a], index = "shannon")
+  diversity_vec[a,2] = diversity(species_table[,a], index = "simpson")
+}
+colnames(diversity_vec) = c("Shannon", "Simpson")
+
+# add sample.type factor
+diversity_vec$sample.type = map_table$sample.type
+diversity_vec$sample.type = factor(diversity_vec$sample.type) # Optional: Add Levels
+```
+
+
+## boxplots 
+```{r}
+ggplot(diversity_vec, aes(x = sample.type, y = Shannon, fill = sample.type)) +
+  geom_boxplot(outlier.shape = NA, alpha = 0.7) +
+  #geom_violin(alpha = 0.8) +
+  geom_jitter(size = 1, width = 0.1, alpha = 0.35) +
+  #scale_fill_manual(values=c("blue", "lightgreen", "yellow", "brown", "violet", "gray"),
+  #                  labels = c("Toothbrush", "HMP-Oral", "HMP-Skin", "HMP-Gut", "HMP-Vaginal", "Building dust")) +
+  theme_bw() +
+  theme(legend.position = "none",
+        axis.title.x = element_blank(),
+        #axis.text.x = element_blank(), 
+        axis.ticks.x = element_blank(), 
+        axis.title.y = element_text(size = 14),
+        axis.text.y = element_text(size = 14))
+```
+## ANOVA stats
+```{r}
+summary(aov(Shannon ~ sample.type, diversity_vec))
+TukeyHSD(aov(Shannon ~ sample.type, diversity_vec))
+```
+####################################
+# Beta diversity between sample types 
+####################################
+
+```{r}
+# beta-diversity measure
+beta <- vegdist(t(species_table), 'jaccard', binary = T)
+beta.mat <- as.matrix(beta)
+
+# projection
+pcoa <- cmdscale(beta, k = 4, eig = TRUE)
+
+# cleanup
+ord <- as.data.frame(pcoa$points)
+names(ord) <- c('pcoa1', 'pcoa2', 'pcoa3', 'pcoa4') ## rename coordinates
+
+# add metadata
+ord$Category = map_table$sample.type
+
+# Percent explained variation
+eig <- eigenvals(pcoa)
+eig.percent <- 100*head(eig/sum(eig))
+eig.1 <- paste("PCo1 (", as.character(round(eig.percent[1], digits = 1)), "%)", sep = "")
+eig.2 <-paste("PCo2 (", as.character(round(eig.percent[2], digits = 1)), "%)", sep = "")
+
+```
+
+```{r}
+
+## plot PCoA (FIGURE 1A)
+ggplot(data = ord, aes(x = pcoa1, y = pcoa2, fill = Category, pch = Category)) +
+  geom_point(alpha = 0.6, size = 3, stroke = 1) +
+  theme_bw() +
+  xlab(eig.1) +
+  ylab(eig.2) +
+  #scale_fill_manual(values=c("blue", "lightgreen", "yellow", "brown", "violet", "gray"),
+  #                  labels = c("Toothbrush", "HMP-Oral", "HMP-Skin", "HMP-Gut", "HMP-Vaginal", "Building dust")) +
+  scale_shape_manual(values=c(21, 22)) + # Adjust to number of pch groups
+  theme(axis.text = element_text(size=15, color = "black"),
+        axis.title = element_text(size=16, color = "black"),
+        legend.text = element_text(size=15, color = "black"),
+        legend.title = element_blank()) +
+  guides(fill = guide_legend(override.aes=list(shape=c(23, 21),
+                                               size = 4))) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+```
+
+## PERMANOVA Stats
+```{r}
+# effect of sample type
+beta <- vegdist(t(species_table), 'jaccard', binary = T)
+adonis_out <- adonis2(beta ~ sample.type, data = map_table, permutations = 999)
+adonis_out
+```
+
+## Distance between samples
+```{r}
+sample.type.1 <- map_table$sample.type[1]
+sample.type.1
+
+mean(as.matrix(vegdist(t(species_table[,grep(sample.type.1,map_table$sample.type)]), 
+                       'jaccard', binary = T)))
+sd(as.matrix(vegdist(t(species_table[,grep(sample.type.1,map_table$sample.type)]), 
+                     'jaccard', binary = T)))/sqrt(34)
+```
+####################################
+# Heat Map Most Abundant Taxa
+####################################
+
+```{r}
+
+# Get most abundant, prevalent species in ranked order
+species.ranked <- species_table %>% 
+  rownames_to_column() %>% 
+  melt() %>% 
+  filter(value != 0) %>% # filter 0 values to get prevalence
+  group_by(rowname) %>%
+  summarise(mean = mean(value), n = n()) %>% 
+  arrange(desc(mean)) %>% 
+  pluck(1)
+species.ranked
+```
+```{r}
+# Order by species rank object and remove extra taxnomic info
+species_table.heat <- species_table[species.ranked,] %>% 
+  rownames_to_column() %>%
+  separate(rowname, into = c("ExtraTaxa", "Taxa"), sep="s__") %>%
+  select(!ExtraTaxa) %>% 
+  column_to_rownames("Taxa") %>% 
+  as.matrix
+```
+
+```{r}
+library(pheatmap)
+annot.col <- map_table %>% select(sample.type) 
+# make 0-100 color palette with 0 as gray
+myColors <- c("#616161", colorRampPalette(c("navy", "firebrick3"))(99))
+pheatmap(species_table.heat, 
+         color = myColors,
+         annotation_col = annot.col,
+         angle_col = "45")
+```
+
+
+
+
+

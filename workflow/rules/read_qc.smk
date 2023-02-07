@@ -62,8 +62,7 @@ rule nonpareil:
         summary = "results/nonpareil_out/{sample}/{sample}.npo"
     threads: 16
     resources:
-        mem="15G",
-        partition="short"
+        mem="25G"
     shell:
         """
         module load nonpareil/3.4.1

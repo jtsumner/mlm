@@ -234,7 +234,7 @@ rule merge_kraken:
         merged_mpa = "results/kraken/merged_kraken_mpa_profile.tsv"
     threads: 1
     resources:
-        mem="5G",
+        mem="15G",
         time="0:10:00"
     shell:
         """
