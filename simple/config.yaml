@@ -7,7 +7,7 @@ cluster:
     --ntasks={threads}
     --mem={resources.mem}
     --time={resources.time}
-    --job-name=smk-{rule}-{wildcards}
+    --job-name={rule}-{wildcards}
     --output=logs/{rule}/smk-{rule}-{wildcards}-{jobid}.out
 default-resources:
   - account="b1042"

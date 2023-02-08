@@ -14,42 +14,38 @@ library(vegan)
 
 # Read in and Prep-process data
 ## Read in Taxa Tables
+
 ```{r}
+taxa_table = read_table('../../results/kraken/merged_kraken_mpa_profile.tsv') %>%
+                        rename(clade_name = "#Classification")
 
-taxa_table = read_table('../../results/metaphlan_bowtie_out/merged_metaphlan_profile.tsv', skip = 1) %>%
-                        select(!NCBI_tax_id)
+# Remove _kraken2report.txt from ends of files 
+colnames(taxa_table) <- sapply(strsplit(names(taxa_table), "_kraken2report.txt"), `[[`, 1)
 
-# Remove .metaphlan_profile from ends of files 
-colnames(taxa_table) <- sapply(strsplit(names(taxa_table), ".metaphlan_profile"), `[[`, 1)
+# Remove Taxa with no samples above count threshold
+min_counts <- 50
+parsed_taxa <- taxa_table %>% 
+  melt() %>% 
+  filter(value > min_counts) %>% # filter 0 values to get prevalence
+  select("clade_name") %>% 
+  unique() %>% 
+  pluck(1)
+taxa_table <- taxa_table %>% filter(clade_name %in% parsed_taxa)
+```
 
+
+```{r}
 genus_table <- taxa_table %>% filter(grepl("g__", clade_name), !grepl("s__", clade_name))
 genus_table <- genus_table %>% column_to_rownames(var = c("clade_name"))
 
 species_table <- taxa_table %>% filter(grepl("s__", clade_name))
 species_table <- species_table %>% column_to_rownames(var = c("clade_name"))
 ```
-# find samples with 100% unknown and remove them
-```{r}
-samples.unknown <- species_table %>% 
-  melt () %>% 
-  group_by(variable) %>% 
-  summarise(sum=sum(value)) %>% 
-  filter(sum == 0) %>% 
-  pluck(1) %>% 
-  as.vector()
-
-# Remove samples with no known taxa
-species_table <- species_table[, -which(names(species_table) %in% samples.unknown)] 
-
-```
 
 ## Read in mapping table
 ```{r}
 map_table <- read_table('../../config/map_table.tsv') %>%
-                        #filter(!sample %in% samples.unknown) %>% # remove samples with unkown
                         column_to_rownames(var = c("sample"))
-map_table <- map_table[-which(rownames(map_table) %in% samples.unknown),] 
-
 ```
 
 
@@ -57,12 +53,14 @@ map_table <- map_table[-which(rownames(map_table) %in% samples.unknown),]
 ```{r}
 species_table <- species_table[,rownames(map_table)] # reorder to match metadata
 species_table <- species_table[,-c(grep("Control", map_table$sample.type))] # remove control samples
+species_table <- species_table %>% prop.table() # Normalize to 100%
 
 genus_table <- genus_table[,rownames(map_table)]
 genus_table <- genus_table[,-c(grep("Control", map_table$sample.type))]
+genus_table <- genus_table %>% prop.table() # Normalize to 100%
 
 map_table <- map_table[-c(grep("Control", map_table$sample.type)), ]
-map_table$sample.type = factor(map_table$sample.type)
+map_table$sample.type = factor(map_table$sample.type, levels=c("Pneumonia", "NonPneumonia", "Unknown"))
 
 all(row.names(map_table) %in% colnames(species_table))
 
@@ -70,18 +68,17 @@ all(row.names(map_table) %in% colnames(species_table))
 
 ## optional, remove follow up BAL
 ```{r}
-# species_table <- species_table[,rownames(map_table)] # rereorder to match metadata
+species_table <- species_table[,rownames(map_table)] # rereorder to match metadata
 
-# species_table <- species_table[,-c(grep("FALSE", map_table$is.baseline))]
+species_table <- species_table[,-c(grep("FALSE", map_table$is.baseline))]
 
-#map_table <- map_table[-c(grep("FALSE", map_table$is.baseline)), ]
+map_table <- map_table[-c(grep("FALSE", map_table$is.baseline)), ]
 
 # set sample type as factor
 
-#all(row.names(map_table) %in% colnames(species_table)) # Sanity check
+all(row.names(map_table) %in% colnames(species_table)) # Sanity check
 
 ```
-
 
 
 ####################################
@@ -141,9 +138,11 @@ pcoa <- cmdscale(beta, k = 4, eig = TRUE)
 ord <- as.data.frame(pcoa$points)
 names(ord) <- c('pcoa1', 'pcoa2', 'pcoa3', 'pcoa4') ## rename coordinates
 
+
 # add metadata
 ord$Category = map_table$sample.type
 ord$Outcome = map_table$binned_outcome
+ord$Baseline = map_table$is.baseline
 
 # Percent explained variation
 eig <- eigenvals(pcoa)
@@ -156,8 +155,8 @@ eig.2 <-paste("PCo2 (", as.character(round(eig.percent[2], digits = 1)), "%)", s
 
 ```{r}
 ## plot PCoA (FIGURE 1A)
-ggplot(data = ord, aes(x = pcoa1, y = pcoa2, fill = Category, pch = Outcome)) +
-  geom_point(alpha = 0.6, size = 3, stroke = 1) +
+ggplot(data = ord, aes(x = pcoa1, y = pcoa3, fill = Outcome)) +
+  geom_point(size = 3, stroke = 1, shape=21) +
   theme_bw() +
   xlab(eig.1) +
   ylab(eig.2) +
@@ -166,23 +165,77 @@ ggplot(data = ord, aes(x = pcoa1, y = pcoa2, fill = Category, pch = Outcome)) +
         axis.title = element_text(size=16, color = "black"),
         legend.text = element_text(size=15, color = "black"),
         legend.title = element_text(size=15, color = "black")) +
-  #guides(fill = guide_legend(override.aes=list(shape=shape.list, size = 4))) +
   scale_fill_brewer(guide="legend", palette="Set1") +
-  scale_shape_manual(values=c(21, 22, 23, 24, 25)) +
+  #scale_shape_manual(values=c(21))+#, 22, 23, 24, 25, 26)) +
   guides(fill=guide_legend(override.aes=list(shape=21))) +
    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
-ggsave("../../results/notebook_out/02A_MetaphlanPCoA.pdf", units="in", width=7, height=4.5)
+ggsave("../../results/notebook_out/02A_KrakenPCoABaseline.pdf", units="in", width=6, height=3.5)
+
 ```
 
 ## PERMANOVA Stats
 ```{r}
 # effect of sample type
 beta <- vegdist(t(species_table), 'jaccard', binary = T)
-adonis_out <- adonis2(beta ~ sample.type, data = map_table, permutations = 999)
+adonis_out <- adonis2(beta ~ overall, data = map_table, permutations = 999)
 adonis_out
 ```
 
 ## Distance between samples
+```{r}
+# effect of sample type
+beta <- vegdist(t(species_table), 'jaccard', binary = T)
+adonis2(beta ~ sample.type, data = map_table, permutations = 999)
+
+```
+
+## Between diagnostic types
+```{r}
+beta <- vegdist(t(species_table[,grep("Other_Pneumonia|Other_Viral_Pneumonia",map_table$diagnosis.subtype)]), 'jaccard', binary = T)
+adonis2(beta ~ diagnosis.subtype, data = map_table[grep("Other_Pneumonia|Other_Viral_Pneumonia",map_table$diagnosis.subtype),], permutations = 999)
+```
+
+```{r}
+beta <- vegdist(t(species_table[,grep("Other_Pneumonia|NonPneumonia",map_table$diagnosis.subtype)]), 'jaccard', binary = T)
+adonis2(beta ~ diagnosis.subtype, data = map_table[grep("Other_Pneumonia|NonPneumonia",map_table$diagnosis.subtype),], permutations = 999)
+```
+```{r}
+beta <- vegdist(t(species_table[,grep("Other_Pneumonia|Unknown",map_table$diagnosis.subtype)]), 'jaccard', binary = T)
+adonis2(beta ~ diagnosis.subtype, data = map_table[grep("Other_Pneumonia|Unknown",map_table$diagnosis.subtype),], permutations = 999)
+```
+
+```{r}
+beta <- vegdist(t(species_table[,grep("Other_Viral_Pneumonia|NonPneumonia",map_table$diagnosis.subtype)]), 'jaccard', binary = T)
+adonis2(beta ~ diagnosis.subtype, data = map_table[grep("Other_Viral_Pneumonia|NonPneumonia",map_table$diagnosis.subtype),], permutations = 999)
+```
+
+```{r}
+beta <- vegdist(t(species_table[,grep("Other_Viral_Pneumonia|Unknown",map_table$diagnosis.subtype)]), 'jaccard', binary = T)
+adonis2(beta ~ diagnosis.subtype, data = map_table[grep("Other_Viral_Pneumonia|Unknown",map_table$diagnosis.subtype),], permutations = 999)
+```
+
+## Between outcomes
+```{r}
+# home vs deceased
+beta <- vegdist(t(species_table[,grep("Home|Deceased",map_table$binned_outcome)]), 'jaccard', binary = T)
+adonis2(beta ~ binned_outcome, data = map_table[grep("Home|Deceased",map_table$binned_outcome),], permutations = 999)
+```
+```{r}
+# home vs ltac
+beta <- vegdist(t(species_table[,grep("Home|LTAC",map_table$binned_outcome)]), 'jaccard', binary = T)
+adonis2(beta ~ binned_outcome, data = map_table[grep("Home|LTAC",map_table$binned_outcome),], permutations = 999)
+```
+```{r}
+# home vs ltac
+beta <- vegdist(t(species_table[,grep("Home|Inpatient_Facility",map_table$binned_outcome)]), 'jaccard', binary = T)
+adonis2(beta ~ binned_outcome, data = map_table[grep("Home|Inpatient_Facility",map_table$binned_outcome),], permutations = 999)
+```
+```{r}
+# home vs ltac
+beta <- vegdist(t(species_table[,grep("Home|Unknown",map_table$binned_outcome)]), 'jaccard', binary = T)
+adonis2(beta ~ binned_outcome, data = map_table[grep("Home|Unknown",map_table$binned_outcome),], permutations = 999)
+```
+
 ```{r}
 sample.type.1 <- map_table$sample.type[1]
 sample.type.1
@@ -235,7 +288,7 @@ paletteLength <- 100
 myColors <- rev(colorRampPalette(rev(brewer.pal(n = 9, name ="Reds")))(paletteLength))
 myColors <- rev(colorRampPalette(rev(brewer.pal(n = 9, name ="RdBu")))(paletteLength))
 
-#pdf(file="../../results/notebook_out/02A_MetaphlanHeatPlot.pdf", width = 25, height = 20)
+#pdf(file="../../results/notebook_out/02A_KrakenPlot.pdf", width = 25, height = 20)
 pheatmap(species_table.heat, 
          color = myColors,
          annotation_col = annot.col,
@@ -283,12 +336,12 @@ paletteLength <- 100
 myColors <- rev(colorRampPalette(rev(brewer.pal(n = 9, name ="Reds")))(paletteLength))
 myColors <- rev(colorRampPalette(rev(brewer.pal(n = 9, name ="RdBu")))(paletteLength))
 
-pdf(file="../../results/notebook_out/02A_MetaphlanHeatPlotGenera.pdf", width = 25, height = 20)
+#pdf(file="../../results/notebook_out/02A_KrakenPlot.pdf", width = 25, height = 20)
 pheatmap(genus_table.heat, 
          color = myColors,
          annotation_col = annot.col,
          angle_col = "45",
          show_colnames=FALSE,
          show_rownames = FALSE, scale="row")
-dev.off()
+#dev.off()
 ```

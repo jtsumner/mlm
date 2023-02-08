@@ -21,13 +21,13 @@ np_length <- length(np_list)
 
 # Graph NonPareil Curves
 ```{r}
-pdf(file="../../results/notebook_out/00_NonPareilPlot.pdf")
+#pdf(file="../../results/notebook_out/00_NonPareilPlot.pdf")
 Nonpareil.legend(Nonpareil.curve.batch(np_list, 
                                        plot.opts = list(legend = NA, 
                                                         #plot.model = F, 
                                                         plot.diversity = F,
                                                         main = NA)), cex = 0.5)
-dev.off()
+#dev.off()
 ```
 
 # Save NonPareil Summary
