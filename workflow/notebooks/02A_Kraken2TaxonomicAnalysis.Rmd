@@ -23,7 +23,7 @@ taxa_table = read_table('../../results/kraken/merged_kraken_mpa_profile.tsv') %>
 colnames(taxa_table) <- sapply(strsplit(names(taxa_table), "_kraken2report.txt"), `[[`, 1)
 
 # Remove Taxa with no samples above count threshold
-min_counts <- 50
+min_counts <- 5
 parsed_taxa <- taxa_table %>% 
   melt() %>% 
   filter(value > min_counts) %>% # filter 0 values to get prevalence
@@ -53,11 +53,11 @@ map_table <- read_table('../../config/map_table.tsv') %>%
 ```{r}
 species_table <- species_table[,rownames(map_table)] # reorder to match metadata
 species_table <- species_table[,-c(grep("Control", map_table$sample.type))] # remove control samples
-species_table <- species_table %>% prop.table() # Normalize to 100%
+#species_table <- species_table %>% prop.table() # Normalize to 100%
 
 genus_table <- genus_table[,rownames(map_table)]
 genus_table <- genus_table[,-c(grep("Control", map_table$sample.type))]
-genus_table <- genus_table %>% prop.table() # Normalize to 100%
+#genus_table <- genus_table %>% prop.table() # Normalize to 100%
 
 map_table <- map_table[-c(grep("Control", map_table$sample.type)), ]
 map_table$sample.type = factor(map_table$sample.type, levels=c("Pneumonia", "NonPneumonia", "Unknown"))
@@ -68,15 +68,15 @@ all(row.names(map_table) %in% colnames(species_table))
 
 ## optional, remove follow up BAL
 ```{r}
-species_table <- species_table[,rownames(map_table)] # rereorder to match metadata
+ species_table <- species_table[,rownames(map_table)] # rereorder to match metadata
 
-species_table <- species_table[,-c(grep("FALSE", map_table$is.baseline))]
+ species_table <- species_table[,-c(grep("FALSE", map_table$is.baseline))]
 
-map_table <- map_table[-c(grep("FALSE", map_table$is.baseline)), ]
+ map_table <- map_table[-c(grep("FALSE", map_table$is.baseline)), ]
 
 # set sample type as factor
 
-all(row.names(map_table) %in% colnames(species_table)) # Sanity check
+ all(row.names(map_table) %in% colnames(species_table)) # Sanity check
 
 ```
 
@@ -143,6 +143,7 @@ names(ord) <- c('pcoa1', 'pcoa2', 'pcoa3', 'pcoa4') ## rename coordinates
 ord$Category = map_table$sample.type
 ord$Outcome = map_table$binned_outcome
 ord$Baseline = map_table$is.baseline
+ord$Diagnosis = map_table$diagnosis.subtype
 
 # Percent explained variation
 eig <- eigenvals(pcoa)
@@ -155,8 +156,8 @@ eig.2 <-paste("PCo2 (", as.character(round(eig.percent[2], digits = 1)), "%)", s
 
 ```{r}
 ## plot PCoA (FIGURE 1A)
-ggplot(data = ord, aes(x = pcoa1, y = pcoa3, fill = Outcome)) +
-  geom_point(size = 3, stroke = 1, shape=21) +
+ggplot(data = ord, aes(x = pcoa1, y = pcoa2, fill = Outcome)) +
+  geom_point(size = 5, stroke = 1.5, shape=21) +
   theme_bw() +
   xlab(eig.1) +
   ylab(eig.2) +
@@ -169,7 +170,7 @@ ggplot(data = ord, aes(x = pcoa1, y = pcoa3, fill = Outcome)) +
   #scale_shape_manual(values=c(21))+#, 22, 23, 24, 25, 26)) +
   guides(fill=guide_legend(override.aes=list(shape=21))) +
    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
-ggsave("../../results/notebook_out/02A_KrakenPCoABaseline.pdf", units="in", width=6, height=3.5)
+ggsave("../../results/notebook_out/02A_KrakenPCoA.pdf", units="in", width=6, height=3.5)
 
 ```
 
@@ -185,36 +186,51 @@ adonis_out
 ```{r}
 # effect of sample type
 beta <- vegdist(t(species_table), 'jaccard', binary = T)
-adonis2(beta ~ sample.type, data = map_table, permutations = 999)
+adonis2(beta ~ diagnosis.subtype, data = map_table, permutations = 999)
 
 ```
 
 ## Between diagnostic types
 ```{r}
+# Bac vs Viral
 beta <- vegdist(t(species_table[,grep("Other_Pneumonia|Other_Viral_Pneumonia",map_table$diagnosis.subtype)]), 'jaccard', binary = T)
 adonis2(beta ~ diagnosis.subtype, data = map_table[grep("Other_Pneumonia|Other_Viral_Pneumonia",map_table$diagnosis.subtype),], permutations = 999)
 ```
 
 ```{r}
+# Bac vs NonP
+
 beta <- vegdist(t(species_table[,grep("Other_Pneumonia|NonPneumonia",map_table$diagnosis.subtype)]), 'jaccard', binary = T)
 adonis2(beta ~ diagnosis.subtype, data = map_table[grep("Other_Pneumonia|NonPneumonia",map_table$diagnosis.subtype),], permutations = 999)
 ```
 ```{r}
+# Bac vs Unknown
+
 beta <- vegdist(t(species_table[,grep("Other_Pneumonia|Unknown",map_table$diagnosis.subtype)]), 'jaccard', binary = T)
 adonis2(beta ~ diagnosis.subtype, data = map_table[grep("Other_Pneumonia|Unknown",map_table$diagnosis.subtype),], permutations = 999)
 ```
 
 ```{r}
+# Viral vs Non
+
 beta <- vegdist(t(species_table[,grep("Other_Viral_Pneumonia|NonPneumonia",map_table$diagnosis.subtype)]), 'jaccard', binary = T)
 adonis2(beta ~ diagnosis.subtype, data = map_table[grep("Other_Viral_Pneumonia|NonPneumonia",map_table$diagnosis.subtype),], permutations = 999)
 ```
 
 ```{r}
+# Viral vs Unknown
+
 beta <- vegdist(t(species_table[,grep("Other_Viral_Pneumonia|Unknown",map_table$diagnosis.subtype)]), 'jaccard', binary = T)
 adonis2(beta ~ diagnosis.subtype, data = map_table[grep("Other_Viral_Pneumonia|Unknown",map_table$diagnosis.subtype),], permutations = 999)
 ```
 
-## Between outcomes
+### Between outcomes
+```{r}
+# effect of sample type
+beta <- vegdist(t(species_table), 'jaccard', binary = T)
+adonis2(beta ~ binned_outcome, data = map_table, permutations = 999)
+
+```
 ```{r}
 # home vs deceased
 beta <- vegdist(t(species_table[,grep("Home|Deceased",map_table$binned_outcome)]), 'jaccard', binary = T)
@@ -231,9 +247,15 @@ beta <- vegdist(t(species_table[,grep("Home|Inpatient_Facility",map_table$binned
 adonis2(beta ~ binned_outcome, data = map_table[grep("Home|Inpatient_Facility",map_table$binned_outcome),], permutations = 999)
 ```
 ```{r}
-# home vs ltac
-beta <- vegdist(t(species_table[,grep("Home|Unknown",map_table$binned_outcome)]), 'jaccard', binary = T)
-adonis2(beta ~ binned_outcome, data = map_table[grep("Home|Unknown",map_table$binned_outcome),], permutations = 999)
+# Deceased vs ltac
+beta <- vegdist(t(species_table[,grep("Deceased|LTAC",map_table$binned_outcome)]), 'jaccard', binary = T)
+adonis2(beta ~ binned_outcome, data = map_table[grep("Deceased|LTAC",map_table$binned_outcome),], permutations = 999)
+```
+
+```{r}
+# Deceased vs ltac
+beta <- vegdist(t(species_table[,grep("Deceased|Inpatient",map_table$binned_outcome)]), 'jaccard', binary = T)
+adonis2(beta ~ binned_outcome, data = map_table[grep("Deceased|Inpatient",map_table$binned_outcome),], permutations = 999)
 ```
 
 ```{r}
@@ -344,4 +366,178 @@ pheatmap(genus_table.heat,
          show_colnames=FALSE,
          show_rownames = FALSE, scale="row")
 #dev.off()
+```
+
+
+####################################
+# Testing as phyloseq + Playground
+####################################
+
+```{r}
+library(tidyverse); packageVersion("tidyverse")     #version:1.3.0 
+library(phyloseq); packageVersion("phyloseq")       #version:1.32.0
+
+
+control_samples <- read_table('../../config/map_table.tsv') %>% column_to_rownames(var = c("sample")) %>%
+  filter(grepl("Control", sample.type)) %>% row.names()
+map_table <- read_table('../../config/map_table.tsv')
+
+s_abund <- read_tsv("../../results/kraken/merged_kraken_mpa_profile.tsv") %>%
+  rename(clade_name = "#Classification") %>% 
+  filter(grepl("s__", clade_name))
+
+
+s_tax_tab <- s_abund %>%
+  dplyr::rename("taxonomy" = "clade_name") %>%
+  dplyr::select(taxonomy) %>%
+  dplyr::mutate(Species = sub('.*\\|', '', taxonomy),
+                Species = gsub("s__", "", Species),
+                spec_row = Species) %>%
+  dplyr::select(-taxonomy) %>%
+  tibble::column_to_rownames(var = "spec_row")
+
+s_otu_tab <- s_abund %>%
+  dplyr::rename("taxonomy" = "clade_name") %>%
+  dplyr::mutate(taxonomy = sub('.*\\|', '', taxonomy),
+                taxonomy = gsub("s__", "", taxonomy)) %>%
+  tibble::column_to_rownames(var = "taxonomy")
+
+names(s_otu_tab) <- gsub(names(s_otu_tab), pattern = "_kraken2report.txt", replacement = "") 
+
+s_otu_tab <-s_otu_tab %>% select(!control_samples)
+
+s_meta <- data.frame(seq_id = names(s_otu_tab))
+s_meta <- s_meta %>%
+  dplyr::mutate(sampleNames_row = seq_id) %>%
+  tibble::column_to_rownames(var = "sampleNames_row")
+s_meta %>% left_join(map_table, by=c("seq_id" = "sample"))
+(ps_kraken_species <- phyloseq(sample_data(s_meta),
+                                otu_table(s_otu_tab, taxa_are_rows = TRUE),
+                                tax_table(as.matrix(s_tax_tab))))
+
+# filter taxa ("Remove taxa not seen more than 3 times in at least 20% of the samples" )
+ps_kraken_species <-filter_taxa(ps_kraken_species, function(x) sum(x > 3) > (0.1*length(x)), TRUE)
+ps_kraken_species
+```
+
+```{r}
+library(metagenomeSeq)
+heatmapCols = colorRampPalette(brewer.pal(9, "RdBu"))(50)
+
+pdf("../../results/notebook_out/02A_KrakenCorrPlot.pdf", width = 12, height=12)
+plotCorr(obj = ps_kraken_species %>% phyloseq_to_metagenomeSeq(), n = 200, cexRow = 0.5, cexCol = 0.5,
+trace = "none", dendrogram = "none", col = heatmapCols)
+dev.off()
+
+
+pdf("../../results/notebook_out/02A_KrakenAbundPlot.pdf")
+plotMRheatmap(obj = ps_kraken_species %>% phyloseq_to_metagenomeSeq(), n = 200, cexRow = 0.25, cexCol = 0.25,
+trace = "none", dendrogram = "none", col = heatmapCols)
+dev.off()
+```
+
+# Genus
+
+```{r}
+library(tidyverse); packageVersion("tidyverse")     #version:1.3.0 
+library(phyloseq); packageVersion("phyloseq")       #version:1.32.0
+
+
+control_samples <- read_table('../../config/map_table.tsv') %>% column_to_rownames(var = c("sample")) %>%
+  filter(grepl("Control", sample.type)) %>% row.names()
+map_table <- read_table('../../config/map_table.tsv')
+
+s_abund <- read_tsv("../../results/kraken/merged_kraken_mpa_profile.tsv") %>%
+  rename(clade_name = "#Classification") %>% 
+  filter(grepl("g__", clade_name)) %>%   filter(!grepl("s__", clade_name))
+
+
+
+s_tax_tab <- s_abund %>%
+  dplyr::rename("taxonomy" = "clade_name") %>%
+  dplyr::select(taxonomy) %>%
+  dplyr::mutate(Genus = sub('.*\\|', '', taxonomy),
+                Genus = gsub("g__", "", Genus),
+                spec_row = Genus) %>%
+  dplyr::select(-taxonomy) %>%
+  tibble::column_to_rownames(var = "spec_row")
+
+s_otu_tab <- s_abund %>%
+  dplyr::rename("taxonomy" = "clade_name") %>%
+  dplyr::mutate(taxonomy = sub('.*\\|', '', taxonomy),
+                taxonomy = gsub("g__", "", taxonomy)) %>%
+  tibble::column_to_rownames(var = "taxonomy")
+
+names(s_otu_tab) <- gsub(names(s_otu_tab), pattern = "_kraken2report.txt", replacement = "") 
+
+s_otu_tab <-s_otu_tab %>% select(!control_samples)
+
+s_meta <- data.frame(seq_id = names(s_otu_tab))
+s_meta <- s_meta %>%
+  dplyr::mutate(sampleNames_row = seq_id) %>%
+  tibble::column_to_rownames(var = "sampleNames_row")
+s_meta %>% left_join(map_table, by=c("seq_id" = "sample"))
+(ps_kraken_species <- phyloseq(sample_data(s_meta),
+                                otu_table(s_otu_tab, taxa_are_rows = TRUE),
+                                tax_table(as.matrix(s_tax_tab))))
+
+# filter taxa ("Remove taxa not seen more than 3 times in at least 20% of the samples" )
+ps_kraken_species <-filter_taxa(ps_kraken_species, function(x) sum(x > 3) > (0.2*length(x)), TRUE)
+ps_kraken_species
+```
+
+```{r}
+library(metagenomeSeq)
+heatmapCols = colorRampPalette(brewer.pal(9, "RdBu"))(50)
+
+pdf("../../results/notebook_out/02A_KrakenCorrPlotGenera.pdf", width = 12, height=12)
+plotCorr(obj = ps_kraken_species %>% phyloseq_to_metagenomeSeq(), n = 100, cexRow = 0.5, cexCol = 0.5,
+trace = "none", dendrogram = "none", col = heatmapCols)
+dev.off()
+
+
+pdf("../../results/notebook_out/02A_KrakenAbundPlot.pdf")
+plotMRheatmap(obj = ps_kraken_species %>% phyloseq_to_metagenomeSeq(), n = 200, cexRow = 0.25, cexCol = 0.25,
+trace = "none", dendrogram = "none", col = heatmapCols)
+dev.off()
+```
+
+```{r}
+psmelt(ps_kraken_species) %>% 
+  left_join(map_table, by=c("Sample"="sample")) %>% 
+  filter(Genus=="Simplexvirus") %>%
+  ggplot(., aes(x=sample.type, y=log(Abundance))) + geom_boxplot()
+```
+## MAASLIN2
+```{r}
+kraken_4mas <-psmelt(ps_kraken_species) %>% 
+  select(Sample,Abundance, Genus) %>% 
+  pivot_wider(names_from=Genus, values_from=Abundance) %>% 
+  arrange(Sample) %>%
+  column_to_rownames("Sample") %>% as.matrix()
+meta <- read_table('../../config/map_table.tsv')
+
+meta_4mas <-
+  meta %>% 
+  filter(!sample %in% control_samples) %>%
+  column_to_rownames("sample")
+meta_4mas$subject.id <- as.factor(meta_4mas$bal.number)
+meta_4mas$sample.type <- as.factor(meta_4mas$sample.type)
+meta_4mas$binned_outcome <- as.factor(meta_4mas$binned_outcome)
+
+head(meta_4mas)
+```
+
+```{r}
+fit_data2 = Maaslin2(input_data     = kraken_4mas, 
+                     input_metadata = meta_4mas, 
+                     min_abundance  = 5,
+                     min_prevalence = .2,
+                     normalization  = "CSS",
+                     output         = "../../results/notebook_out/maaslin2_out", 
+                     fixed_effects  = c("binned_outcome", "diagnosis.subtype"),
+                     reference      = c("binned_outcome,Deceased", "diagnosis.subtype,NonPneumonia"),
+                     random_effects = c("subject.id"),
+                     core           = 4,
+                     ) # Subject
 ```

@@ -176,7 +176,7 @@ unzip GRCh38_noalt_as.zip
 Start interactive job on slurm
 
 ```
-srun -A b1042 --partition=genomics -N 1 -n 24 --mem=64G --time=12:00:00 --pty bash -i
+srun -A b1042 --partition=genomics -N 1 -n 24 --mem=64G --time=01:00:00 --pty bash -i
 ```
 
 Start interactive job on slurm with salloc 

@@ -12,7 +12,7 @@ rule quast_megahit:
         "../envs/genome_qc.yml"
     shell:
         """
-        quast.py -o {params.out_dir} --threads {threads} --min-contig 0 -L {input}
+        quast.py -o {params.out_dir} --threads {threads} --min-contig 500 -L {input}
         """
 
 
@@ -28,7 +28,7 @@ rule quast_spades:
         "../envs/genome_qc.yml"
     shell:
         """
-        quast.py -o {params.out_dir} --threads {threads} --min-contig 0 -L {input}
+        quast.py -o {params.out_dir} --threads {threads} --min-contig 500 -L {input}
         """
 
 rule multiqc_quast:

@@ -21,8 +21,8 @@ rule index_contigs:
 
 rule map2contigs:
     input:
-        r1_clean = "results/bwa_out/{sample}/{sample}.fastp_bwa.r1.fastq",
-        r2_clean = "results/bwa_out/{sample}/{sample}.fastp_bwa.r2.fastq",
+        r1_clean = get_assembly_r1,
+        r2_clean = get_assembly_r2,
         parsed_contigs = "results/{assembler}_parsed/{sample}/{sample}.parsed_assembly.fa",
         index = "results/{assembler}_parsed/{sample}/{sample}.parsed_assembly.fa.bwt"
     output:
@@ -57,7 +57,6 @@ rule index_bam:
 
         samtools index {input.bam_sorted}
         """
-
 
 rule metabat_depth:
     input:

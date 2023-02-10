@@ -8,7 +8,6 @@ import pandas as pd
 
 configfile: "config/config.yaml"
 include: "workflow/rules/common.smk"
-#include: "workflow/rules/metagenomics.smk"
 # include: "workflow/rules/bin_assembly.smk"
 #include: "workflow/rules/single_sample_binning.smk"
 include: "workflow/rules/00_TrimReads.smk"

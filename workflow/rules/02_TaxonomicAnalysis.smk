@@ -10,7 +10,6 @@ def metaphlan_merge_inputs(wildcards):
         sample=samples["sample"])
     return files
 
-
 rule metaphlan_setup:
     output:
         metaphlan_db=directory("resources/metaphlan_db"),
@@ -27,7 +26,6 @@ rule metaphlan_setup:
         """
         metaphlan --install --index {params.metaphlan_idx} --bowtie2db {output.metaphlan_db} --nproc {threads}
         """
-
 
 rule metaphlan:
     input:
@@ -69,7 +67,6 @@ rule metaphlan_merge:
         merge_metaphlan_tables.py {input} > {output}
         """
 
-
 rule metaphlan_species_abundance:
     input:
         "results/metaphlan_merged/merged_metaphlan_profile.tsv"
@@ -82,7 +79,6 @@ rule metaphlan_species_abundance:
         grep -E "s__|clade|UNKNOWN" {input} | sed 's/^.*s__//g' \
         | cut -f1,3- | sed -e 's/clade_name/sample/g' > {output}
         """
-
 
 rule metaphlan_genus_abundance:
     input:
@@ -136,8 +132,6 @@ rule hclust_genus:
         hclust2.py -i {input} -o {output} --f_dist_f braycurtis --s_dist_f braycurtis --cell_aspect_ratio 0.5 -l --flabel_size 10 --slabel_size 10 --max_flabel_len 100 --max_slabel_len 100 --minv 0.1 --dpi 300
         """
 
-
-
 use rule metaphlan as metaphlan_bowtie with:
     input:
         metaphlan_db = rules.metaphlan_setup.output.metaphlan_db,
@@ -164,7 +158,6 @@ use rule metaphlan_species_abundance as metaphlan_bowtie_species_abundance with:
         "results/metaphlan_bowtie_out/merged_metaphlan_profile.tsv"
     output:
         "results/metaphlan_bowtie_out/merged_metaphlan_profile_species.tsv"
-
 
 ############################
 ###  PART 1B: KRACKEN2   ###
@@ -198,9 +191,6 @@ rule kraken2:
             --minimum-hit-groups 3 \
             --paired {input.r1_clean} {input.r2_clean}
         """ 
-#            --use-names \
-#            --use-mpa-style \
-
 
 rule kraken_mpa:
     """

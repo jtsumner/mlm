@@ -22,23 +22,23 @@ rule megahit:
         mv {params.out_dir}_tmp/* {params.out_dir}
         rmdir {params.out_dir}_tmp
         """
-
+        
 ############################
 ###   PART 1B: SPADES    ###
 ############################
 
 rule spades:
     input:
-        r1_clean = "results/bwa_out/{sample}/{sample}.fastp_bwa.r1.fastq",
-        r2_clean = "results/bwa_out/{sample}/{sample}.fastp_bwa.r2.fastq"
+        r1_clean = get_assembly_r1,
+        r2_clean = get_assembly_r2
     output:
         scaffolds="results/spades_out/{sample}/scaffolds.fasta"
     params:
         out_dir=directory("results/spades_out/{sample}")
 
-    threads: 40
+    threads: 25
     resources:
-        mem="100g",
+        mem="80g",
         time="10:00:00"
     shell:
         """

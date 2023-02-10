@@ -5,7 +5,7 @@
 dag.pdf 
 core.*
 report.html
-config/map_table.tsv
+map_table.tsv
 *.sif
 # Ignore directory or contents of directory
 .snakemake/
