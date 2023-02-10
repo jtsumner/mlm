@@ -5,13 +5,15 @@
 dag.pdf 
 core.*
 report.html
-
+config/map_table.tsv
+*.sif
 # Ignore directory or contents of directory
 .snakemake/
+tmp/
 data/*
 logs/
 resources/*
 results/*
-
+.snakemamba_env/
 # Exceptions
 !README.md
