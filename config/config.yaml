@@ -13,16 +13,19 @@ genome_name: "hg38.fa.gz"
 
 
 # Configuration for which rules to execute are listed below\
-FASTQC: True
-NONPAREIL: True
+MODULE_READ_QC: True
 TRIM_READS: True
+COMPLEXITY_FILTER: True
 DECONVOLUTE: True
-BWA: False
 BOWTIE2: True
-METAPHLAN: True
-KRAKEN2: True
+MERGE_READS: True
+NONPAREIL: False
+FASTQC: False
+
+METAPHLAN: False
+KRAKEN2: False
 METAXA2: False
 ASSEMBLE: True
 MEGAHIT: False
-SPADES: True
+SPADES: False
 METABAT2: False

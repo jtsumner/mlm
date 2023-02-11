@@ -1,8 +1,9 @@
 from snakemake.utils import validate
 import pandas as pd
 
-
-### Takes pipeline configuration to set rule all ###
+###########################################################
+###    Takes pipeline configuration to set rule all     ###
+###########################################################
 
 def get_rules(wildcards):
     all_rules = []
@@ -18,44 +19,41 @@ def get_rules(wildcards):
             )
         if config["DECONVOLUTE"]:
             pass
-            #all_rules = all_rules = all_rules + expand(
-            #    "results/fastqc_out/bwa_qc/{sample}/{sample}.fastp_bwa.r1_fastqc.html", 
-            #    sample=samples["sample"])
-            #all_rules = all_rules = all_rules + expand(
-            #    "results/fastqc_out/bwa_qc/{sample}/{sample}.fastp_bwa.r2_fastqc.html", 
-            #    sample=samples["sample"])
-    if config["TRIM_READS"]:
+    if config["MODULE_READ_QC"]:
+        if config["MERGE_READS"]:
+            all_rules = all_rules + expand(
+                "results/bbmerge_out/{sample}/{sample}.bbmerge.fastq.gz",
+                sample=samples["sample"])
+        elif config["DECONVOLUTE"]:
+            if config["BOWTIE2"]:
+                    all_rules.append("results/bowtie_out/flagstat_summary.txt")
+        elif config["COMPLEXITY_FILTER"]:
+            all_rules = all_rules + expand(
+                "results/bbduk_out/{sample}/{sample}.bbduk.r1.fastq.gz", 
+                sample=samples["sample"])
+            all_rules = all_rules + expand(
+                "results/bbduk_out/{sample}/{sample}.bbduk.r2.fastq.gz", 
+                sample=samples["sample"])
+        elif config["TRIM_READS"]:
+            all_rules = all_rules + expand(
+                    "results/fastp_out/{sample}/{sample}.fastp.r1.fastq.gz", 
+                    sample=samples["sample"])
+            all_rules = all_rules + expand(
+                    "results/fastp_out/{sample}/{sample}.fastp.r2.fastq.gz", 
+                    sample=samples["sample"])
+        else:
+            pass
+            
+    if config["NONPAREIL"]:
         all_rules = all_rules + expand(
-            "results/fastp_out/{sample}/{sample}.fastp.r1.fastq.gz", 
+            "results/nonpareil_out/{sample}/{sample}.npo", 
             sample=samples["sample"])
-        all_rules = all_rules + expand(
-            "results/fastp_out/{sample}/{sample}.fastp.r2.fastq.gz", 
-            sample=samples["sample"])
-    if config["DECONVOLUTE"]:
-        if config["BWA"]:
-            all_rules = all_rules + expand(
-                "results/bwa_out/{sample}/{sample}.fastp_bwa.r1.fastq", 
-                sample=samples["sample"])
-            all_rules = all_rules + expand(
-                "results/bwa_out/{sample}/{sample}.fastp_bwa.r2.fastq", 
-                sample=samples["sample"])
-        if config["BOWTIE2"]:
-            all_rules = all_rules + expand(
-                "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r1.fastq.gz", 
-                sample=samples["sample"])
-            all_rules = all_rules + expand(
-                "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r2.fastq.gz", 
-                sample=samples["sample"]) 
-            all_rules.append("results/bowtie_out/flagstat_summary.txt")
-        if config["NONPAREIL"]:
-            all_rules = all_rules + expand(
-                "results/nonpareil_out/{sample}/{sample}.npo", 
-                sample=samples["sample"])
     if config["METAPHLAN"]:
         all_rules.append("results/metaphlan_bowtie_out/merged_metaphlan_profile_genus.tsv")
         all_rules.append("results/metaphlan_bowtie_out/merged_metaphlan_profile_species.tsv")
     if config["KRAKEN2"]:
-        all_rules = all_rules + expand("results/kraken/{sample}/{sample}_kraken2out.txt", sample=samples["sample"])
+        all_rules.append("results/kraken/merged_kraken_report_profile.tsv")
+        #all_rules = all_rules + expand("results/kraken/{sample}/{sample}_kraken2out.txt", sample=samples["sample"])
     if config["METAXA2"]:
         all_rules = all_rules + expand("results/metaxa2/{sample}/{sample}_metaxa2.taxonomy.txt", sample=samples["sample"])
     if config["ASSEMBLE"]:
@@ -81,6 +79,10 @@ def get_rules(wildcards):
         all_rules = all_rules + metabat2_results
     return all_rules
 
+###########################################################
+###  Helper functions for determining readQC rule I/O   ###
+###########################################################
+
 ### Helper functions for getting initial reads ###
 
 def get_read_path_v2(wildcards):
@@ -94,13 +96,80 @@ def get_r2(wildcards):
     tmp = get_read_path_v2(wildcards)
     return tmp["reverse_read"]
 
-### Helper functions for determining assembly read input ###
+### Helper functions for getting trimmed reads ###
 
-def get_assembly_r1(wildcards):
-    return "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r1.fastq.gz"
+def get_trimmed_read1(wildcards):
+    return "results/fastp_out/{sample}/{sample}.fastp.r1.fastq.gz"
 
-def get_assembly_r2(wildcards):
-    return "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r2.fastq.gz"
+def get_trimmed_read2(wildcards):
+    return "results/fastp_out/{sample}/{sample}.fastp.r2.fastq.gz"
+
+### Helper functions for getting complexity-filtered reads ###
+
+def get_complex_read1(wildcards):
+    return "results/bbduk_out/{sample}/{sample}.bbduk.r1.fastq.gz"
+
+def get_complex_read2(wildcards):
+    return "results/bbduk_out/{sample}/{sample}.bbduk.r2.fastq.gz"
+
+### Helper functions for getting host-decontaminated reads ###
+
+def get_decontaminated_read1(wildcards):
+    return "results/bowtie_out/{sample}/{sample}.bowtie.r1.fastq.gz"
+
+def get_decontaminated_read2(wildcards):
+    return "results/bowtie_out/{sample}/{sample}.bowtie.r2.fastq.gz"
+
+### Helper functions for getting merged reads ###
+
+def get_merged_reads(wildcards):
+    return  "results/bbmerge_out/{sample}/{sample}.bbmerge.fastq.gz"
+
+### Helper functions for determining penultimate paired/merged reads ###
+
+def get_penultimate_read1(wildcards):
+    if config["COMPLEXITY_FILTER"]:
+        return get_complex_read1(wildcards)
+    elif config["TRIM_READS"]:
+        return get_trimmed_read1(wildcards)
+    else:
+        return get_r1(wildcards)
+
+def get_penultimate_read2(wildcards):
+    if config["COMPLEXITY_FILTER"]:
+        return get_complex_read2(wildcards)
+    elif config["TRIM_READS"]:
+        return get_trimmed_read2(wildcards)
+    else:
+        return get_r2(wildcards)
+### Helper functions for determining final paired/merged reads ###
+
+def get_final_read1(wildcards):
+    if config["DECONVOLUTE"]:
+        return get_decontaminated_read1(wildcards)
+    elif config["COMPLEXITY_FILTER"]:
+        return get_complex_read1(wildcards)
+    elif config["TRIM_READS"]:
+        return get_trimmed_read1(wildcards)
+    else:
+        return get_r1(wildcards)
+
+def get_final_read2(wildcards):
+    if config["DECONVOLUTE"]:
+        return get_decontaminated_read2(wildcards)
+    elif config["COMPLEXITY_FILTER"]:
+        return get_complex_read2(wildcards)
+    elif config["TRIM_READS"]:
+        return get_trimmed_read2(wildcards)
+    else:
+        return get_r2(wildcards)
+
+def get_final_merged_read(wildcards):
+    return get_merged_reads(wildcards)
+
+###########################################################
+###   Helper functions for determining misc. rule I/O   ###
+###########################################################
 
 ### Helper functions for configuring quast multiqc input ###
 

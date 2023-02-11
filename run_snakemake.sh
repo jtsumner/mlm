@@ -38,7 +38,7 @@ source activate snakemake
 echo "Starting snakemake on cluster..."
 snakemake --profile simple
 
-
+snakemake --forceall --rulegraph | dot -Tpdf > results/dag.pdf
 # Annotating the output file
 END_TIME=$(date)
 echo "

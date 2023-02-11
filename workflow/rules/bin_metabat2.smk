@@ -21,8 +21,8 @@ rule index_contigs:
 
 rule map2contigs:
     input:
-        r1_clean = get_assembly_r1,
-        r2_clean = get_assembly_r2,
+        r1_clean = get_final_read1,
+        r2_clean = get_final_read2,
         parsed_contigs = "results/{assembler}_parsed/{sample}/{sample}.parsed_assembly.fa",
         index = "results/{assembler}_parsed/{sample}/{sample}.parsed_assembly.fa.bwt"
     output:

@@ -29,8 +29,8 @@ rule megahit:
 
 rule spades:
     input:
-        r1_clean = get_assembly_r1,
-        r2_clean = get_assembly_r2
+        r1_clean = get_final_read1,
+        r2_clean = get_final_read2
     output:
         scaffolds="results/spades_out/{sample}/scaffolds.fasta"
     params:
