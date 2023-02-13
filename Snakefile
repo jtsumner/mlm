@@ -19,12 +19,6 @@ include: "workflow/rules/bin_metabat2.smk"
 rule all:
     input:
         get_rules,
-        "results/fastqc_out/fastp_qc/DNA_B01_18/DNA_B01_18.fastp.r1_fastqc.html",
-        "results/fastqc_out/bbduk_qc/DNA_B01_18/DNA_B01_18.bbduk.r1_fastqc.html",
-        "results/fastqc_out/bowtie_qc/DNA_B01_18/DNA_B01_18.bowtie.r1_fastqc.html",
-        "results/fastqc_out/bbmerge_qc/DNA_B01_18/DNA_B01_18.bbmerge_fastqc.html",
-        "results/fastqc_out/raw_qc/DNA_B01_18/DNA_B01_18.raw.r1_fastqc.html",
-        "results/fastqc_out/multiqc_report.html"
 
 # Make report for snakemake. 
 report: "workflow/report/workflow.rst"

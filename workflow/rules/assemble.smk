@@ -5,8 +5,8 @@
 
 rule megahit:
     input:
-        r1_clean = "results/bwa_out/{sample}/{sample}.fastp_bwa.r1.fastq",
-        r2_clean = "results/bwa_out/{sample}/{sample}.fastp_bwa.r2.fastq"
+        r1_clean = get_final_read1,
+        r2_clean = get_final_read2
     output:
         scaffolds = "results/megahit_out/{sample}/{sample}.contigs.fa"
     params:

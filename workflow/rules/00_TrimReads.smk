@@ -76,7 +76,7 @@ rule complexity_filter:
 ## PART 3: DECONTAMINATE  ##
 ############################
 
-rule qc_filter:
+rule host_decontamination:
     """
     Performs host read filtering on paired end data using Bowtie and Samtools
     """

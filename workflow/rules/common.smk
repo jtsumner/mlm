@@ -8,17 +8,7 @@ import pandas as pd
 def get_rules(wildcards):
     all_rules = []
     if config["FASTQC"]:
-        if config["TRIM_READS"]:
-            all_rules = all_rules = all_rules + expand(
-                "results/fastqc_out/fastp_qc/{sample}/{sample}.fastp.r1_fastqc.html", 
-                sample=samples["sample"]
-            )
-            all_rules = all_rules = all_rules + expand(
-                "results/fastqc_out/fastp_qc/{sample}/{sample}.fastp.r2_fastqc.html", 
-                sample=samples["sample"]
-            )
-        if config["DECONVOLUTE"]:
-            pass
+        all_rules.append("results/fastqc_out/multiqc_report.html")
     if config["MODULE_READ_QC"]:
         if config["MERGE_READS"]:
             all_rules = all_rules + expand(
@@ -176,7 +166,14 @@ def get_final_merged_read(wildcards):
 
 ### Helper functions for configuring quast multiqc input ###
 def get_multiqc_input():
+    """
+    Gets list of files that were expected to be made based on config settings and 
+    creates a list of fastqc output files to expect for multiqc input
+    """
     multiqc_in = []
+    if config["DECONVOLUTE"]:
+        multiqc_in = multiqc_in + expand("results/fastqc_out/bbmerge_qc/{sample}/{sample}.bbmerge_fastqc.html",
+            sample=samples["sample"])
     if config["DECONVOLUTE"]:
         multiqc_in = multiqc_in + expand("results/fastqc_out/bowtie_qc/{sample}/{sample}.bowtie.r1_fastqc.html",
             sample=samples["sample"])
