@@ -1,7 +1,7 @@
 import glob
 import pandas as pd
 from snakemake.utils import validate
-
+import os.path
 ############################
 ### PART 1A: FASTP TRIM  ###
 ############################
@@ -109,6 +109,18 @@ rule qc_filter:
         samtools flagstat -@ {threads} -O tsv {output.sorted_bam} > {output.flagstat}
         """
 
+rule flagstat_summarize:
+    input:
+        expand("results/bowtie_out/{sample}/{sample}.flagstat.tsv",
+        sample=samples["sample"])
+    output:
+        "results/bowtie_out/flagstat_summary.txt"
+    shell:
+        """
+        cd results/bowtie_out/
+        for i in $(ls -d *) ; do sed -e "s/^/$i\t/" $i/*.flagstat.tsv >> flagstat_summary.txt ; done
+        """
+
 ############################
 ### PART 4: MERGE READS  ###
 ############################
@@ -136,4 +148,132 @@ rule merge_reads:
             k=60 \
             mininsert=70 \
             threads={threads}
+        """
+
+###############################
+###  PART 5A: QC NONPAREIL  ###
+###############################
+
+rule nonpareil:
+    """
+    Takes fastq.gz files from bowtie2 output 
+    Decompresses reads and pipes stdout to a tmp file in nonpareil folder
+    Kmer based nonpareil executed on tmp file and them tmp file is deleted
+    """
+    input:
+        r1_clean = get_final_read1,
+        r2_clean = get_final_read2,
+    output:
+        tmp_fastq = temp("results/nonpareil_out/{sample}/{sample}.tmp"),
+        summary = "results/nonpareil_out/{sample}/{sample}.npo",
+        out_dir = directory("results/nonpareil_out/{sample}/")
+    threads: 16
+    resources:
+        mem="25G"
+    shell:
+        """
+        module load nonpareil/3.4.1
+        gunzip -c {input.r1_clean} > {output.tmp_fastq}
+        nonpareil -s {output.tmp_fastq} -T kmer -f fastq -b {output.out_dir}/{wildcards.sample} -t {threads}
+        """
+        
+use rule nonpareil as nonpareil_merged with:
+    input:
+        r1_clean = get_final_merged_read,
+        r2_clean = get_final_read2
+    output:
+        tmp_fastq = temp("results/nonpareil.merged_out/{sample}/{sample}.tmp"),
+        summary = "results/nonpareil.merged_out/{sample}/{sample}.npo",
+        out_dir = directory("results/nonpareil.merged_out/{sample}/")
+
+###############################
+###    PART 5B: QC FASTQC   ###
+###############################
+
+rule fastqc_fastp:
+    input: 
+        get_trimmed_read1,
+        get_trimmed_read2
+    output:
+        "results/fastqc_out/fastp_qc/{sample}/{sample}.fastp.r1_fastqc.html",
+        "results/fastqc_out/fastp_qc/{sample}/{sample}.fastp.r2_fastqc.html"
+    params:
+        out_dir = "results/fastqc_out/fastp_qc/{sample}"
+    threads: 4
+    resources:
+        time = "00:30:00"
+    shell:
+        """
+        module load fastqc/0.11.5
+        fastqc -t {threads} {input} --outdir {params.out_dir}
+        """ 
+
+use rule fastqc_fastp as fastqc_bbduk with:
+    input: 
+        get_complex_read1,
+        get_complex_read2
+    output:
+        "results/fastqc_out/bbduk_qc/{sample}/{sample}.bbduk.r1_fastqc.html",
+        "results/fastqc_out/bbduk_qc/{sample}/{sample}.bbduk.r2_fastqc.html"
+    params:
+        out_dir = "results/fastqc_out/bbduk_qc/{sample}"
+
+use rule fastqc_fastp as fastqc_bowtie with:
+    input: 
+        get_decontaminated_read1,
+        get_decontaminated_read2
+    output:
+        "results/fastqc_out/bowtie_qc/{sample}/{sample}.bowtie.r1_fastqc.html",
+        "results/fastqc_out/bowtie_qc/{sample}/{sample}.bowtie.r2_fastqc.html"
+    params:
+        out_dir = "results/fastqc_out/bowtie_qc/{sample}"
+
+use rule fastqc_fastp as fastqc_bbmerge with:
+    input: 
+        get_merged_reads
+    output:
+        "results/fastqc_out/bbmerge_qc/{sample}/{sample}.bbmerge_fastqc.html"
+    params:
+        out_dir = "results/fastqc_out/bbmerge_qc/{sample}"
+
+rule fastqc_raw:
+    input: 
+        r1 = get_r1,
+        r2 = get_r2
+    output:
+        html1 = "results/fastqc_out/raw_qc/{sample}/{sample}.raw.r1_fastqc.html",
+        html2 = "results/fastqc_out/raw_qc/{sample}/{sample}.raw.r2_fastqc.html",
+        zip1 = "results/fastqc_out/raw_qc/{sample}/{sample}.raw.r1_fastqc.zip",
+        zip2 = "results/fastqc_out/raw_qc/{sample}/{sample}.raw.r2_fastqc.zip",
+        outdir = directory("results/fastqc_out/raw_qc/{sample}/")
+    params:
+        html1 = lambda wildcards, output, input: output.outdir + "/" + os.path.basename(input.r1).split(".fastq.gz")[0] + "_fastqc.html",
+        html2 = lambda wildcards, output, input: output.outdir + "/" + os.path.basename(input.r2).split(".fastq.gz")[0] + "_fastqc.html",
+        zip1 = lambda wildcards, output, input: output.outdir + "/" + os.path.basename(input.r1).split(".fastq.gz")[0] + "_fastqc.zip",
+        zip2 = lambda wildcards, output, input: output.outdir + "/" + os.path.basename(input.r2).split(".fastq.gz")[0] + "_fastqc.zip",
+    threads: 4
+    resources:
+        time = "00:30:00"
+    shell:
+        """
+        module load fastqc/0.11.5
+        mkdir -p {output.outdir}
+        fastqc -t {threads} {input.r1} {input.r2} --outdir {output.outdir}
+        mv {params.html1} {output.html1}
+        mv {params.html2} {output.html2}
+        mv {params.zip1} {output.zip1}
+        mv {params.zip2} {output.zip2}
+        """
+
+rule fastqc_multiqc:
+    input:
+        get_multiqc_input()
+    output:
+        multiqc_report = "results/fastqc_out/multiqc_report.html"
+    params:
+        out_dir="results/fastqc_out"
+    shell:
+        """
+        module load multiqc
+        multiqc --outdir {params.out_dir} --dirs --dirs-depth 2 results/fastqc_out/
         """

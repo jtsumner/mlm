@@ -27,15 +27,33 @@ rule megahit:
 ###   PART 1B: SPADES    ###
 ############################
 
+#rule spades:
+#    input:
+#        r1_clean = get_final_read1,
+#        r2_clean = get_final_read2
+#    output:
+#        scaffolds="results/spades_out/{sample}/scaffolds.fasta"
+#    params:
+#        out_dir=directory("results/spades_out/{sample}")
+#
+#    threads: 25
+#    resources:
+#        mem="80g",
+#        time="10:00:00"
+#    shell:
+#        """
+#        module load spades/3.14.1
+#        spades.py -1 {input.r1_clean} -2 {input.r2_clean} -o {params.out_dir} -t {threads} -m 100 --meta
+#        """
+
 rule spades:
     input:
-        r1_clean = get_final_read1,
-        r2_clean = get_final_read2
+        r_merged = get_final_merged_read,
     output:
         scaffolds="results/spades_out/{sample}/scaffolds.fasta"
     params:
-        out_dir=directory("results/spades_out/{sample}")
-
+        out_dir=directory("results/spades_out/{sample}"),
+        fastq_flag="--merged"
     threads: 25
     resources:
         mem="80g",
@@ -43,5 +61,5 @@ rule spades:
     shell:
         """
         module load spades/3.14.1
-        spades.py -1 {input.r1_clean} -2 {input.r2_clean} -o {params.out_dir} -t {threads} -m 100 --meta
+        spades.py {params.fastq_flag} {input.r_merged} -o {params.out_dir} -t {threads} -m 100 --meta
         """

@@ -135,8 +135,8 @@ rule hclust_genus:
 use rule metaphlan as metaphlan_bowtie with:
     input:
         metaphlan_db = rules.metaphlan_setup.output.metaphlan_db,
-        r1_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r1.fastq.gz",
-        r2_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r2.fastq.gz"
+        r1_clean = get_final_read1,
+        r2_clean = get_final_read2
     output:
         profile = "results/metaphlan_bowtie_out/{sample}/{sample}.metaphlan_profile.txt",
         bowtie_out = "results/metaphlan_bowtie_out/{sample}/{sample}.bowtie2.bz2"
@@ -171,8 +171,8 @@ rule kraken2:
     script from KrakenTools
     """
     input: 
-        r1_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r1.fastq.gz",
-        r2_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r2.fastq.gz"
+        r1_clean = get_final_read1,
+        r2_clean = get_final_read2
     output:
         kraken_out = "results/kraken/{sample}/{sample}_kraken2out.txt",
         kraken_report = "results/kraken/{sample}/{sample}_kraken2report.txt"
@@ -243,8 +243,8 @@ rule merge_kraken:
 
 rule metaxa2:
     input:
-        r1_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r1.fastq.gz",
-        r2_clean = "results/bowtie_out/{sample}/{sample}.fastp_bowtie.r2.fastq.gz"
+        r1_clean = get_final_read1,
+        r2_clean = get_final_read2
     output:
         out = "results/metaxa2/{sample}/{sample}_metaxa2.taxonomy.txt"
     params:

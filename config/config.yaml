@@ -25,7 +25,7 @@ FASTQC: False
 METAPHLAN: False
 KRAKEN2: False
 METAXA2: False
-ASSEMBLE: True
+ASSEMBLE: False
 MEGAHIT: False
-SPADES: False
+SPADES: True
 METABAT2: False

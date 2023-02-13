@@ -43,8 +43,11 @@ def get_rules(wildcards):
                     sample=samples["sample"])
         else:
             pass
-            
     if config["NONPAREIL"]:
+        if config["MERGE_READS"]:
+            all_rules = all_rules + expand("results/nonpareil.merged_out/{sample}/{sample}.npo",
+                sample=samples["sample"])
+        #else:
         all_rules = all_rules + expand(
             "results/nonpareil_out/{sample}/{sample}.npo", 
             sample=samples["sample"])
@@ -170,6 +173,22 @@ def get_final_merged_read(wildcards):
 ###########################################################
 ###   Helper functions for determining misc. rule I/O   ###
 ###########################################################
+
+### Helper functions for configuring quast multiqc input ###
+def get_multiqc_input():
+    multiqc_in = []
+    if config["DECONVOLUTE"]:
+        multiqc_in = multiqc_in + expand("results/fastqc_out/bowtie_qc/{sample}/{sample}.bowtie.r1_fastqc.html",
+            sample=samples["sample"])
+    if config["COMPLEXITY_FILTER"]:
+        multiqc_in = multiqc_in + expand("results/fastqc_out/bbduk_qc/{sample}/{sample}.bbduk.r1_fastqc.html",
+            sample=samples["sample"])
+    if config["TRIM_READS"]:
+        multiqc_in = multiqc_in + expand("results/fastqc_out/fastp_qc/{sample}/{sample}.fastp.r1_fastqc.html",
+            sample=samples["sample"])
+    multiqc_in = multiqc_in + expand("results/fastqc_out/raw_qc/{sample}/{sample}.raw.r1_fastqc.html",
+        sample=samples["sample"])
+    return multiqc_in
 
 ### Helper functions for configuring quast multiqc input ###
 
