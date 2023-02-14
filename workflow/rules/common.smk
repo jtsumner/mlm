@@ -50,20 +50,20 @@ def get_rules(wildcards):
     if config["METAXA2"]:
         all_rules = all_rules + expand("results/metaxa2/{sample}/{sample}_metaxa2.taxonomy.txt", sample=samples["sample"])
     if config["ASSEMBLE"]:
-        if config["MEGAHIT"]:
-            all_rules = all_rules + expand(
-                "results/megahit_out/{sample}/{sample}.contigs.fa", 
-                sample=samples["sample"])
-        if config["SPADES"]:
-            all_rules = all_rules + expand(
-                "results/spades_out/{sample}/scaffolds.fasta", 
-                sample=samples["sample"])
+        #if config["MEGAHIT"]:
+        #    all_rules = all_rules + expand(
+        #        "results/megahit_out/{sample}/{sample}.contigs.fa", 
+        #        sample=samples["sample"])
+        #if config["SPADES"]:
+        #    all_rules = all_rules + expand(
+        #        "results/spades_out/{sample}/scaffolds.fasta", 
+        #        sample=samples["sample"])
         if config["SPADES"] or config["MEGAHIT"]:
             all_rules.append("results/quast_out/multiqc_report.html")
-            all_rules = all_rules + expand(
-                "results/{assembler}_parsed/{sample}/{sample}.parsed_assembly.fa", 
-                sample=samples["sample"],
-                assembler=ASSEMBLER)
+            #all_rules = all_rules + expand(
+            #    "results/{assembler}_parsed/{sample}/{sample}.parsed_assembly.fa", 
+            #    sample=samples["sample"],
+            #    assembler=ASSEMBLER)
     if config["METABAT2"]:
         metabat2_results = directory(expand(
             "results/metabat_{assembler}_out/{sample}/bins/", 
@@ -171,7 +171,7 @@ def get_multiqc_input():
     creates a list of fastqc output files to expect for multiqc input
     """
     multiqc_in = []
-    if config["DECONVOLUTE"]:
+    if config["MERGE_READS"]:
         multiqc_in = multiqc_in + expand("results/fastqc_out/bbmerge_qc/{sample}/{sample}.bbmerge_fastqc.html",
             sample=samples["sample"])
     if config["DECONVOLUTE"]:
@@ -190,6 +190,10 @@ def get_multiqc_input():
 ### Helper functions for configuring quast multiqc input ###
 
 def get_multiqc_quast_input(wildcards):
+    #if config["MERGE_READS"] and config["SPADES"]:
+    #    return expand("results/quast_out/spades.merged/{sample}/report.html", 
+    #        sample=samples["sample"],
+    #        assembler=ASSEMBLER)
     if config["MEGAHIT"] and config["SPADES"]:
         quast_reports = expand(
             "results/quast_out/{assembler}/{sample}/report.html", 

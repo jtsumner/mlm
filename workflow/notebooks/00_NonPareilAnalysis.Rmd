@@ -24,9 +24,14 @@ np_length <- length(np_list)
 #pdf(file="../../results/notebook_out/00_NonPareilPlot.pdf")
 Nonpareil.legend(Nonpareil.curve.batch(np_list, 
                                        plot.opts = list(legend = NA, 
-                                                        #plot.model = F, 
+                                                        plot.model = F, 
                                                         plot.diversity = F,
-                                                        main = NA)), cex = 0.5)
+                                                        main = NA)), cex = 0.10)
+Nonpareil.curve.batch(np_list, plot.opts = list(legend = NA, 
+                                                        plot.model = F, 
+                                                        plot.diversity = F,
+                                                        main = NA))
+
 #dev.off()
 ```
 
@@ -37,7 +42,7 @@ Nonpareil.legend(Nonpareil.curve.batch(np_list,
 np_summary <-as.data.frame(
                             summary(Nonpareil.curve.batch(np_list, plot = F))
                             )
-write_csv2(np_summary, "../../results/notebook_out/00_NonPareilSummary.csv")
+#write_csv2(np_summary, "../../results/notebook_out/00_NonPareilSummary.csv")
 np_summary
 ```
 

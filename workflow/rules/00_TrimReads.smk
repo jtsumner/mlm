@@ -30,7 +30,6 @@ rule fastp_pe:
             --detect_adapter_for_pe \
             --trim_poly_g \
             --trim_poly_x \
-            --dedup \
             --thread {threads} \
             --length_required 50 \
             -j {output.json} \

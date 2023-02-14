@@ -44,7 +44,6 @@ rule multiqc_quast:
         multiqc --outdir {params.out_dir} --dirs --dirs-depth 2 results/quast_out/
         """
 
-
 rule drop_short_contigs_megahit:
     input:
         "results/megahit_out/{sample}/{sample}.contigs.fa"
@@ -61,7 +60,6 @@ rule drop_short_contigs_spades:
         "results/spades_out/{sample}/scaffolds.fasta"
     output:
         "results/spades_parsed/{sample}/{sample}.parsed_assembly.fa"
-    conda:
-        "../envs/seq_processing.yml"
     script:
         "../scripts/parse_contigs.py"
+
