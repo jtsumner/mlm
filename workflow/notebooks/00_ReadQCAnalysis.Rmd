@@ -1,0 +1,74 @@
+---
+title: "General ReadQC and AssemblyQC analysis"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(ggpubr)
+library(cowplot)
+```
+
+```{r}
+# Set multiqc file name and summary output name
+readqc = "../../results/old_results/with_dedupB/fastqc_out/multiqc_data/multiqc_fastqc.txt"
+summary_out = "../../results/tables/ReadNumberSummary.tsv"
+
+# Parse multiqc/fastqc data to have columns for Sample and Tool+Read# 
+#   (e.g., bowtie_qc.1, bowtie_qc.2, bbmerge.merged)
+tmp_readqc<- read_tsv(readqc, name_repair = "universal") %>% 
+  select(Sample,Total.Sequences,Sequence.length,.GC, 
+         total_deduplicated_percentage, avg_sequence_length) %>%
+  separate(Sample, into = c("Tool", "Sample", "Read"), sep = "\\s*\\|\\s*") %>%
+  mutate(Read = ifelse(grepl("_R1_", Read), "1",
+                       ifelse(grepl("_R2_", Read), "2", 
+                              ifelse(grepl("_R1", Read), "1",
+                              ifelse(grepl("_R2", Read), "2",
+                              ifelse(grepl(".r1", Read), "1",
+                              ifelse(grepl(".r2", Read), "2", "merged")))))), .after="Read") %>%
+  mutate(Tool_Read = paste(Tool, Read, sep = ".")) %>%
+  select(!c(Tool, Read)) 
+
+# Make major summary/output table for total sequences by tools per 
+fastqc_summary <- tmp_readqc %>% 
+  select(Sample, Tool_Read, Total.Sequences) %>% 
+  pivot_wider(names_from = Tool_Read, values_from = Total.Sequences) %>%
+  select(Sample, raw_qc.1, raw_qc.2, fastp_qc.merged, bbduk_qc.1, bbduk_qc.2, bowtie_qc.1, bowtie_qc.2, bbmerge_qc.merged)
+write_tsv(fastqc_summary, summary_out)
+```
+
+# Some quick visuals for funsies
+```{r}
+fastqc_summary %>%
+  ggplot( aes(x=bowtie_qc.1)) +
+    geom_density(fill="#69b3a2", color="#e9ecef", alpha=0.8) + theme_q2r()
+```
+
+```{r}
+# Trimmed reads by raw reads scatter plot. Direct Corr Expected
+fastqc_summary %>%
+  ggplot( aes(x=fastp_qc.merged, y=raw_qc.1)) +
+    geom_point() + theme_q2r()
+
+# Add metadata for sampels w less than 1E6 Trimmed Reads
+fastqc_summary$col <- cut(fastqc_summary$bowtie_qc.1,
+               breaks = c(-Inf, 1e6, Inf),
+               labels = c("<=1e6", ">1e6"))
+fastqc_summary$col %>% summary()
+
+# Trimmed reads by raw reads scatter plot. Direct Corr Expected
+fastqc_summary %>%
+  ggplot( aes(x=fastp_qc.merged, y=bowtie_qc.1, color=col)) +
+    geom_point()+ 
+    scale_x_continuous(breaks = seq(0, 3e7, by = 1e6)) + 
+    scale_y_continuous(breaks = seq(0, 3e7, by = 1e6)) + rotate_x_text()
+```
+
+```{r}
+ggplot(tmp_readqc, aes(x=as.factor(Tool_Read), y=Total.Sequences)) + geom_boxplot() + rotate_x_text()
+```
+```{r}
+
+```
+

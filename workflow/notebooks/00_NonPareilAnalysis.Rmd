@@ -54,4 +54,13 @@ sd(summary(Nonpareil.curve.batch(np_list, plot = F))[,2])
 sd(summary(Nonpareil.curve.batch(np_list, plot = F))[,2])/sqrt(np_length)
 
 ```
+```{r}
+np_summary %>%
+  ggplot( aes(x=C)) +
+    geom_density(fill="#69b3a2", color="#e9ecef", alpha=0.8) + theme_q2r()
+
+np_summary %>%
+  ggplot( aes(x=diversity, y=C)) +
+    geom_point() + theme_q2r()
+```
 

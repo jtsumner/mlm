@@ -382,7 +382,7 @@ control_samples <- read_table('../../config/map_table.tsv') %>% column_to_rownam
   filter(grepl("Control", sample.type)) %>% row.names()
 map_table <- read_table('../../config/map_table.tsv')
 
-s_abund <- read_tsv("../../results/kraken/merged_kraken_mpa_profile.tsv") %>%
+s_abund <- read_tsv("../../results/old_results/tmp_resultsB//kraken/merged_kraken_mpa_profile.tsv") %>%
   rename(clade_name = "#Classification") %>% 
   filter(grepl("s__", clade_name))
 
@@ -541,3 +541,96 @@ fit_data2 = Maaslin2(input_data     = kraken_4mas,
                      core           = 4,
                      ) # Subject
 ```
+
+# Consensus Cluster Analysis
+```{r}
+
+# Convert PS object (here not filtered) to metagenomeseq object
+ms_kraken_species <- ps_kraken_species %>% phyloseq_to_metagenomeSeq()
+
+# Normalize counts using CSS method
+ms_kraken_norm<- MRcounts(ms_kraken_species, norm = TRUE, log = FALSE)
+
+# Get top 500 most variable features using median absolute deviation method
+mads=apply(ms_kraken_norm,1,mad)
+d=ms_kraken_norm[rev(order(mads))[1:2000],]
+d = sweep(d,1, apply(d,1,median,na.rm=T))
+library(ConsensusClusterPlus)
+report = ConsensusClusterPlus(d,maxK=15,reps=100,pItem=0.8,pFeature=1,clusterAlg="hc",distance="pearson",seed=123456)
+report[[5]]
+icl = calcICL(report)
+icl[["itemConsensus"]]
+
+# Cluster assignments for k=[[num]]
+# Use enframe to convert from terrible list to tibble
+clusters <- enframe(report[[8]]$consensusClass)
+```
+
+```{r}
+# beta-diversity measure
+beta <- vegdist(t(d), 'jaccard', binary = T)
+beta.mat <- as.matrix(beta)
+
+# projection
+pcoa <- cmdscale(beta, k = 4, eig = TRUE)
+
+# cleanup
+ord <- as.data.frame(pcoa$points)
+names(ord) <- c('pcoa1', 'pcoa2', 'pcoa3', 'pcoa4') ## rename coordinates
+
+# add clusters
+
+#group_by(item) %>% max(itemConsensus)
+
+ord$Sample <- rownames(ord)
+
+ord<-ord %>% left_join(clusters, by = c("Sample" = "name"))
+# Percent explained variation
+eig <- eigenvals(pcoa)
+eig.percent <- 100*head(eig/sum(eig))
+eig.percent
+eig.1 <- paste("PCo1 (", as.character(round(eig.percent[1], digits = 1)), "%)", sep = "")
+eig.2 <-paste("PCo2 (", as.character(round(eig.percent[2], digits = 1)), "%)", sep = "")
+```
+
+```{r}
+## plot PCoA (FIGURE 1A)
+ggplot(data = ord, aes(x = pcoa1, y = pcoa2, fill = as.factor(value))) +
+  geom_point(size = 2, stroke = 1, shape=21, alpha=.5) +
+  theme_bw() +
+  xlab(eig.1) +
+  ylab(eig.2) +
+  theme_q2r() +
+  theme(axis.text = element_text(size=15, color = "black"),
+        axis.title = element_text(size=16, color = "black"),
+        legend.text = element_text(size=15, color = "black"),
+        legend.title = element_text(size=15, color = "black")) +
+  scale_fill_brewer(guide="legend", palette="Set1") +
+  #scale_shape_manual(values=c(21))+#, 22, 23, 24, 25, 26)) +
+  guides(fill=guide_legend(override.aes=list(shape=21))) +
+   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
+#ggsave("../../results/notebook_out/02A_KrakenPCoA.pdf", units="in", width=6, height=3.5)
+
+```
+```
+
+```{r}
+data(mouseData)
+mouseData = mouseData[which(rowSums(mouseData)>139),]
+sparsity = rowMeans(MRcounts(mouseData)==0)
+lor = log(fitPA(mouseData,cl=pData(mouseData)[,3])$oddsRatio)
+plotBubble(lor,sparsity,main="lor ~ sparsity")
+# Example 2
+x = runif(100000)
+y = runif(100000)
+plotBubble(y,x)
+```
+
+
+```{r}
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("ConsensusClusterPlus")
+a```
+

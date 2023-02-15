@@ -30,8 +30,9 @@ rule fastp_pe:
             --detect_adapter_for_pe \
             --trim_poly_g \
             --trim_poly_x \
+            --dedup \
             --thread {threads} \
-            --length_required 50 \
+            --length_required 100 \
             -j {output.json} \
             -h {output.html} \
             -V 
@@ -145,7 +146,7 @@ rule merge_reads:
             out={output.r3} \
             strict=t \
             k=60 \
-            mininsert=70 \
+            mininsert=90 \
             threads={threads}
         """
 
