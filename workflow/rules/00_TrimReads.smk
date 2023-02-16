@@ -38,6 +38,51 @@ rule fastp_pe:
             -V 
         """
 
+rule fastp4amp:
+    """
+    This is a special trimming rule used to quality trim and merge 
+    reads from 16S amplicon sequencing. The remainder of my 16S pipeline 
+    is not integrated into MLM (see MGX2AMP repo).
+
+    After this step, prepare manifest and sample metadata files,
+    acquire the SILVA DB for 16S sequences, and run QIIME2
+
+    To use: 
+        1. Comment out get_rules in rule all.
+        2. Replace with expand(
+            "results/AMP_trimmed/{sample}_fastp-merged.fq.gz", 
+            sample=samples["sample"])
+        3. Prep sample sheet and execute
+    """
+    input:
+        r1 = get_r1,
+        r2 = get_r2
+    output:
+        r1_merged = "results/AMP_trimmed/{sample}_fastp-merged.fq.gz",
+        json = "results/AMP_trimmed/{sample}_fastp.json",
+        html = "results/AMP_trimmed/{sample}_fastp.html"
+    conda:
+        "../envs/seq_processing.yml"
+    threads: 15
+    resources:
+        mem="20G"
+    shell: 
+        """
+        fastp \
+            -i {input.r1} \
+            -I {input.r2} \
+            --merged_out {output.r1_merged} \
+            --merge \
+            --detect_adapter_for_pe \
+            --trim_poly_g \
+            --trim_poly_x \
+            --thread {threads} \
+            --length_required 250 \
+            -j {output.json} \
+            -h {output.html}
+        """
+
+
 ############################
 ###  PART 2: COMPLEXITY  ###
 ############################
