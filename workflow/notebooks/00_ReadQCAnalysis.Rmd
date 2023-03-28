@@ -12,7 +12,7 @@ library(cowplot)
 
 ```{r}
 # Set multiqc file name and summary output name
-readqc = "../../results/old_results/with_dedupB/fastqc_out/multiqc_data/multiqc_fastqc.txt"
+readqc = "../../results/tmp/fastqc_out/multiqc_data/multiqc_fastqc.txt"
 summary_out = "../../results/tables/ReadNumberSummary.tsv"
 
 # Parse multiqc/fastqc data to have columns for Sample and Tool+Read# 
@@ -34,7 +34,12 @@ tmp_readqc<- read_tsv(readqc, name_repair = "universal") %>%
 fastqc_summary <- tmp_readqc %>% 
   select(Sample, Tool_Read, Total.Sequences) %>% 
   pivot_wider(names_from = Tool_Read, values_from = Total.Sequences) %>%
-  select(Sample, raw_qc.1, raw_qc.2, fastp_qc.merged, bbduk_qc.1, bbduk_qc.2, bowtie_qc.1, bowtie_qc.2, bbmerge_qc.merged)
+  select(Sample, raw_qc.1, raw_qc.2, fastp_qc.merged, bbduk_qc.1, bbduk_qc.2, bowtie_qc.1, bowtie_qc.2, bbmerge_qc.merged) %>%
+    mutate("fastp-raw"= fastp_qc.merged/raw_qc.1) %>% 
+    mutate("bbduk-fastp"= bbduk_qc.1/fastp_qc.merged) %>% 
+    mutate("bowtie-bbduk"= bowtie_qc.1/bbduk_qc.1) %>% 
+    mutate("bbmerge-bowtie"= bbmerge_qc.merged/bowtie_qc.1)
+
 write_tsv(fastqc_summary, summary_out)
 ```
 
@@ -57,18 +62,40 @@ fastqc_summary$col <- cut(fastqc_summary$bowtie_qc.1,
                labels = c("<=1e6", ">1e6"))
 fastqc_summary$col %>% summary()
 
-# Trimmed reads by raw reads scatter plot. Direct Corr Expected
+# Trimmed reads by decontaminated reads scatter plot. Partial Corr Expected
 fastqc_summary %>%
   ggplot( aes(x=fastp_qc.merged, y=bowtie_qc.1, color=col)) +
     geom_point()+ 
-    scale_x_continuous(breaks = seq(0, 3e7, by = 1e6)) + 
-    scale_y_continuous(breaks = seq(0, 3e7, by = 1e6)) + rotate_x_text()
+    scale_x_continuous(breaks = seq(0, 3e7, by = 1e6)) + # Set identical scales
+    scale_y_continuous(breaks = seq(0, 3e7, by = 1e6)) + 
+    rotate_x_text()
 ```
 
 ```{r}
+# Boxplot of number of reads at each step of QC 
 ggplot(tmp_readqc, aes(x=as.factor(Tool_Read), y=Total.Sequences)) + geom_boxplot() + rotate_x_text()
 ```
 ```{r}
+# Scatter plot of percent human reads by trimmed read mumber. Expect no relationship
+fastqc_summary %>% mutate(per.human=bowtie_qc.1/bbduk_qc.1) %>%select(Sample, bowtie_qc.1, fastp_qc.merged, raw_qc.1,per.human) %>% left_join(map_table, by = c("Sample" = "sample")) %>%
+ggplot(aes(x=fastp_qc.merged, y=per.human)) + 
+  geom_point() 
+  
+```
+
+
+
+```{r}
+fastqc_tmp<- fastqc_summary %>% mutate(per.human=bowtie_qc.1/bbduk_qc.1) %>%select(Sample, bowtie_qc.1, fastp_qc.merged, raw_qc.1,per.human) %>% left_join(map_table, by = c("Sample" = "sample")) %>%filter(binned_outcome != "Control")
+
+# Percent human on binned outcome OR subtype. No relationship
+one.way <- aov(per.human ~ binned_outcome, data = fastqc_tmp)
+summary(one.way)
+TukeyHSD(one.way)
+
+one.way <- aov(per.human ~ is.baseline, data = fastqc_tmp)
+summary(one.way)
+TukeyHSD(one.way)
 
 ```
 

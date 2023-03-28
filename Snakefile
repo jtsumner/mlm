@@ -18,7 +18,8 @@ include: "workflow/rules/bin_metabat2.smk"
 
 rule all:
     input:
-        expand("results/AMP_trimmed/{sample}_fastp-merged.fq.gz", sample=samples["sample"])        #get_rules,
+        get_rules,
+        #expand("results/AMP_trimmed/{sample}_fastp-merged.fq.gz", sample=samples["sample"])        #g
 
 # Make report for snakemake. 
 report: "workflow/report/workflow.rst"

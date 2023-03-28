@@ -279,19 +279,19 @@ genus_table.heat <- genus_table[genera.ranked,] %>%
 library(pheatmap)
 annot.col <- map_table %>% select(sample.type, binned_outcome, is.baseline) 
 
-paletteLength <- 100
+paletteLength <- 50
 
 myColors <- rev(colorRampPalette(rev(brewer.pal(n = 9, name ="Reds")))(paletteLength))
 myColors <- rev(colorRampPalette(rev(brewer.pal(n = 9, name ="RdBu")))(paletteLength))
 
-pdf(file="../../results/notebook_out/02A_MetaphlanHeatPlotGenera.pdf", width = 25, height = 20)
+#pdf(file="../../results/notebook_out/02A_MetaphlanHeatPlotGenera.pdf", width = 25, height = 20)
 pheatmap(genus_table.heat, 
          color = myColors,
          annotation_col = annot.col,
          angle_col = "45",
          show_colnames=FALSE,
          show_rownames = FALSE, scale="row")
-dev.off()
+#dev.off()
 ```
 
 

@@ -30,7 +30,6 @@ rule fastp_pe:
             --detect_adapter_for_pe \
             --trim_poly_g \
             --trim_poly_x \
-            --dedup \
             --thread {threads} \
             --length_required 100 \
             -j {output.json} \
@@ -58,12 +57,13 @@ rule fastp4amp:
         r1 = get_r1,
         r2 = get_r2
     output:
-        r1_merged = "results/AMP_trimmed/{sample}_fastp-merged.fq.gz",
-        json = "results/AMP_trimmed/{sample}_fastp.json",
-        html = "results/AMP_trimmed/{sample}_fastp.html"
+        r1_filtered = "results/AMP_trimmed/{sample}/{sample}.fastp.r1.fastq.gz",
+        r2_filtered = "results/AMP_trimmed/{sample}/{sample}.fastp.r2.fastq.gz",
+        json = "results/AMP_trimmed/{sample}/{sample}_fastp.json",
+        html = "results/AMP_trimmed/{sample}/{sample}_fastp.html"
     conda:
         "../envs/seq_processing.yml"
-    threads: 15
+    threads: 12
     resources:
         mem="20G"
     shell: 
@@ -71,15 +71,16 @@ rule fastp4amp:
         fastp \
             -i {input.r1} \
             -I {input.r2} \
-            --merged_out {output.r1_merged} \
-            --merge \
+            --out1 {output.r1_filtered} \
+            --out2 {output.r2_filtered} \
             --detect_adapter_for_pe \
             --trim_poly_g \
             --trim_poly_x \
             --thread {threads} \
-            --length_required 250 \
+            --length_required 100 \
             -j {output.json} \
-            -h {output.html}
+            -h {output.html} \
+            -V 
         """
 
 
@@ -322,3 +323,4 @@ rule fastqc_multiqc:
         module load multiqc
         multiqc --outdir {params.out_dir} --dirs --dirs-depth 2 results/fastqc_out/
         """
+
