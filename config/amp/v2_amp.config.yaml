@@ -1,0 +1,31 @@
+# This file should contain everything to configure the workflow on a global scale.
+# In case of sample based data, it should be complemented by a samples.tsv file that contains
+# one row per sample. It can be parsed easily via pandas.
+
+samples: "config/sample_sheet.tsv"
+#samples: "config/samples_minimal_path.tsv"
+
+#samples: "config/samples_minimal.tsv"
+
+metaphlan_idx: "mpa_v30_CHOCOPhlAn_201901"
+human_genome: "https://hgdownload.cse.ucsc.edu/goldenpath/hg38/bigZips/hg38.fa.gz"
+genome_name: "hg38.fa.gz"
+
+
+# Configuration for which rules to execute are listed below\
+MODULE_READ_QC: True
+TRIM_READS: True
+COMPLEXITY_FILTER: False
+DECONVOLUTE: False
+BOWTIE2: False
+MERGE_READS: False
+NONPAREIL: False
+FASTQC: False
+
+METAPHLAN: False
+KRAKEN2: False
+METAXA2: False
+ASSEMBLE: False
+MEGAHIT: False
+SPADES: False
+METABAT2: False

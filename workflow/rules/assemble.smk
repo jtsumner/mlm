@@ -38,7 +38,7 @@ rule spades:
 
     threads: 25
     resources:
-        mem="80g",
+        mem="100g",
         time="10:00:00"
     shell:
         """

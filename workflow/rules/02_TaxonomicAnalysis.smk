@@ -4,7 +4,7 @@
 ############################
 
 ### Setup Metaphlan. Run Metaphlan on samples to make abundance tables ###
-
+#mpa_vOct22_CHOCOPhlAnSGB_202212
 def metaphlan_merge_inputs(wildcards):
     files = expand("results/metaphlan_out/{sample}/{sample}.metaphlan_profile.txt",
         sample=samples["sample"])
@@ -52,6 +52,7 @@ rule metaphlan:
         --nproc {threads} \
         --input_type fastq \
         --unknown_estimation \
+        -t rel_ab_w_read_stats \
         -o {output.profile}
         """
 

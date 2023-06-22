@@ -26,7 +26,7 @@ Nonpareil.legend(Nonpareil.curve.batch(np_list,
                                        plot.opts = list(legend = NA, 
                                                         plot.model = F, 
                                                         plot.diversity = F,
-                                                        main = NA)), cex = 0.10)
+                                                        main = NA)), cex = 0.90)
 Nonpareil.curve.batch(np_list, plot.opts = list(legend = NA, 
                                                         plot.model = F, 
                                                         plot.diversity = F,
@@ -63,4 +63,36 @@ np_summary %>%
   ggplot( aes(x=diversity, y=C)) +
     geom_point() + theme_q2r()
 ```
+
+
+
+```{r}
+mgx <- read_csv("../../results/minimal_SCRIPT_01_Metagenomics.csv", name_repair = "universal")[1:11]
+
+np.meta <- clusters %>% mutate(cluster_num = as.factor(cluster_num)) %>%
+  left_join(shannon.cluster) %>%
+  separate(name, into=c("pt", "tube"), sep = "-TUBE")
+
+np.meta <- np.meta %>% left_join(mgx, by=c("tube" ="DNA.tube.ID" ))
+
+np.mgx2amp<- np_summary %>% rownames_to_column() %>%
+  left_join(np.meta, by=c("rowname"="Batch_sample")) %>% drop_na(tube)
+#missing <- np.mgx2amp %>% filter(is.na(tube)) 
+#mgx %>% filter(Batch_sample %in% missing$rowname)
+ggplot(np.mgx2amp, aes(x=factor(cluster_num), y=C)) +
+  geom_boxplot()
+
+
+ggplot(np.mgx2amp, aes(x=value, y=C)) +
+  geom_point() + 
+  geom_smooth(method = "lm") +
+  nature_theme("Diag", "value") + 
+  theme(aspect.ratio=1) 
+
+ggscatter(np.mgx2amp, x = "value", y = "diversity", #facet.by="success", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "AMP Value", ylab = "NonPareil Value", title = "")
+```
+
 

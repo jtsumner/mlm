@@ -1,0 +1,824 @@
+---
+title: "02A_MetaPhlanTaxonomic2AMP"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(ggpubr)
+library(cowplot)
+library(vegan)
+library(metagenomeSeq)
+library(ggridges)
+library(shades)
+
+```
+
+# Read in and Prep-process data
+## Read in Taxa Tables
+```{r}
+
+taxa_table <- read_table('../../results/metaphlan_bowtie_out/merged_metaphlan_profile.tsv',skip = 1) %>%
+                          select(!clade_taxid)
+
+
+# Remove .metaphlan_profile from ends of files 
+colnames(taxa_table) <- sapply(strsplit(names(taxa_table), ".metaphlan_profile"), `[[`, 1)
+taxa_table <- taxa_table %>% select(!"20221221-Comunal-Zymo")
+genus_table <- taxa_table %>% filter(grepl("g__", clade_name), !grepl("s__", clade_name))
+genus_table <- genus_table %>% column_to_rownames(var = c("clade_name"))
+
+species_table <- taxa_table %>% filter(grepl("s__", clade_name))
+species_table <- species_table %>% column_to_rownames(var = c("clade_name"))
+```
+
+# find samples with 100% unknown and remove them
+```{r}
+samples.unknown <- species_table %>% 
+  melt () %>% 
+  group_by(variable) %>% 
+  summarise(sum=sum(value)) %>% 
+  filter(sum == 0) %>% 
+  pluck(1) %>% 
+  as.vector()
+
+# Remove samples with no known taxa
+species_table <- species_table[, -which(names(species_table) %in% samples.unknown)] 
+```
+
+
+
+# read in map table
+```{r}
+mgx <- read_csv("../../results/minimal_SCRIPT_01_Metagenomics.csv", name_repair = "universal") %>%
+  select(Sample, DNA.tube.ID, Batch_sample) %>%
+  rename(tube = "DNA.tube.ID", file_name = "Batch_sample") %>%
+  filter(file_name %in% colnames(species_table)) %>%
+  mutate(Sample = stringr::str_replace_all(Sample, "-", ""))
+amp <- clusters %>%
+  separate(name, into=c("Sample", "tube"), sep = "-TUBE") %>%
+  mutate(Sample = stringr::str_replace_all(Sample, "PT", "")) %>%
+  mutate(cluster_num = as.factor(cluster_num)) %>%
+  filter(tube %in% mgx$tube)
+map_table <- mgx %>% 
+  left_join(amp) %>%
+  column_to_rownames("file_name") %>% 
+  filter(!rownames(.) %in% samples.unknown) %>%
+  filter(!is.na(cluster_num))
+
+```
+
+
+## remove neg controls; set sample.type factor
+```{r}
+species_table <- species_table[,rownames(map_table)] # reorder to match metadata
+
+genus_table <- genus_table[,rownames(map_table)]
+
+all(row.names(map_table) %in% colnames(species_table))
+```
+
+
+
+####################################
+# Testing as phyloseq + Playground
+####################################
+## MPA
+```{r}
+library(tidyverse); packageVersion("tidyverse")     #version:1.3.0 
+library(phyloseq); packageVersion("phyloseq")       #version:1.32.0
+
+
+#Building MetaPhlAn species abundance ps object
+s_abund <- species_table %>%
+  rownames_to_column(var="taxonomy")
+
+s_tax_tab <- s_abund %>%
+  dplyr::select(taxonomy) %>%
+  tidyr::separate(taxonomy, into = c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species"), sep = "\\|") %>%
+  dplyr::mutate(spec_row = Species) %>%
+  tibble::column_to_rownames(var = "spec_row") %>%
+  filter(Kingdom == "k__Bacteria")
+
+s_otu_tab <- s_abund %>%
+  tidyr::separate(taxonomy, into = c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species"), sep = "\\|") %>%
+  filter(Kingdom != "k__Bacteria") %>%
+  dplyr::select(-Kingdom, -Phylum, -Class, -Order, -Family, -Genus) %>%
+  tibble::column_to_rownames(var == "Species")
+
+names(s_otu_tab) <- gsub(names(s_otu_tab), pattern = ".metaphlan_profile", replacement = "") 
+
+head(colSums(s_otu_tab))
+s_otu_tab <- s_otu_tab / 100                                                   #convert to proportion with unit sum of 1
+head(colSums(s_otu_tab))
+
+s_meta <- data.frame(seq_id = names(s_otu_tab))
+s_meta <- s_meta %>%
+  left_join(
+   rownames_to_column(map_table), 
+    by=c("seq_id" = "rowname")) %>%  
+  dplyr::mutate(sampleNames_row = seq_id) %>%
+  tibble::column_to_rownames(var = "sampleNames_row") %>%
+  mutate(sample.id = paste0("PT", Sample, "-TUBE", tube))
+
+
+(ps_mpa3 <- phyloseq(sample_data(s_meta),
+                             otu_table(s_otu_tab, taxa_are_rows = TRUE),
+                             tax_table(as.matrix(s_tax_tab))))
+ps_mpa3 <- prune_samples(sample_sums(ps_mpa3) > 0, ps_mpa3)
+ps_mpa3 <- microbiome::transform(ps_mpa3,  
+                                 transform = "compositional",
+                                 target="Genus")
+ps_mpa3.gen <- tax_glom(ps_mpa3, taxrank = "Genus",NArm=FALSE)
+
+library(vegan)
+decostand(s_otu_tab, method="normalize", MARGIN=1)
+View(otu_table(ps_mpa3))
+
+```
+
+## KRAKEN
+```{r}
+# For Species-Level Analysis
+s_abund <- read_tsv("../../results/kraken/merged_kraken_mpa_profile.tsv") %>%
+  rename(clade_name = "#Classification") %>%
+  filter(grepl("s__", clade_name))
+
+s_tax_tab <- s_abund %>%
+  dplyr::rename("taxonomy" = "clade_name") %>%
+  #filter(stringr::str_detect(taxonomy,pattern = "k__Bacteria")) %>% # +/- Non-Bacs?
+  dplyr::select(taxonomy) %>%
+  dplyr::mutate(Species = sub('.*\\|', '', taxonomy),
+                Species = gsub("s__", "", Species),
+                spec_row = taxonomy) %>%#Species) %>%
+  dplyr::select(-taxonomy) %>%
+  tibble::column_to_rownames(var = "spec_row")
+
+
+s_otu_tab <- s_abund %>%
+  dplyr::rename("taxonomy" = "clade_name") %>%
+  #filter(stringr::str_detect(taxonomy,pattern = "k__Bacteria")) %>% # +/- Non-Bacs?
+  # dplyr::mutate(taxonomy = sub('.*\\|', '', taxonomy),
+  #               taxonomy = gsub("s__", "", taxonomy)) %>%
+  tibble::column_to_rownames(var = "taxonomy")
+
+
+# # For Genera-Level Analysis
+# s_abund <- read_tsv("../../results/kraken/merged_kraken_mpa_profile.tsv") %>%
+#   rename(clade_name = "#Classification") %>% 
+#   filter(grepl("g__", clade_name)) #%>%   filter(!grepl("s__", clade_name)) %>%filter(str_detect(clade_name, "k__Bacteria"))
+# 
+# 
+# s_tax_tab <- s_abund %>%
+#   dplyr::rename("taxonomy" = "clade_name") %>%
+#   dplyr::select(taxonomy) %>%
+#   #filter(stringr::str_detect(taxonomy,pattern = "k__Bacteria")) %>% # +/- Non-Bacs?
+#   dplyr::mutate(Genus = sub('.*\\|', '', taxonomy),
+#                 Genus = gsub("g__", "", Genus),
+#                 spec_row = Genus) %>%
+#   dplyr::select(-taxonomy) %>%
+#   tibble::column_to_rownames(var = "spec_row")
+# 
+# s_otu_tab <- s_abund %>%
+#   dplyr::rename("taxonomy" = "clade_name") %>%
+#   #filter(stringr::str_detect(taxonomy,pattern = "k__Bacteria")) %>% # +/- Non-Bacs?
+#   dplyr::mutate(taxonomy = sub('.*\\|', '', taxonomy),
+#                 taxonomy = gsub("g__", "", taxonomy)) %>%
+#   tibble::column_to_rownames(var = "taxonomy")
+
+names(s_otu_tab) <- gsub(names(s_otu_tab), pattern = "_kraken2report.txt", replacement = "") 
+
+s_meta <- data.frame(seq_id = names(s_otu_tab))
+
+s_meta <- s_meta %>%
+  left_join(
+   rownames_to_column(map_table), 
+    by=c("seq_id" = "rowname")) %>%  
+  dplyr::mutate(sampleNames_row = seq_id) %>%
+  tibble::column_to_rownames(var = "sampleNames_row") %>%
+  drop_na(tube) %>%
+  mutate(sample.id = paste0("PT", Sample, "-TUBE", tube))
+
+ps_kraken_species <- phyloseq(sample_data(s_meta),
+                                otu_table(s_otu_tab, taxa_are_rows = TRUE),
+                                tax_table(as.matrix(s_tax_tab)))
+
+# Initial filtering
+ps_kraken_species <- filter_taxa(ps_kraken_species, function(x){sum(x > 3) > 0}, prune = TRUE)
+ps_kraken_species <- prune_samples(sample_sums(ps_kraken_species) > 5000, ps_kraken_species)
+
+ps_kraken_species.css <- ps_kraken_species
+otu_table(ps_kraken_species.css) <- otu_table(MRcounts(ps_kraken_species %>% phyloseq_to_metagenomeSeq(), norm = TRUE, log = FALSE),taxa_are_rows=TRUE)
+
+
+# Relative Abundance Transform
+ps_kraken_species <- microbiome::transform(ps_kraken_species,  
+                                 transform = "compositional",
+                                 target="Species") # "Species" OR "Genus"
+
+ps_kraken_species
+
+ps.ast.krak <- ps_kraken_species
+otu.ast.krak <- psmelt(ps.ast.krak) %>% 
+  mutate(Abundance = sign(Abundance)*asin(sqrt(abs(Abundance)))) %>% # if want AST transform
+  arrange(Sample) %>%
+  select(Sample, OTU, Abundance) %>%
+  pivot_wider(id_cols = OTU, names_from = Sample, values_from = Abundance) %>%
+  column_to_rownames(var="OTU") %>% 
+  as.matrix() 
+otu_table(ps.ast.krak) <- otu_table(otu.ast.krak, taxa_are_rows = TRUE)
+
+# sample_sums(ps_kraken_species) %>% sort()
+# plot_library_size(ps_clean)
+
+#View(otu_table(ps_kraken_species))
+```
+
+
+
+# Bray Curtis Distance
+```{r}
+dist.amp.bray <-as.matrix(distance(subset_samples(ps.gen.comp, sample.id %in% s_meta$sample.id), method="bray", type="samples"))
+dist.mpa.bray <-as.matrix(distance(ps_mpa3.gen, method="bray", type="samples"))
+dist.krak.bray <-as.matrix(distance(ps_kraken_species.css, method="bray", type="samples"))
+
+```
+
+# PCoA
+### PCoA
+```{r}
+jacc.pcoa <- pcoa(dist.amp.bray)
+pcoa.pt <- jacc.pcoa$vectors %>%
+  as_tibble(rownames = NA) %>% 
+  rownames_to_column()
+
+pcoa.pt <- pcoa.pt %>% select(1:20) %>%
+  left_join(s_meta, by=c("rowname"="sample.id"))
+
+p.wu <-ggplot(pcoa.pt, aes(Axis.1, Axis.2))+ 
+    geom_point(aes(color=factor(cluster_num)),size=1, alpha=0) + 
+    theme_bw(10) + 
+    theme(legend.position = "left") + 
+    labs(x="PCoA1",y="PCoA2") +
+    #scale_color_brewer(palette="Set1")+  
+    scale_color_npg() +
+    theme(axis.title = element_text(size = 8)) + 
+    geom_point(aes(fill=factor(cluster_num)),size=3, alpha=1, shape=21)  + 
+    scale_fill_npg() +
+    #scale_fill_brewer(palette="Set1") + 
+    nature_theme("PCoA1", "PCoA1") + 
+    theme(legend.position = "bottom") + coord_fixed(ratio=1) + ggtitle("Amplicon Bray Curtis")
+
+p.wu
+```
+
+```{r}
+jacc.pcoa <- pcoa(dist.mpa.bray)
+pcoa.pt <- jacc.pcoa$vectors %>%
+  as_tibble(rownames = NA) %>% 
+  rownames_to_column()
+
+pcoa.pt <- pcoa.pt %>% select(1:20) %>%
+  left_join(s_meta, by=c("rowname"="seq_id"))
+
+p.wu <-ggplot(pcoa.pt, aes(Axis.1, Axis.2))+ 
+    geom_point(aes(color=factor(cluster_num)),size=1, alpha=0) + 
+    theme_bw(10) + 
+    theme(legend.position = "left") + 
+    labs(x="PCoA1",y="PCoA2") +
+    #scale_color_brewer(palette="Set1")+  
+    scale_color_npg() +
+    theme(axis.title = element_text(size = 8)) + 
+    geom_point(aes(fill=factor(cluster_num)),size=3, alpha=1, shape=21)  + 
+    scale_fill_npg() +
+    #scale_fill_brewer(palette="Set1") + 
+    nature_theme("PCoA1", "PCoA1") + 
+    theme(legend.position = "bottom") + coord_fixed(ratio=1) + ggtitle("Metaphlan Bray Curtis")
+
+p.wu
+```
+
+```{r}
+jacc.pcoa <- pcoa(dist.krak.bray)
+pcoa.pt <- jacc.pcoa$vectors %>%
+  as_tibble(rownames = NA) %>% 
+  rownames_to_column()
+
+pcoa.pt <- pcoa.pt %>% select(1:20) %>%
+  left_join(s_meta, by=c("rowname"="seq_id"))
+
+p.wu <-ggplot(pcoa.pt, aes(Axis.1, Axis.2))+ 
+    geom_point(aes(color=factor(cluster_num)),size=1, alpha=0) + 
+    theme_bw(10) + 
+    theme(legend.position = "left") + 
+    labs(x="PCoA1",y="PCoA2") +
+    #scale_color_brewer(palette="Set1")+  
+    scale_color_npg() +
+    theme(axis.title = element_text(size = 8)) + 
+    geom_point(aes(fill=factor(cluster_num)),size=3, alpha=1, shape=21)  + 
+    scale_fill_npg() +
+    #scale_fill_brewer(palette="Set1") + 
+    nature_theme("PCoA1", "PCoA1") + 
+    theme(legend.position = "bottom") + coord_fixed(ratio=1) + ggtitle("Kraken Bray Curtis")
+
+p.wu
+
+ggMarginal(p.wu, type="density", groupFill = T, groupColour = T)
+```
+
+## UMAP UniFrac W
+```{r}
+# Unifrac Settings 
+library(ggExtra)
+library(umap)
+
+# Set UMAP config (see knight 2021 umap paper)
+umap.config<-umap::umap.defaults
+umap.config$n_neighbors <- length(sample_names(ps_kraken_species))-1
+umap.config$min_dist <- .9
+umap.config$spread <- 1
+umap.config$random_state <- 1234567
+umap.config$transform_state <- 123
+
+```
+
+```{r}
+
+do_umap_mgx2amp <- function(dist.matrix, umap_config,join_var){
+  # Run UMAP
+  fun.umap <- umap::umap(dist.matrix, config = umap_config,input="dist")
+  
+  # Get Coordinates for ggplot2
+  umap.pt <- fun.umap$layout %>%  
+    as_tibble(rownames = NA) %>% 
+    rownames_to_column()
+
+  # Join with extra metadata, clusters, etc.
+  umap.pt <- umap.pt %>% 
+    left_join(s_meta, by=c("rowname"=join_var))
+
+  
+  # Plot UMAP
+  p.umap <-ggplot(umap.pt, aes(x=V1, y=V2))+ 
+    geom_point(aes(color=factor(cluster_num)),size=1, alpha=0) + 
+    theme_bw(10) + 
+    theme(legend.position = "left") + 
+    labs(x="UMAP1",y="UMAP2") +
+    #scale_color_brewer(palette="Set1")+  
+    scale_color_npg() +
+    theme(axis.title = element_text(size = 8)) + 
+    geom_point(aes(fill=factor(cluster_num)),size=2, alpha=1, shape=21)  + 
+    scale_fill_npg() +
+    #scale_fill_brewer(palette="Set1") + 
+    nature_theme("UMAP1", "UMAP2") + 
+    theme(legend.position = "bottom") + theme(aspect.ratio=1)
+  p.ellipse <- p.umap + stat_ellipse(aes(color = factor(cluster_num))) #+ theme(legend.position = "none")
+  # Optional Plot with Marginal Distributions
+  p.marginal<-ggMarginal(p.umap, type="density", groupFill = T, groupColour = T)
+  return(list(p.umap, p.ellipse, p.marginal, umap.pt))
+}
+
+p.umaps.amp <- do_umap_mgx2amp(dist.amp.bray, umap.config, "sample.id")
+p.umaps.amp[[3]]
+
+p.umaps.krak <- do_umap_mgx2amp(dist.krak.bray, umap.config, "seq_id")
+p.umaps.krak[[4]] %>%
+  left_join(meta) %>%
+  ggplot(., aes(x=V1, y=V2))+ 
+    geom_point(aes(color=factor(cluster_num)),size=1, alpha=0) + 
+    geom_point(aes(fill=factor(cluster_num)),size=2, alpha=1, shape=21)  + 
+    stat_ellipse(aes(color = factor(cluster_num))) + 
+    scale_color_npg() +
+    scale_fill_npg() +
+    labs(x="UMAP1",y="UMAP2") +
+    nature_theme("UMAP1", "UMAP2") + 
+    theme(aspect.ratio=1,legend.position = "bottom", axis.title = element_text(size = 8))
+p.umaps.krak[[3]]
+p.umaps.krak[[4]] %>%
+  left_join(meta) %>%
+  ggplot(., aes(x=V1, y=V2))+ 
+    #geom_point(color="grey", size=1, alpha=.01) + 
+    geom_point(aes(fill=antibiotics_48h),size=2, alpha=1, shape=21)  + 
+    scale_fill_npg() +
+    labs(x="UMAP1",y="UMAP2") +
+    nature_theme("UMAP1", "UMAP2") + 
+    theme(aspect.ratio=1,legend.position = "bottom", axis.title = element_text(size = 8))
+
+```
+
+
+
+
+```{r}
+library(ade4)
+
+tmp.mant <- mantel.rtest(as.dist(dist.amp.bray), as.dist(dist.krak.bray), nrepet = 999)
+tmp.mant$^2
+```
+
+
+
+# Visualize Specific Features
+
+```{r}
+
+gen.otu <- psmelt(ps.ast.krak) %>% 
+  arrange(Sample) %>%
+  mutate(OTU = stringr::str_replace(string = OTU, pattern = "-", replacement=".")) %>%
+  #select(!OTU) %>% rename(OTU="Genera") %>%
+  filter(stringr::str_detect(OTU, paste(diff.genera, collapse="|"))) #Plasmodium|Herpes|Toxoplasma
+
+gen.otu$cluster_num <- as.factor(gen.otu$cluster_num)
+abundant.gen <- gen.otu %>% filter(Abundance > 0.05) %>% select(Species) %>% unique() %>% pluck(1)
+gen.otu <- gen.otu %>% filter(Species %in% abundant.gen)
+
+p.box.genera <- gen.otu %>%
+  filter(cluster_num %in% c("1","5")) %>%
+  ggplot(., aes(x=cluster_num, y=Abundance,fill = cluster_num)) +
+  geom_boxplot(aes(y=Abundance), 
+                      outlier.alpha = 0.0, 
+                      na.rm = TRUE, 
+                      alpha = .5, 
+                      show.legend = FALSE) +
+  geom_point(aes(y=Abundance), 
+          alpha = 0.75 ,
+          size = 1, 
+          shape = 21, 
+          color = 'black',
+          position = ggplot2::position_jitterdodge(jitter.width = 1)) + 
+  labs(x="Pneumotype Cluster") + 
+  scale_fill_npg() + 
+  nature_theme("PT", "Relative Abundance") +
+  ggtitle("Some Unusual Microbes") +
+  facet_wrap(vars(Species), 
+             scales = "free", 
+             strip.position="top") +
+  theme(strip.background = element_blank(), 
+        strip.text.x = element_text(size = 10),
+        legend.position = "bottom",
+        aspect.ratio=1) +
+  stat_compare_means(label.y.npc = .9,size=2) + 
+  scale_y_continuous(expand = c(0, 0))
+p.box.genera
+ggsave("../../results/figures/Corynebacterium.pdf",p.box.genera, width=20, height=20)
+# gen.otu %>%
+#   filter(Species=="Toxoplasma_gondii") %>%
+#   filter(Abundance > 0.1)
+
+
+c25 <- c(
+  "dodgerblue2", "#E31A1C", # red
+  "green4",
+  "#6A3D9A", # purple
+  "#FF7F00", # orange
+  "black", "gold1",
+  "skyblue2", "#FB9A99", # lt pink
+  "palegreen2",
+  "#CAB2D6", # lt purple
+  "#FDBF6F", # lt orange
+  "gray70", "khaki2",
+  "maroon", "orchid1", "deeppink1", "blue1", "steelblue4",
+  "darkturquoise", "green1", "yellow4", "yellow3",
+  "darkorange4", "brown"
+)
+colourCount = length(unique(gen.otu$Species))
+getPalette = colorRampPalette(c25)
+
+p.stacked <- gen.otu %>%
+    filter(cluster_num %in% c("1","5")) %>%
+  ggplot(., aes(x=Sample, y=Abundance, fill=Species)) +
+  geom_bar(color="black", stat="identity", position="fill") +
+  ylab("Relative Abundance") +
+  ggtitle("Amplicon Sequencing") + 
+  theme_pubclean() + 
+  rotate_x_text() +
+  scale_fill_manual(values = getPalette(colourCount)) + 
+  theme(strip.background = element_blank(), 
+        strip.text.x = element_text(size = 5), 
+        axis.text.x = element_text(size=3)) + 
+  rotate_x_text(angle=90) +
+  facet_wrap(vars(cluster_num), ncol=5,scales = "free_x", strip.position="top")
+
+a_legend <- as_ggplot(cowplot::get_legend(p.stacked))
+
+p.stacked + theme(legend.position = "none")
+
+gen.otu %>%
+  mutate(Presence = if_else(Abundance > 0, 1, 0), .before=Abundance) %>%
+  ggplot(., aes(x=Sample, y=Species, fill=cluster_num)) +
+  geom_point(aes(alpha=Presence, size=Abundance), shape=21) +  
+  #nature_theme("", "") +
+  theme(strip.background = element_blank(), 
+        strip.text.x = element_text(size = 5), 
+        axis.text.x = element_text(size=3),
+        axis.text.y = element_text(size=7, face="italic"),
+        panel.border = element_rect(fill=NA, linewidth=1)) + 
+  rotate_x_text(angle=90) +
+  scale_alpha(range = c(0, 1)) +
+  facet_grid(cols=vars(cluster_num), scales="free_x", space="free_x")
+
+library(ggridges)
+med.spp.values <- gen.otu %>% 
+  filter(cluster_num == "4") %>% 
+  filter(Abundance > 0) %>% 
+  group_by(Species) %>% 
+  mutate(med = median(Abundance)) %>% 
+  select(Species, med) %>% 
+  unique()
+
+# gen.otu %>%
+#   mutate(Presence = if_else(Abundance > 0, 1, 0), .before=Abundance) %>%
+#   left_join(select(meta, sample.id, pt_category, success)) %>%
+#   left_join(med.spp.values) %>%
+#   filter(Presence == 1) %>%
+#   group_by(Species) %>%
+#   mutate_at(c("Abundance"), ~(log10(./med))) %>%
+#   #mutate_at(c("Abundance"), ~(scale(., scale=TRUE) %>% as.vector)) %>%
+#   ungroup() %>%
+#   ggplot(., aes(x=Abundance, y=cluster_num, fill=cluster_num)) +
+#     geom_density_ridges(scale=10, alpha=.5) +
+#     nature_theme("", "") +
+#     scale_fill_npg() +
+#     facet_wrap(vars(Species), ncol=1,strip.position = "right")+ 
+#     theme(
+#       strip.background = element_blank(),
+#       strip.text.x = element_text(size=1, angle=0), 
+#       panel.spacing = unit(0, "in")) + xlim(-2.5, 2.5) 
+mypal <- pal_npg("nrc")(9)
+
+p.ridge <- gen.otu %>%
+  mutate(Presence = if_else(Abundance > 0, 1, 0), .before=Abundance) %>%
+  left_join(select(meta, sample.id, pt_category, success)) %>%
+  left_join(med.spp.values) %>%
+  filter(Presence == 1) %>%
+  mutate(Species = stringr::str_replace_all(Species, "_", " ")) %>%
+  group_by(Species) %>%
+  mutate_at(c("Abundance"), ~(log10(./med))) %>%
+  #mutate_at(c("Abundance"), ~(scale(., scale=TRUE) %>% as.vector)) %>%
+  ungroup() %>%
+  ggplot(.) +
+  geom_hline(aes(yintercept=cluster_num, color=cluster_num), size=.1) +
+  geom_vline(xintercept=0, color="grey38") +
+
+    geom_density_ridges(aes(x=Abundance, y=cluster_num, fill=cluster_num, color=cluster_num),
+                        scale=10.0, 
+                        panel_scaling=TRUE,
+                        height=1,
+                        size=.1,
+                        draw_baseline=TRUE,
+                        rel_min_height = 0) +
+    nature_theme("", "") +
+    scale_color_manual(values = brightness(mypal, delta(-0.3))) +
+    scale_fill_npg() +
+    facet_wrap(vars(Species), ncol=1,strip.position = "right", scale="free_y")+ 
+    theme(
+      strip.background = element_blank(),#element_text(size=1, angle=0), 
+      panel.spacing = unit(0, "in"),
+      axis.text.y = element_blank(),
+      strip.text = element_text(face="italic"),
+      strip.text.y.right = element_text(size=8,angle = 0, hjust = 0, face = "italic"),
+      axis.ticks.y = element_blank(),
+      strip.text.x = element_blank()) + 
+    xlim(-2.5, 2.5)  +
+  labs(x=expression(log[10]('abundance relative to'~~P[4]~'median')),
+       y="Density") + ggtitle("Taxonomy") +
+  scale_x_continuous(expand = c(0, 0))
+  
+p.ridge + theme(aspect.ratio = 0.618)
+
+ggsave("../../results/KDETaxonomyPlot.pdf", plot=p.ridge, height=10, width=5)
+```
+```{r}
+psmelt(ps_kraken_species) %>% 
+  arrange(Sample) %>%
+  mutate(OTU = stringr::str_replace(string = OTU, pattern = "-", replacement=".")) %>% 
+  #filter(Sample %in% c("DNA_B02_27")) %>%
+  filter(str_detect(OTU, "k__Viruses")) %>%
+  group_by(cluster_num) %>%
+  summarize(min = min(Abundance),
+            q1 = quantile(value, 0.25),
+            median = median(value),
+            mean = mean(value),
+            q3 = quantile(value, 0.75),
+            max = max(value))
+  filter(str_detect(OTU, "s__Corynebacterium_diphtheriae")) %>%
+  filter(Abundance>0) %>%
+  arrange(desc(Abundance))
+```
+
+
+# Maaslin Genera
+```{r}
+kraken_4mas <-psmelt(ps_kraken_species) %>% 
+  select(Sample,Abundance, Species) %>% 
+  pivot_wider(names_from=Species, values_from=Abundance) %>% 
+  arrange(Sample) %>%
+  column_to_rownames("Sample") %>% as.matrix()
+
+meta_4mas <- sample_data(ps_kraken_species) %>%
+  as.data.frame() %>%
+  as_tibble(rownames = NA) %>%
+  select(sample.id, seq_id, cluster_num) %>% 
+  left_join(select(meta, sample.id, pt_category, success,patient.id.num)) %>%
+  column_to_rownames("seq_id") %>% mutate(cluster_num = if_else(cluster_num == "4", "0", cluster_num))
+meta_4mas$success <- as.factor(meta_4mas$success)
+meta_4mas$patient.id.num <- as.factor(meta_4mas$patient.id.num)
+
+head(meta_4mas)
+```
+
+```{r}
+krakenMGX = Maaslin2(input_data     = kraken_4mas, 
+                     input_metadata = meta_4mas, 
+                     #min_abundance  = .001,
+                     min_prevalence = .1,
+                     #normalization  = "TSS",
+                     transform = "AST",
+                     output         = "../../results/notebook_out/maaslin2_out", 
+                     fixed_effects  = c("cluster_num"),
+                     reference      = c("cluster_num,4"),
+                     random_effects = c("patient.id.num"),
+                     core           = 4,plot_scatter = FALSE
+                     ) # Subject
+
+maaslin_norm.gen <- krakenMGX$results %>% as.data.frame() 
+maaslin_norm.gen$OTU <- rownames(maaslin_norm.gen)
+maaslin_norm.gen <- maaslin_norm.gen %>% 
+  #separate(feature, into=c("ASV", "feature"), sep = "[.]") %>% 
+  filter(qval < 0.01) %>%
+  filter(N.not.zero > 20) %>%
+  arrange(qval) %>% 
+  select(feature) %>% 
+  unique
+diff.genera <- maaslin_norm.gen$feature
+sort(diff.genera)
+```
+```{r}
+# For Species-Level Analysis
+s_abund <- read_tsv("../../results/kraken/merged_kraken_mpa_profile.tsv") %>%
+  rename(clade_name = "#Classification") %>%
+  filter(!grepl("p__", clade_name)) %>%
+  filter(!str_detect(clade_name, '.*\\|'))
+read_tsv("../../results/kraken/merged_kraken_mpa_profile.tsv") %>%
+  rename(clade_name = "#Classification") %>%
+  filter(grepl("k__Euk", clade_name))
+s_tax_tab <- s_abund %>%
+  dplyr::rename("taxonomy" = "clade_name") %>%
+  #filter(stringr::str_detect(taxonomy,pattern = "k__Bacteria")) %>% # +/- Non-Bacs?
+  dplyr::select(taxonomy) %>%
+  dplyr::mutate(Species = sub('.*\\|', '', taxonomy),
+                Species = gsub("s__", "", Species),
+                spec_row = taxonomy) %>%#Species) %>%
+  dplyr::select(-taxonomy) %>%
+  tibble::column_to_rownames(var = "spec_row")
+
+
+s_otu_tab <- s_abund %>%
+  dplyr::rename("taxonomy" = "clade_name") %>%
+  #filter(stringr::str_detect(taxonomy,pattern = "k__Bacteria")) %>% # +/- Non-Bacs?
+  # dplyr::mutate(taxonomy = sub('.*\\|', '', taxonomy),
+  #               taxonomy = gsub("s__", "", taxonomy)) %>%
+  tibble::column_to_rownames(var = "taxonomy")
+
+names(s_otu_tab) <- gsub(names(s_otu_tab), pattern = "_kraken2report.txt", replacement = "") 
+
+s_meta <- data.frame(seq_id = names(s_otu_tab))
+
+s_meta <- s_meta %>%
+  left_join(
+   rownames_to_column(map_table), 
+    by=c("seq_id" = "rowname")) %>%  
+  dplyr::mutate(sampleNames_row = seq_id) %>%
+  tibble::column_to_rownames(var = "sampleNames_row") %>%
+  drop_na(tube) %>%
+  mutate(sample.id = paste0("PT", Sample, "-TUBE", tube))
+
+ps_kraken_phyla <- phyloseq(sample_data(s_meta),
+                                otu_table(s_otu_tab, taxa_are_rows = TRUE),
+                                tax_table(as.matrix(s_tax_tab)))
+
+# Initial filtering
+ps_kraken_phyla <- filter_taxa(ps_kraken_phyla, function(x){sum(x > 3) > 0}, prune = TRUE)
+ps_kraken_phyla <- prune_samples(sample_sums(ps_kraken_phyla) > 5000, ps_kraken_phyla)
+
+ps_kraken_phyla.css <- ps_kraken_phyla
+otu_table(ps_kraken_phyla.css) <- otu_table(MRcounts(ps_kraken_phyla %>% phyloseq_to_metagenomeSeq(), norm = TRUE, log = FALSE),taxa_are_rows=TRUE)
+
+
+# Relative Abundance Transform
+ps_kraken_phyla <- microbiome::transform(ps_kraken_phyla,  
+                                 transform = "compositional",
+                                 target="Species") # "Species" OR "Genus"
+
+ps_kraken_phyla
+
+ps.ast.krak.phy <- ps_kraken_phyla
+otu.ast.krak.phy <- psmelt(ps.ast.krak.phy) %>% 
+  mutate(Abundance = sign(Abundance)*asin(sqrt(abs(Abundance)))) %>% # if want AST transform
+  arrange(Sample) %>%
+  select(Sample, OTU, Abundance) %>%
+  pivot_wider(id_cols = OTU, names_from = Sample, values_from = Abundance) %>%
+  column_to_rownames(var="OTU") %>% 
+  as.matrix() 
+otu_table(ps.ast.krak.phy) <- otu_table(otu.ast.krak.phy, taxa_are_rows = TRUE)
+
+```
+
+
+```{r}
+phy.abund <-psmelt(ps.ast.krak.phy) %>% 
+  select(Sample,Abundance, Species,cluster_num) %>% 
+  pivot_wider(names_from=Species, values_from=Abundance) %>% 
+  arrange(Sample) %>%
+  column_to_rownames("Sample")
+
+phy.abund %>%
+  # mutate(k__Viruses = log10(k__Viruses),
+  #        k__Bacteria = log10(k__Bacteria),
+  #        k__Eukaryota = log10(k__Eukaryota)) %>%
+  ggplot(., aes(x=k__Bacteria, y=k__Eukaryota)) +
+  geom_point()+#aes(size=k__Viruses, fill=cluster_num), shape=21, alpha=.6) +
+  geom_smooth(method="loess") +
+  nature_theme("","") +
+  theme(aspect.ratio = 1) +
+  scale_fill_npg() 
+
+psmelt(ps_kraken_phyla) %>% 
+  select(Sample,Abundance, Species,cluster_num) %>%
+# mutate(k__Viruses = log10(k__Viruses),
+  #        k__Bacteria = log10(k__Bacteria),
+  #        k__Eukaryota = log10(k__Eukaryota)) %>%
+  ggplot(., aes(x=cluster_num, y=Abundance, fill=Species, group=cluster_num)) +
+  geom_boxplot(aes(fill=Species), outlier.alpha = 0) +
+  geom_point(aes(fill=Species), 
+             alpha = 0.75,
+             size = 1, 
+             shape = 21, 
+             color = 'black',
+             position = position_jitterdodge(jitter.width = .5)) +
+  scale_fill_simpsons() +
+  nature_theme("Read", "Fol") +
+  labs(x="Pneumotype Cluster" , 
+       y="Domain Abundance", 
+       title="Domain Level Shifts in Metagenomic Data  (AST Normalized)") +
+  theme(aspect.ratio = 1) + facet_grid(~Species) + 
+  stat_compare_means(label.y.npc = .95,size=2,label.x.npc = "center")
+
+
+psmelt(ps_kraken_phyla) %>% 
+  select(Sample,Abundance, Species,cluster_num) %>%
+# mutate(k__Viruses = log10(k__Viruses),
+  #        k__Bacteria = log10(k__Bacteria),
+  #        k__Eukaryota = log10(k__Eukaryota)) %>%
+  ggplot(., aes(x=cluster_num, y=Abundance, fill=Species, group=cluster_num)) +
+  geom_boxplot(aes(fill=Species), outlier.alpha = 0) +
+  geom_point(aes(fill=Species), 
+             alpha = 0.75,
+             size = 1, 
+             shape = 21, 
+             color = 'black',
+             position = position_jitterdodge(jitter.width = .5)) +
+  scale_fill_simpsons() +
+  nature_theme("Read", "Fol") +
+  labs(x="Pneumotype Cluster" , 
+       y="Domain Abundance", 
+       title="Domain Level Shifts in Metagenomic Data  (AST Normalized)") +
+  theme(aspect.ratio = 1) + facet_grid(~Species) + 
+  stat_compare_means(label.y.npc = .95,size=2,label.x.npc = "center")
+
+psmelt(ps_kraken_phyla) %>% 
+  select(Sample,Abundance, Species,cluster_num) %>%
+mutate(k__Viruses = log10(k__Viruses),
+       k__Bacteria = log10(k__Bacteria),
+       k__Eukaryota = log10(k__Eukaryota)) %>%
+  ggplot(., aes(x=cluster_num, y=Abundance, fill=Species, group=cluster_num)) +
+  geom_boxplot(aes(fill=Species), outlier.alpha = 0) +
+  geom_point(aes(fill=Species), 
+             alpha = 0.75,
+             size = 1, 
+             shape = 21, 
+             color = 'black',
+             position = position_jitterdodge(jitter.width = .5)) +
+  scale_fill_simpsons() +
+  nature_theme("Read", "Fol") +
+  labs(x="Pneumotype Cluster" , 
+       y="Domain Abundance", 
+       title="Domain Level Shifts in Metagenomic Data  (AST Normalized)") +
+  theme(aspect.ratio = 1) + facet_grid(~Species) + 
+  stat_compare_means(label.y.npc = .95,size=2,label.x.npc = "center")
+
+library(ggtern)
+phy.abund %>%
+  ggtern(., aes(x=k__Bacteria, y=k__Viruses, z=k__Eukaryota)) +
+  geom_point() +
+  theme_rgbw() +
+  labs(title = "Example Density/Contour Plot")    +
+  scale_fill_gradient(low = "blue",high = "red")  +
+  guides(color = "none", fill = "none", alpha = "none")
+  
+```
+
+
+
+

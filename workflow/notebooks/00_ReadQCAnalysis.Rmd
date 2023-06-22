@@ -8,11 +8,12 @@ library(tidyverse)
 library(ggplot2)
 library(ggpubr)
 library(cowplot)
+library(ggsci)
 ```
 
 ```{r}
 # Set multiqc file name and summary output name
-readqc = "../../results/tmp/fastqc_out/multiqc_data/multiqc_fastqc.txt"
+readqc = "../../results/fastqc_out/multiqc_data/multiqc_fastqc.txt"
 summary_out = "../../results/tables/ReadNumberSummary.tsv"
 
 # Parse multiqc/fastqc data to have columns for Sample and Tool+Read# 
@@ -27,75 +28,99 @@ tmp_readqc<- read_tsv(readqc, name_repair = "universal") %>%
                               ifelse(grepl("_R2", Read), "2",
                               ifelse(grepl(".r1", Read), "1",
                               ifelse(grepl(".r2", Read), "2", "merged")))))), .after="Read") %>%
-  mutate(Tool_Read = paste(Tool, Read, sep = ".")) %>%
-  select(!c(Tool, Read)) 
+  mutate(Tool_Read = paste(Tool, Read, sep = ".")) #%>% select(!c(Tool, Read)) 
 
 # Make major summary/output table for total sequences by tools per 
 fastqc_summary <- tmp_readqc %>% 
   select(Sample, Tool_Read, Total.Sequences) %>% 
   pivot_wider(names_from = Tool_Read, values_from = Total.Sequences) %>%
-  select(Sample, raw_qc.1, raw_qc.2, fastp_qc.merged, bbduk_qc.1, bbduk_qc.2, bowtie_qc.1, bowtie_qc.2, bbmerge_qc.merged) %>%
-    mutate("fastp-raw"= fastp_qc.merged/raw_qc.1) %>% 
-    mutate("bbduk-fastp"= bbduk_qc.1/fastp_qc.merged) %>% 
-    mutate("bowtie-bbduk"= bowtie_qc.1/bbduk_qc.1) %>% 
-    mutate("bbmerge-bowtie"= bbmerge_qc.merged/bowtie_qc.1)
+  select(Sample, raw_qc.1, raw_qc.2, fastp_qc.merged, bbduk_qc.1, bbduk_qc.2, bowtie_qc.1, bowtie_qc.2) %>% #bbmerge_qc.merged
+    # mutate("fastp-raw"= fastp_qc.merged/raw_qc.1) %>% 
+    # mutate("bbduk-fastp"= bbduk_qc.1/fastp_qc.merged) %>% 
+    # mutate("bowtie-bbduk"= bowtie_qc.1/bbduk_qc.1) #%>% mutate("bbmerge-bowtie"= bbmerge_qc.merged/bowtie_qc.1)    
+    mutate("raw.FC"= raw_qc.1/raw_qc.1) %>% 
+    mutate("fastp.FC"= fastp_qc.merged/raw_qc.1) %>% 
+    mutate("bbduk.FC"= bbduk_qc.1/raw_qc.1) %>% 
+    mutate("bowtie.FC"= bowtie_qc.1/raw_qc.1) #%>% mutate("bbmerge-bowtie"= bbmerge_qc.merged/bowtie_qc.1)
 
 write_tsv(fastqc_summary, summary_out)
 ```
 
-# Some quick visuals for funsies
 ```{r}
-fastqc_summary %>%
-  ggplot( aes(x=bowtie_qc.1)) +
-    geom_density(fill="#69b3a2", color="#e9ecef", alpha=0.8) + theme_q2r()
+# Make major summary/output table for total sequences by tools per 
+fastqc_tidy <- fastqc_summary %>% 
+  select(Sample, raw.FC,fastp.FC, bbduk.FC, bowtie.FC) %>%
+  pivot_longer(2:last_col()) %>%
+  mutate(name = factor(name, levels=c("raw.FC","fastp.FC", "bbduk.FC", "bowtie.FC")))
+
+fastqc_tidy %>%
+  group_by(name) %>%
+  summarize(min = min(value),
+            q1 = quantile(value, 0.25),
+            median = median(value),
+            mean = mean(value),
+            q3 = quantile(value, 0.75),
+            max = max(value))
+
+ggplot(fastqc_tidy, aes(x=name, y=value)) +
+  geom_boxplot(aes(fill=name), outlier.alpha = 0) +
+  geom_point(aes(fill=name), 
+             alpha = 0.75,
+             size = 1, 
+             shape = 21, 
+             color = 'black',
+             position = position_jitterdodge(jitter.width = 1)) +
+  scale_fill_simpsons() +
+  nature_theme("Read", "Fol") +
+  labs(x="ReadQC Step", 
+       y="Read Fold Change", 
+       title="Stepwise Loss of Sequencing Data") +
+  theme(aspect.ratio = 1)
 ```
 
-```{r}
-# Trimmed reads by raw reads scatter plot. Direct Corr Expected
-fastqc_summary %>%
-  ggplot( aes(x=fastp_qc.merged, y=raw_qc.1)) +
-    geom_point() + theme_q2r()
-
-# Add metadata for sampels w less than 1E6 Trimmed Reads
-fastqc_summary$col <- cut(fastqc_summary$bowtie_qc.1,
-               breaks = c(-Inf, 1e6, Inf),
-               labels = c("<=1e6", ">1e6"))
-fastqc_summary$col %>% summary()
-
-# Trimmed reads by decontaminated reads scatter plot. Partial Corr Expected
-fastqc_summary %>%
-  ggplot( aes(x=fastp_qc.merged, y=bowtie_qc.1, color=col)) +
-    geom_point()+ 
-    scale_x_continuous(breaks = seq(0, 3e7, by = 1e6)) + # Set identical scales
-    scale_y_continuous(breaks = seq(0, 3e7, by = 1e6)) + 
-    rotate_x_text()
-```
+# Quast
 
 ```{r}
-# Boxplot of number of reads at each step of QC 
-ggplot(tmp_readqc, aes(x=as.factor(Tool_Read), y=Total.Sequences)) + geom_boxplot() + rotate_x_text()
-```
-```{r}
-# Scatter plot of percent human reads by trimmed read mumber. Expect no relationship
-fastqc_summary %>% mutate(per.human=bowtie_qc.1/bbduk_qc.1) %>%select(Sample, bowtie_qc.1, fastp_qc.merged, raw_qc.1,per.human) %>% left_join(map_table, by = c("Sample" = "sample")) %>%
-ggplot(aes(x=fastp_qc.merged, y=per.human)) + 
-  geom_point() 
+quast_tidy <- read_tsv("../../results/quast_out/multiqc_data/multiqc_quast.txt") %>%
+  pivot_longer(2:last_col()) %>%
+  separate(Sample, into=c(NA, NA, "Sample"), sep="\\| ") %>%
+  left_join(., s_meta, by=c("Sample" = "seq_id")) %>%
+  filter(!stringr::str_detect(name, ">")) %>%
+  #mutate(value = sqrt(value)) %>%
+  mutate(RepeatID=if_else(str_detect(Sample.y, "BAL00"), "Baseline", if_else(str_detect(Sample.y, "BAL"), "Repeat", NA)))
   
+quast_tidy %>%
+  group_by(cluster_num, name) %>%
+  summarize(min = min(value),
+            q1 = quantile(value, 0.25),
+            median = median(value),
+            mean = mean(value),
+            q3 = quantile(value, 0.75),
+            max = max(value))
+
+ggplot(quast_tidy, aes(x=cluster_num, y=value)) +
+  geom_boxplot(aes(fill=cluster_num), outlier.alpha = 0, alpha=0.75) +
+  geom_point(aes(fill=cluster_num), 
+             alpha = 0.9,
+             size = 1, 
+             shape = 21, 
+             color = 'black',
+             position = position_jitterdodge(jitter.width = .5)) +
+  scale_fill_npg() +
+  nature_theme("Clust", "Stat") +
+  labs(x="Pneumotype Cluster", 
+       y="Square Root of Quast Statistic", 
+       title="Number of Contigs") +
+  facet_wrap(~ name, scales = "free") +
+  theme(aspect.ratio = 1, 
+        strip.background = element_blank(), 
+        strip.text.x = element_text(size = 5, face="bold")) 
 ```
 
-
-
 ```{r}
-fastqc_tmp<- fastqc_summary %>% mutate(per.human=bowtie_qc.1/bbduk_qc.1) %>%select(Sample, bowtie_qc.1, fastp_qc.merged, raw_qc.1,per.human) %>% left_join(map_table, by = c("Sample" = "sample")) %>%filter(binned_outcome != "Control")
-
-# Percent human on binned outcome OR subtype. No relationship
-one.way <- aov(per.human ~ binned_outcome, data = fastqc_tmp)
-summary(one.way)
-TukeyHSD(one.way)
-
-one.way <- aov(per.human ~ is.baseline, data = fastqc_tmp)
-summary(one.way)
-TukeyHSD(one.way)
+quast_tidy %>% 
+  filter(cluster_num=="5") %>%
+  arrange(desc(value))
 
 ```
 

@@ -59,7 +59,9 @@ rule drop_short_contigs_spades:
     input:
         "results/spades_out/{sample}/scaffolds.fasta"
     output:
-        "results/spades_parsed/{sample}/{sample}.parsed_assembly.fa"
+        "results/spades_parsed/{sample}/{sample}.fa"
+    conda:
+        "../envs/seq_processing.yml"
     script:
         "../scripts/parse_contigs.py"
 

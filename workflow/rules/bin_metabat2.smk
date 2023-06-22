@@ -7,9 +7,9 @@ from snakemake.utils import validate
 
 rule index_contigs:
     input:
-        "results/{assembler}_parsed/{sample}/{sample}.parsed_assembly.fa"
+        "results/{assembler}_parsed/{sample}/{sample}.fa"
     output:
-        "results/{assembler}_parsed/{sample}/{sample}.parsed_assembly.fa.bwt"
+        "results/{assembler}_parsed/{sample}/{sample}.fa.bwt"
     shell:
         """
         module load bwa/0.7.17
@@ -23,8 +23,8 @@ rule map2contigs:
     input:
         r1_clean = get_final_read1,
         r2_clean = get_final_read2,
-        parsed_contigs = "results/{assembler}_parsed/{sample}/{sample}.parsed_assembly.fa",
-        index = "results/{assembler}_parsed/{sample}/{sample}.parsed_assembly.fa.bwt"
+        parsed_contigs = "results/{assembler}_parsed/{sample}/{sample}.fa",
+        index = "results/{assembler}_parsed/{sample}/{sample}.fa.bwt"
     output:
         bam_sorted = "results/{assembler}_bams/{sample}/{sample}.sorted.bam"
     params:
@@ -61,7 +61,7 @@ rule index_bam:
 rule metabat_depth:
     input:
         bam_sorted = "results/{assembler}_bams/{sample}/{sample}.sorted.bam",
-        contigs = "results/{assembler}_parsed/{sample}/{sample}.parsed_assembly.fa",
+        contigs = "results/{assembler}_parsed/{sample}/{sample}.fa",
         bam_index = "results/{assembler}_bams/{sample}/{sample}.sorted.bam.bai"
     output:
         depth_fi = "results/metabat_{assembler}_out/{sample}/{sample}_depth.txt"
@@ -80,7 +80,7 @@ rule metabat_depth:
 
 rule metabat_bin:
     input:
-        contigs = "results/{assembler}_parsed/{sample}/{sample}.parsed_assembly.fa",
+        contigs = "results/{assembler}_parsed/{sample}/{sample}.fa",
         depth_fi = "results/metabat_{assembler}_out/{sample}/{sample}_depth.txt"
     output:
         bin_dir = directory("results/metabat_{assembler}_out/{sample}/bins")
@@ -105,7 +105,7 @@ rule metabat_bin:
 
 rule SS_checkm_analysis:
     input:
-        bin_dir = directory("results/metabat_out/{sample}/bins")
+        bin_dir = directory("results/metabat_{assembler}_out/{sample}/bins")
     output:
         checkm_dir = directory("results/metabat_out/checkm/{sample}"),
         checkm_fi = "results/metabat_out/checkm/{sample}/{sample}_checkm_output.txt"

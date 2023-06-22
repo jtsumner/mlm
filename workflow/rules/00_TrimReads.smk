@@ -29,9 +29,9 @@ rule fastp_pe:
             --out2 {output.r2_filtered} \
             --detect_adapter_for_pe \
             --trim_poly_g \
-            --trim_poly_x \
+            --dedup \
             --thread {threads} \
-            --length_required 100 \
+            --length_required 60 \
             -j {output.json} \
             -h {output.html} \
             -V 

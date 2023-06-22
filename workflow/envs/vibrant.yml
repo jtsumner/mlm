@@ -1,0 +1,20 @@
+name: vibrant
+channels:
+  - anaconda
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=3.8.5
+  - pip
+  - hmmer
+  - prodigal
+  - anaconda::numpy
+  - conda-forge::biopython
+  - matplotlib
+  - anaconda::pandas
+  - seaborn
+  - bioconda::vibrant==1.2.0
+  - pip:
+    - cython==0.29.21
+    - scikit-learn==0.21.3
