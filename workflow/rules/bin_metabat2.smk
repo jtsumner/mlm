@@ -95,7 +95,7 @@ rule metabat_bin:
         """
         metabat2 -t {threads} \
             --inFile {input.contigs} \
-            --outFile {output.bin_dir}/bin \
+            --outFile {output.bin_dir}/{wildcards.sample}_bin \
             --minContig 1500 \
             --abdFile {input.depth_fi} \
             --seed=100 \

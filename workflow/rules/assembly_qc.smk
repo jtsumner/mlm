@@ -50,7 +50,7 @@ rule drop_short_contigs_megahit:
     output:
         "results/megahit_parsed/{sample}/{sample}.parsed_assembly.fa"
     conda:
-        "../envs/seq_processing.yml"
+        "../envs/biopython.yml"
     script:
         "../scripts/parse_contigs.py"
 
@@ -61,7 +61,7 @@ rule drop_short_contigs_spades:
     output:
         "results/spades_parsed/{sample}/{sample}.fa"
     conda:
-        "../envs/seq_processing.yml"
+        "../envs/biopython.yml"
     script:
         "../scripts/parse_contigs.py"
 

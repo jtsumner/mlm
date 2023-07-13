@@ -154,7 +154,15 @@ cd resources/bowtie_human
 wget https://genome-idx.s3.amazonaws.com/bt/GRCh38_noalt_as.zip
 unzip GRCh38_noalt_as.zip
 ```
+or use T2T reference
+```
+mkdir resources/bowtie_human
+cd resources/bowtie_human
+wget https://genome-idx.s3.amazonaws.com/bt/chm13.draft_v1.0_plusY.zip
+unzip chm13.draft_v1.0_plusY.zip
+```
 
+See https://benlangmead.github.io/aws-indexes/bowtie for more options and including other organisms
 ## Execution
 
 1. (Optional) Check that snakemake is correctly interpretting your sample spreadsheet by executing a dryrun or one of the commands in the notes above

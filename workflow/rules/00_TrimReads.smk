@@ -28,10 +28,8 @@ rule fastp_pe:
             --out1 {output.r1_filtered} \
             --out2 {output.r2_filtered} \
             --detect_adapter_for_pe \
-            --trim_poly_g \
-            --dedup \
             --thread {threads} \
-            --length_required 60 \
+            --length_required 50 \
             -j {output.json} \
             -h {output.html} \
             -V 
@@ -100,7 +98,7 @@ rule complexity_filter:
         r1 = "results/bbduk_out/{sample}/{sample}.bbduk.r1.fastq.gz",
         r2 = "results/bbduk_out/{sample}/{sample}.bbduk.r2.fastq.gz"
     params:
-        entropy = 0.5
+        entropy = 0.8
     threads: 5
     resources:
         mem="10G"
@@ -113,8 +111,8 @@ rule complexity_filter:
             out={output.r1} \
             out2={output.r2} \
             entropy={params.entropy} \
-            entropywindow=50 \
-            entropyk=5 \
+            entropywindow=100 \
+            entropyk=10 \
             threads={threads}
         """
 
@@ -135,7 +133,8 @@ rule host_decontamination:
         sorted_bam = "results/bowtie_out/{sample}/{sample}.mapped.sorted.bam",
         flagstat = "results/bowtie_out/{sample}/{sample}.flagstat.tsv"
     params:
-        filter_db = "resources/bowtie_human/GRCh38_noalt_as/GRCh38_noalt_as",
+        filter_db = "resources/bowtie_human/chm13.draft_v1.0_plusY/chm13.draft_v1.0_plusY"
+        #filter_db = "resources/bowtie_human/GRCh38_noalt_as/GRCh38_noalt_as",
         #filter_db = "/projects/b1042/HartmannLab/jack/mlm/resources/bowtie_mouse/GRCm39/GRCm39",
     threads: 15
     resources:
@@ -143,10 +142,10 @@ rule host_decontamination:
         time="02:00:00"
     shell:
         """
-        module load bowtie2
+        module load bowtie2/2.4.5
         module load samtools/1.10.1
 
-        bowtie2 -p {threads} -x {params.filter_db} --very-sensitive -1 {input.r1} -2 {input.r2}| \
+        bowtie2 -p {threads} -x {params.filter_db} -1 {input.r1} -2 {input.r2}| \
         samtools view -bS -@ {threads}| \
         samtools sort -@ {threads} -n -o {output.sorted_bam}
 

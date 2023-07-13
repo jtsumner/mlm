@@ -6,5 +6,5 @@ channels:
   - biobakery
 dependencies:
   - python=3.7
-  - metaphlan=3.0.13
+  - metaphlan=4
   - bowtie2=2.4.4

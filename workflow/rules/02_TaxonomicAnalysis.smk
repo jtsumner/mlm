@@ -10,10 +10,13 @@ def metaphlan_merge_inputs(wildcards):
         sample=samples["sample"])
     return files
 
+#        metaphlan_db_file="resources/metaphlan_db/{}.rev.1.bt2".format(config["metaphlan_idx"])
+
 rule metaphlan_setup:
     output:
         metaphlan_db=directory("resources/metaphlan_db"),
-        metaphlan_db_file="resources/metaphlan_db/{}.rev.1.bt2".format(config["metaphlan_idx"])
+        metaphlan_db_file="resources/metaphlan_db/{}.rev.2.bt2l".format(config["metaphlan_idx"])
+
     conda: 
         "../envs/metaphlan.yml"
     params:
@@ -39,9 +42,9 @@ rule metaphlan:
         "../envs/metaphlan.yml"
     params:
         metaphlan_idx = config["metaphlan_idx"] # Index for metaphlan
-    threads: 20
+    threads: 10
     resources:
-        mem="10g",
+        mem="20g",
         time="04:00:00"
     shell:
         """
@@ -51,7 +54,7 @@ rule metaphlan:
         --bowtie2db {input.metaphlan_db} \
         --nproc {threads} \
         --input_type fastq \
-        --unknown_estimation \
+        --unclassified_estimation \
         -t rel_ab_w_read_stats \
         -o {output.profile}
         """
@@ -65,7 +68,7 @@ rule metaphlan_merge:
         "../envs/metaphlan.yml"
     shell:
         """
-        merge_metaphlan_tables.py {input} > {output}
+        workflow/scripts/merge_metaphlan_tables_abs.py {input} > {output}
         """
 
 rule metaphlan_species_abundance:

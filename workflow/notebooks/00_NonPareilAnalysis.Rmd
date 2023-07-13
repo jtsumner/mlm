@@ -16,6 +16,7 @@ library(Nonpareil)
 # Get list of NonPareil outputs
 ```{r}
 np_list <- list.files(path = "../../results/nonpareil_out", pattern='*\\.npo', recursive=TRUE, full.names=TRUE)
+np_list<-np_list[grep("B1|B2", np_list)]
 np_length <- length(np_list)
 ```
 
@@ -28,7 +29,7 @@ Nonpareil.legend(Nonpareil.curve.batch(np_list,
                                                         plot.diversity = F,
                                                         main = NA)), cex = 0.90)
 Nonpareil.curve.batch(np_list, plot.opts = list(legend = NA, 
-                                                        plot.model = F, 
+                                                        plot.model = T, 
                                                         plot.diversity = F,
                                                         main = NA))
 
