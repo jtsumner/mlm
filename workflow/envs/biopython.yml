@@ -4,7 +4,5 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - python>=3.7
-  - pip
-  - pip:
-    - biopython==1.78
+  - python
+  - biopython

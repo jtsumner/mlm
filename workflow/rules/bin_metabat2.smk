@@ -94,14 +94,15 @@ rule metabat_bin:
     shell:
         """
         metabat2 -t {threads} \
+            --minClsSize 50000 \
             --inFile {input.contigs} \
-            --outFile {output.bin_dir}/{wildcards.sample}_bin \
+            --outFile {output.bin_dir}/{wildcards.sample}.bin \
             --minContig 1500 \
-            --abdFile {input.depth_fi} \
-            --seed=100 \
-            --unbinned
+            --seed=123456 \
+            --unbinned \
+            --verbose
         """
-    
+    #            --abdFile {input.depth_fi} \
 
 rule SS_checkm_analysis:
     input:

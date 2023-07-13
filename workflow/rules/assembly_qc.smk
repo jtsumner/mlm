@@ -57,11 +57,20 @@ rule drop_short_contigs_megahit:
 
 rule drop_short_contigs_spades:
     input:
-        "results/spades_out/{sample}/scaffolds.fasta"
+        scaffolds = "results/spades_out/{sample}/scaffolds.fasta"
     output:
-        "results/spades_parsed/{sample}/{sample}.fa"
+        parsed = "results/spades_parsed/{sample}/{sample}.fa"
+    params:
+        min_length = "1000",
+        assembler="spades"
     conda:
         "../envs/biopython.yml"
-    script:
-        "../scripts/parse_contigs.py"
+    shell:
+        """
+        python3 workflow/scripts/parse_contigs.py --sample {wildcards.sample} \
+            --scaffolds {input.scaffolds} \
+            --parsed {output.parsed} \
+            --min_length {params.min_length} \
+            --assembler {params.assembler}
+        """
 
