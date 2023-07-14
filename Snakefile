@@ -9,13 +9,11 @@ import pandas as pd
 configfile: "config/config.yaml"
 include: "workflow/rules/common.smk"
 include: "workflow/rules/00_TrimReads.smk"
-#include: "workflow/rules/read_qc.smk"
 include: "workflow/rules/01_DecontaminateReads.smk"
 include: "workflow/rules/02_TaxonomicAnalysis.smk"
-include: "workflow/rules/assemble.smk"
-include: "workflow/rules/assembly_qc.smk"
-include: "workflow/rules/bin_metabat2.smk"
 include: "workflow/rules/04_ViralAnalysis.smk"
+include: "workflow/rules/05_AssemblyAnalysis.smk"
+include: "workflow/rules/06_SingleGenomeBins.smk"
 
 rule all:
     input:
