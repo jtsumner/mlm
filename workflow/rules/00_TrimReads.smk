@@ -320,6 +320,6 @@ rule fastqc_multiqc:
     shell:
         """
         module load multiqc
-        multiqc --outdir {params.out_dir} --dirs --dirs-depth 2 results/fastqc_out/
+        multiqc --outdir {params.out_dir} --dirs --dirs-depth 2 results/fastqc_out/ -f
         """
 

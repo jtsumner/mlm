@@ -48,7 +48,7 @@ rule spades:
 # -k 21,33,55,77,99,127 --only-assembler
 
 ############################
-###   PART 2: FILTER     ###
+#   PART 2A: QC FILTER     #
 ############################
 
 rule drop_short_contigs_megahit:
@@ -81,7 +81,7 @@ rule drop_short_contigs_spades:
         """
 
 ############################
-###    PART 3: QUAST     ###
+#    PART 2B: QC QUAST     #
 ############################
 
 rule quast_megahit:
@@ -125,5 +125,51 @@ rule multiqc_quast:
     shell:
         """
         module load multiqc
-        multiqc --outdir {params.out_dir} --dirs --dirs-depth 2 results/quast_out/
+        multiqc --outdir {params.out_dir} --dirs --dirs-depth 2 results/quast_out/ -f
+        """
+
+############################
+#   PART 3A: ANNOTATION    #
+############################
+
+rule prep_annotation:
+    """
+    Takes spades headers and transforms them to be >NODE_#### only
+    """
+    input:
+        scaffolds="results/spades_out/{sample}/scaffolds.fasta"
+    output:
+        scaffolds_clean=temp("results/prokka_out/tmp_scaffolds/{sample}_scaffolds_clean.fasta")
+    threads: 1
+    resources:
+        mem="3g",
+        time="00:05:00"
+    shell:
+        """
+        awk '/^>/ {{ sub(/_length_[0-9]+_cov_[0-9.]+/, "", $0) }} 1' {input.scaffolds} > {output.scaffolds_clean}
+        """
+
+rule annotate_prokka:
+    input:
+        scaffolds_clean="results/prokka_out/tmp_scaffolds/{sample}_scaffolds_clean.fasta"
+    output:
+        annotation="results/prokka_out/{sample}/{sample}.tsv",
+        out_dir=directory("results/prokka_out/{sample}/")
+    threads: 20
+    resources:
+        mem="25g",
+        time="01:00:00"
+    conda:
+        "../envs/prokka.yml"
+    shell:
+        """
+        module load prokka
+        prokka {input.scaffolds_clean} --cpus {threads} \
+            --metagenome \
+            --locustag {wildcards.sample} \
+            --prefix {wildcards.sample} \
+            --outdir {output.out_dir}/ \
+            --addgenes \
+            --mincontiglen 200 \
+            --force
         """

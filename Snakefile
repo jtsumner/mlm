@@ -17,7 +17,8 @@ include: "workflow/rules/06_SingleGenomeBins.smk"
 
 rule all:
     input:
-        get_rules
+        get_rules,
+        expand("results/prokka_out/{sample}/{sample}.tsv", sample=samples["sample"])
         #"results/vcontact2_data/vcontact2_output/genome_by_genome_overview.csv"
 
 # Make report for snakemake. 
