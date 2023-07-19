@@ -64,7 +64,15 @@ def get_rules(wildcards):
             #    "results/{assembler}_parsed/{sample}/{sample}.parsed_assembly.fa", 
             #    sample=samples["sample"],
             #    assembler=ASSEMBLER)
+        if config["PROKKA"] and config["SPADES"]:
+            all_rules.append("results/prokka_out/merged_fastas.faa")
+        if config["VIRAL"]:
+            all_rules.append("results/vcontact2_data/vcontact2_output/genome_by_genome_overview.csv")
     if config["METABAT2"]:
+        #if config["CHECKM"]:
+        #    metabat2_results = expand("results/checkm_{assembler}_out/{sample}/{sample}_checkm_output.txt", sample=samples["sample"], 
+        #        assembler=ASSEMBLER, #["megahit", "spades"]
+        #        sample=samples["sample"])
         metabat2_results = directory(expand(
             "results/metabat_{assembler}_out/{sample}/bins/", 
             assembler=ASSEMBLER, #["megahit", "spades"]

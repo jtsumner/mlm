@@ -106,10 +106,10 @@ rule metabat_bin:
 
 rule checkm_analysis:
     input:
-        bin_dir = directory("results/metabat_spades_out/{sample}/bins")
+        bin_dir = directory("results/metabat_{assembler}_out/{sample}/bins") #was spades
     output:
-        checkm_dir = directory("results/checkm_out/{sample}"),
-        checkm_fi = "results/checkm_out/{sample}/{sample}_checkm_output.txt"
+        checkm_dir = directory("results/checkm_{assembler}_out/{sample}"),
+        checkm_fi = "results/checkm_{assembler}_out/{sample}/{sample}_checkm_output.txt"
     threads: 10
     resources:
         mem="80g",
