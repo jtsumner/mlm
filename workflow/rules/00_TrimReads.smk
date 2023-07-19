@@ -98,7 +98,7 @@ rule complexity_filter:
         r1 = "results/bbduk_out/{sample}/{sample}.bbduk.r1.fastq.gz",
         r2 = "results/bbduk_out/{sample}/{sample}.bbduk.r2.fastq.gz"
     params:
-        entropy = 0.8
+        entropy = 0.3
     threads: 5
     resources:
         mem="10G"
@@ -145,7 +145,7 @@ rule host_decontamination:
         module load bowtie2/2.4.5
         module load samtools/1.10.1
 
-        bowtie2 -p {threads} -x {params.filter_db} -1 {input.r1} -2 {input.r2}| \
+        bowtie2 -p {threads} -x {params.filter_db} --local -1 {input.r1} -2 {input.r2}| \
         samtools view -bS -@ {threads}| \
         samtools sort -@ {threads} -n -o {output.sorted_bam}
 
@@ -323,3 +323,70 @@ rule fastqc_multiqc:
         multiqc --outdir {params.out_dir} --dirs --dirs-depth 2 results/fastqc_out/ -f
         """
 
+###############################
+##   PART 5B: CONTAMINANTS   ##
+###############################
+
+def get_negative_reads1(wildcards):
+    r1 = get_trimmed_read1(wildcards)
+    return expand(r1, sample=samples[samples["sample"].isin(negative_controls)]["sample"])
+
+def get_negative_reads2(wildcards):
+    r2 = get_trimmed_read2(wildcards)
+    return expand(r2, sample=samples[samples["sample"].isin(negative_controls)]["sample"])
+
+rule get_control_assemblies:
+    """
+    TAKES trimmed reads from negative_controls (see config)
+    RETURNS coassembled and bowtie indexed database from contaminant removal
+
+    Functionality in params.r1 and params.r2 to take lists from input and convert to 
+    comma-seperated strings for direct input to megahit, bypassing the need to 
+    concatenate files manually. Manually confirmed r1 and r2 are in same order
+    as expected
+    """
+    input:
+        r1 = get_negative_reads1,
+        r2 = get_negative_reads2
+    output:
+        out_dir = directory("results/negative_db"),
+        negative_scaffolds = "results/negative_db/negative_controls.contigs.fa"
+    params:
+        r1 = ",".join(get_negative_reads1(samples)),
+        r2 = ",".join(get_negative_reads2(samples))
+    resources:
+        mem="130g",
+        time="02:00:00"
+    threads: 40
+    shell:
+        """
+        module load megahit/1.0.6.1 bowtie2/2.4.5 
+
+        megahit -t {threads} \
+            -m 120e9 \
+            -1 {params.r1} \
+            -2 {params.r2} \
+            --out-prefix negative_controls -o {output.out_dir}/assemble \
+            --presets meta \
+            --min-contig-len 1000
+        mv {output.out_dir}/assemble/negative_controls.contigs.fa {output.negative_scaffolds} 
+        bowtie2-build {output.negative_scaffolds} {output.out_dir}/negative_db --thread {threads} --seed 12345
+        """
+
+#Performs host read filtering on paired end data using Bowtie and Samtools 
+use rule host_decontamination as negative_decontamination with:
+    input:
+        r1 = get_penultimate_read1,
+        r2 = get_penultimate_read2,
+        negative_scaffolds = "results/negative_db/negative_controls.contigs.fa"
+    output:
+        r1_clean = "results/negative_out/{sample}/{sample}.clean.r1.fastq.gz",
+        r2_clean = "results/negative_out/{sample}/{sample}.clean.r2.fastq.gz",
+        sorted_bam = "results/negative_out/{sample}/{sample}.mapped.sorted.bam",
+        flagstat = "results/negative_out/{sample}/{sample}.flagstat.tsv"
+    params:
+        filter_db = "results/negative_db/negative_db"
+    threads: 15
+    resources:
+        mem="25G",
+        time="02:00:00"

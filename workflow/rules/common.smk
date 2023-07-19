@@ -225,5 +225,7 @@ def get_assemblers():
 
 samples = pd.read_csv(config["samples"], sep="\t").set_index("sample", drop=False)
 samples.index.names = ["sample"]
+controls = config["controls"]
+negative_controls = config["negative_controls"]
 
 ASSEMBLER = get_assemblers()

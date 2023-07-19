@@ -104,13 +104,16 @@ rule metabat_bin:
             --verbose
         """
 
-rule SS_checkm_analysis:
+rule checkm_analysis:
     input:
-        bin_dir = directory("results/metabat_{assembler}_out/{sample}/bins")
+        bin_dir = directory("results/metabat_spades_out/{sample}/bins")
     output:
-        checkm_dir = directory("results/metabat_out/checkm/{sample}"),
-        checkm_fi = "results/metabat_out/checkm/{sample}/{sample}_checkm_output.txt"
-    threads: 12
+        checkm_dir = directory("results/checkm_out/{sample}"),
+        checkm_fi = "results/checkm_out/{sample}/{sample}_checkm_output.txt"
+    threads: 10
+    resources:
+        mem="80g",
+        time="00:30:00"
     shell:
         """
         module load checkm/1.0.7
@@ -118,8 +121,17 @@ rule SS_checkm_analysis:
         --threads {threads} \
         --extension 'fa' \
         --file {output.checkm_fi} \
+        --tab_table \
         {input.bin_dir} {output.checkm_dir}
         """
+
+#use rule checkm_analysis as checkm_analysis_megahit with:
+#    input:
+#        bin_dir = directory("results/metabat_megahit_out/{sample}/bins")
+#    output:
+#        checkm_dir = directory("results/checkm_megahit_out/{sample}"),
+#        checkm_fi = "results/checkm_megahit_out/{sample}/{sample}_checkm_output.txt"
+
 
 # to do: add config data for checkm
 # add checkm plots

@@ -1,32 +1,53 @@
 # This file should contain everything to configure the workflow on a global scale.
 # In case of sample based data, it should be complemented by a samples.tsv file that contains
 # one row per sample. It can be parsed easily via pandas.
+# Controls is a python list of sample names belonging to blank and zymo controls. 
+# Control names must match the way they appear in the sample_sheet
+
+############################
+#   PART 1: SAMPLE SHEET   #
+############################
 
 samples: "config/sample_sheet.tsv"
 #samples: "config/samples_minimal_path.tsv"
-
 #samples: "config/samples_minimal.tsv"
+#samples[samples["sample"].isin(controls)]
+
+############################
+#  PART 2: CONTROL NAMES   #
+############################
+
+controls: ["Blank1","Blank2","Blank3","Blank4","Blank5","Blank6", "Blank7", "Water", "20221117_Zymo_10ng"] 
+negative_controls: ["Blank1","Blank2","Blank3","Blank4","Blank5","Blank6", "Blank7", "Water"] 
+
+############################
+#  PART 3: DB PARAMETERS   #
+############################
 
 metaphlan_idx: "mpa_vOct22_CHOCOPhlAnSGB_202212"
 metaphlan_nwk: "https://github.com/biobakery/MetaPhlAn/blob/master/metaphlan/utils/mpa_vJan21_CHOCOPhlAnSGB_202103.nwk"
 human_genome: "https://hgdownload.cse.ucsc.edu/goldenpath/hg38/bigZips/hg38.fa.gz"
 genome_name: "hg38.fa.gz"
 
+############################
+#  PART 4: MLM PARAMETERS  #
+############################
 
 # Configuration for which rules to execute are listed below\
+
 MODULE_READ_QC: True
 TRIM_READS: True
 COMPLEXITY_FILTER: False
 DECONVOLUTE: True
 BOWTIE2: True
 MERGE_READS: False
-NONPAREIL: True
-FASTQC: False
+NONPAREIL: False
+FASTQC: True
 
 METAPHLAN: False
-KRAKEN2: False
+KRAKEN2: True
 METAXA2: False
-ASSEMBLE: True
-MEGAHIT: False
+ASSEMBLE: False
+MEGAHIT: True
 SPADES: True
-METABAT2: True
+METABAT2: False

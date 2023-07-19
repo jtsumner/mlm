@@ -48,18 +48,49 @@ rule spades:
 # -k 21,33,55,77,99,127 --only-assembler
 
 ############################
-#   PART 2A: QC FILTER     #
+##  PART 1C: COASSEMBLY   ##
 ############################
 
-rule drop_short_contigs_megahit:
+
+def get_final_reads_all1(wildcards):
+    r1 = get_final_read1(wildcards)
+    return expand(r1, sample=samples[~samples["sample"].isin(controls)]["sample"])
+
+def get_final_reads_all2(wildcards):
+    r2 = get_final_read2(wildcards)
+    return expand(r2, sample=samples[~samples["sample"].isin(controls)]["sample"])
+
+rule concat_reads:
     input:
-        "results/megahit_out/{sample}/{sample}.contigs.fa"
+        r1_clean = get_final_reads_all1,
+        r2_clean = get_final_reads_all2
     output:
-        "results/megahit_parsed/{sample}/{sample}.parsed_assembly.fa"
-    conda:
-        "../envs/biopython.yml"
-    script:
-        "../scripts/parse_contigs.py"
+        r1_concat = "results/coassembly_out/concat_reads.clean.r1.fastq.gz",
+        r2_concat = "results/coassembly_out/concat_reads.clean.r2.fastq.gz"
+    shell:
+        """
+        cat {input.r1_clean} > {output.r1_concat}
+        cat {input.r2_clean} > {output.r2_concat}
+        """
+
+# use rule megahit as megahit_coassembly with:
+#     input:
+#         r1_concat = "results/coassembly_out/concat_reads.clean.r1.fastq.gz",
+#         r2_concat = "results/coassembly_out/concat_reads.clean.r1.fastq.gz"
+#     output:
+#         scaffolds = "results/coassembly_out/{sample}.contigs.fa"
+#     params:
+#         out_dir = "results/coassembly_out"
+#     threads: 60
+#     resources:
+#         mem="200g",
+#         time="10:00:00"
+
+
+
+############################
+#   PART 2A: QC FILTER     #
+############################
 
 rule drop_short_contigs_spades:
     input:
@@ -79,6 +110,14 @@ rule drop_short_contigs_spades:
             --min_length {params.min_length} \
             --assembler {params.assembler}
         """
+use rule drop_short_contigs_spades as drop_short_contigs_megahit with:
+    input:
+        scaffolds = "results/megahit_out/{sample}/{sample}.contigs.fa"
+    output:
+        parsed = "results/megahit_parsed/{sample}/{sample}.fa"
+    params:
+        min_length = "1000",
+        assembler="megahit"
 
 ############################
 #    PART 2B: QC QUAST     #
@@ -139,7 +178,7 @@ rule prep_annotation:
     input:
         scaffolds="results/spades_out/{sample}/scaffolds.fasta"
     output:
-        scaffolds_clean=temp("results/prokka_out/tmp_scaffolds/{sample}_scaffolds_clean.fasta")
+        scaffolds_clean="results/prokka_out/tmp_scaffolds/{sample}_scaffolds_clean.fasta"
     threads: 1
     resources:
         mem="3g",
@@ -154,6 +193,7 @@ rule annotate_prokka:
         scaffolds_clean="results/prokka_out/tmp_scaffolds/{sample}_scaffolds_clean.fasta"
     output:
         annotation="results/prokka_out/{sample}/{sample}.tsv",
+        amino_acids="results/prokka_out/{sample}/{sample}.faa",
         out_dir=directory("results/prokka_out/{sample}/")
     threads: 20
     resources:
@@ -172,4 +212,22 @@ rule annotate_prokka:
             --addgenes \
             --mincontiglen 200 \
             --force
+        """
+
+rule merge_prokka_aa:
+    """
+    Takes prokka outputs from SAMPLES (see config to ID controls)
+    and concatenates to make a master file
+    """
+    input:
+        annotation=expand("results/prokka_out/{sample}/{sample}.faa", sample=samples[~samples["sample"].isin(controls)]["sample"])
+    output:
+        merged_annotation="results/prokka_out/merged_fastas.faa"
+    threads: 1
+    resources:
+        mem="3g",
+        time="00:30:00"
+    shell:
+        """
+        cat {input.annotation} > {output.merged_annotation}
         """

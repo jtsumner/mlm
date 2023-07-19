@@ -15,12 +15,16 @@ include: "workflow/rules/04_ViralAnalysis.smk"
 include: "workflow/rules/05_AssemblyAnalysis.smk"
 include: "workflow/rules/06_SingleGenomeBins.smk"
 
+
 rule all:
     input:
         get_rules,
-        expand("results/prokka_out/{sample}/{sample}.tsv", sample=samples["sample"])
+        #expand("results/prokka_out/{sample}/{sample}.tsv", sample=samples["sample"]), # Prokka
+        #expand("results/checkm_out/{sample}/{sample}_checkm_output.txt", sample=samples["sample"]), # checkm
+        "results/coassembly_out/concat_reads.clean.r1.fastq.gz",
+        "results/negative_db/negative_controls.contigs.fa", # make negative control datbase
+        expand("results/negative_out/{sample}/{sample}.clean.r1.fastq.gz", sample=samples["sample"])
         #"results/vcontact2_data/vcontact2_output/genome_by_genome_overview.csv"
-
 # Make report for snakemake. 
 report: "workflow/report/workflow.rst"
 

@@ -2,7 +2,7 @@ name: biopython
 channels:
   - conda-forge
   - bioconda
-  - defaults
 dependencies:
   - python
   - biopython
+  - pandas

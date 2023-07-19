@@ -3,7 +3,7 @@
 #SBATCH --job-name="scheduler"
 #SBATCH -t 20:00:00
 #SBATCH -N 1
-#SBATCH -n 2
+#SBATCH -n 5
 #SBATCH -p genomics
 #SBATCH --mem=8gb
 #SBATCH --mail-type=ALL
