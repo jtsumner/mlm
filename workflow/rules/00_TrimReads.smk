@@ -281,6 +281,16 @@ use rule fastqc_fastp as fastqc_bbmerge with:
     params:
         out_dir = "results/fastqc_out/bbmerge_qc/{sample}"
 
+use rule fastqc_fastp as fastqc_control_decontamination with:
+    input: 
+        get_control_decontaminated_read1,
+        get_control_decontaminated_read2
+    output:
+        "results/fastqc_out/bowtie_qc/{sample}/{sample}.clean.r1_fastqc.html",
+        "results/fastqc_out/bowtie_qc/{sample}/{sample}.clean.r2_fastqc.html"
+    params:
+        out_dir = "results/fastqc_out/clean_fastqc/{sample}"
+
 rule fastqc_raw:
     input: 
         r1 = get_r1,
@@ -376,8 +386,8 @@ rule get_control_assemblies:
 #Performs host read filtering on paired end data using Bowtie and Samtools 
 use rule host_decontamination as negative_decontamination with:
     input:
-        r1 = get_penultimate_read1,
-        r2 = get_penultimate_read2,
+        r1 = get_input_control_decontaminated_read1,
+        r2 = get_input_control_decontaminated_read1,
         negative_scaffolds = "results/negative_db/negative_controls.contigs.fa"
     output:
         r1_clean = "results/negative_out/{sample}/{sample}.clean.r1.fastq.gz",

@@ -105,6 +105,14 @@ def get_complex_read1(wildcards):
 def get_complex_read2(wildcards):
     return "results/bbduk_out/{sample}/{sample}.bbduk.r2.fastq.gz"
 
+### Helper functions for getting control-decontaminated reads ###
+
+def get_control_decontaminated_read1(wildcards):
+    return "results/negative_out/{sample}/{sample}.clean.r1.fastq.gz"
+
+def get_control_decontaminated_read2(wildcards):
+    return "results/negative_out/{sample}/{sample}.clean.r2.fastq.gz"
+
 ### Helper functions for getting host-decontaminated reads ###
 
 def get_decontaminated_read1(wildcards):
@@ -118,9 +126,29 @@ def get_decontaminated_read2(wildcards):
 def get_merged_reads(wildcards):
     return  "results/bbmerge_out/{sample}/{sample}.bbmerge.fastq.gz"
 
+### Helper functions for determining inputs for control decontamination module ###
+
+def get_input_control_decontaminated_read1(wildcards):
+    if config["COMPLEXITY_FILTER"]:
+        return get_complex_read1(wildcards)
+    elif config["TRIM_READS"]:
+        return get_trimmed_read1(wildcards)
+    else:
+        return get_r1(wildcards)
+
+def get_input_control_decontaminated_read2(wildcards):
+    if config["COMPLEXITY_FILTER"]:
+        return get_complex_read2(wildcards)
+    elif config["TRIM_READS"]:
+        return get_trimmed_read2(wildcards)
+    else:
+        return get_r2(wildcards)
+
 ### Helper functions for determining penultimate paired/merged reads ###
 
 def get_penultimate_read1(wildcards):
+    if config["CTRL_CONTAMINANT_FILTER"]:
+        return get_control_decontaminated_read1(wildcards)
     if config["COMPLEXITY_FILTER"]:
         return get_complex_read1(wildcards)
     elif config["TRIM_READS"]:
@@ -129,6 +157,8 @@ def get_penultimate_read1(wildcards):
         return get_r1(wildcards)
 
 def get_penultimate_read2(wildcards):
+    if config["CTRL_CONTAMINANT_FILTER"]:
+        return get_control_decontaminated_read2(wildcards)
     if config["COMPLEXITY_FILTER"]:
         return get_complex_read2(wildcards)
     elif config["TRIM_READS"]:
@@ -139,7 +169,9 @@ def get_penultimate_read2(wildcards):
 
 def get_final_read1(wildcards):
     if config["DECONVOLUTE"]:
-        return get_decontaminated_read1(wildcards)
+        return get_decontaminated_read2(wildcards)
+    elif config["CTRL_CONTAMINANT_FILTER"]:
+        return get_control_decontaminated_read1(wildcards)
     elif config["COMPLEXITY_FILTER"]:
         return get_complex_read1(wildcards)
     elif config["TRIM_READS"]:
@@ -150,6 +182,8 @@ def get_final_read1(wildcards):
 def get_final_read2(wildcards):
     if config["DECONVOLUTE"]:
         return get_decontaminated_read2(wildcards)
+    elif config["CTRL_CONTAMINANT_FILTER"]:
+        return get_control_decontaminated_read2(wildcards)
     elif config["COMPLEXITY_FILTER"]:
         return get_complex_read2(wildcards)
     elif config["TRIM_READS"]:
@@ -173,6 +207,9 @@ def get_multiqc_input():
     multiqc_in = []
     if config["MERGE_READS"]:
         multiqc_in = multiqc_in + expand("results/fastqc_out/bbmerge_qc/{sample}/{sample}.bbmerge_fastqc.html",
+            sample=samples["sample"])
+    if config["CTRL_CONTAMINANT_FILTER"]:
+        multiqc_in = multiqc_in + expand("results/fastqc_out/bowtie_qc/{sample}/{sample}.clean.r1_fastqc.html",
             sample=samples["sample"])
     if config["DECONVOLUTE"]:
         multiqc_in = multiqc_in + expand("results/fastqc_out/bowtie_qc/{sample}/{sample}.bowtie.r1_fastqc.html",
