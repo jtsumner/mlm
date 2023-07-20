@@ -101,7 +101,7 @@ rule drop_short_contigs_spades:
         min_length = "1000",
         assembler="spades"
     conda:
-        "../envs/biopython.yml"
+        "../envs/seq_processing.yml"
     shell:
         """
         python3 workflow/scripts/parse_contigs.py --sample {wildcards.sample} \
@@ -230,4 +230,38 @@ rule merge_prokka_aa:
     shell:
         """
         cat {input.annotation} > {output.merged_annotation}
+        """
+
+rule eggnog_setup:
+    output:
+        eggnog_db = "resources/eggnog_db/eggnog_db.db"
+    conda:
+        "../env/eggnog.yml"
+    shell:
+    """
+    download_eggnog_data.py -y --data_dir resources/eggnog_db/
+    """
+
+rule emapper:
+    input:
+        merged_annotation="results/prokka_out/merged_fastas.faa",
+        eggnog_db = "resources/eggnog_db/eggnog_db.db"
+    output:
+        annotations = "results/eggnog/merged_annotation.emapper.annotations"
+    params:
+        prefix = "merged_annotations"
+    threads: 20
+    resources:
+        mem="30G"
+    conda:
+        "../env/eggnog.yml"
+    shell:
+        """
+        emapper.py \
+            -m diamond \
+            --cpu {threads} \
+            -i {input.merged_annotation} \
+            -o  {params.prefix} \
+            --out_dir $(dirname {output.annotations}) \
+            --data_dir $(dirname {input.eggnog.db})
         """

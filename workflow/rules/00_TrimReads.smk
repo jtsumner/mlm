@@ -244,7 +244,7 @@ rule fastqc_fastp:
         "results/fastqc_out/fastp_qc/{sample}/{sample}.fastp.r2_fastqc.html"
     params:
         out_dir = "results/fastqc_out/fastp_qc/{sample}"
-    threads: 4
+    threads: 2
     resources:
         time = "00:30:00"
     shell:
@@ -387,7 +387,7 @@ rule get_control_assemblies:
 use rule host_decontamination as negative_decontamination with:
     input:
         r1 = get_input_control_decontaminated_read1,
-        r2 = get_input_control_decontaminated_read1,
+        r2 = get_input_control_decontaminated_read2,
         negative_scaffolds = "results/negative_db/negative_controls.contigs.fa"
     output:
         r1_clean = "results/negative_out/{sample}/{sample}.clean.r1.fastq.gz",

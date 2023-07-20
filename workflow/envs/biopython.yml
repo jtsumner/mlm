@@ -4,5 +4,6 @@ channels:
   - bioconda
 dependencies:
   - python
-  - biopython
   - pandas
+  - pip:
+    - biopython

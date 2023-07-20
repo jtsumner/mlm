@@ -68,7 +68,7 @@ rule metaphlan_merge:
         "../envs/metaphlan.yml"
     shell:
         """
-        workflow/scripts/merge_metaphlan_tables_abs.py {input} > {output}
+        python3 workflow/scripts/merge_metaphlan_tables_abs.py {input} > {output}
         """
 
 rule metaphlan_species_abundance:

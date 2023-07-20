@@ -177,7 +177,7 @@ def get_penultimate_read2(wildcards):
 
 def get_final_read1(wildcards):
     if config["DECONVOLUTE"]:
-        return get_decontaminated_read2(wildcards)
+        return get_decontaminated_read1(wildcards)
     elif config["CTRL_CONTAMINANT_FILTER"]:
         return get_control_decontaminated_read1(wildcards)
     elif config["COMPLEXITY_FILTER"]:

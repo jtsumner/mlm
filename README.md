@@ -67,6 +67,12 @@ Execute to create a rule graph visualization
 snakemake --forceall --rulegraph | dot -Tpdf > dag.pdf
 ```
 
+Execute to create a file graph visualization (intermediate between DAG and rulegraph)
+
+```
+snakemake --forceall --filegraph | dot -Tpdf > dag.pdf
+```
+
 -------------
 # Getting Started 
 
