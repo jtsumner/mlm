@@ -31,7 +31,7 @@ module purge all
 module load mamba
 which mamba
 which conda
-source activate snakemake
+mamba activate snakemake
 #source activate snakemamba
 
 # Execute snakemake
@@ -49,5 +49,3 @@ Start Time: ${END_TIME}
 
 Bye-bye :)
 "
-## "#SBTCH -A b1042"
-## "#SBTCH -p genomics"

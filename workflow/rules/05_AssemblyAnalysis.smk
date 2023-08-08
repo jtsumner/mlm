@@ -238,9 +238,9 @@ rule eggnog_setup:
     conda:
         "../env/eggnog.yml"
     shell:
-    """
-    download_eggnog_data.py -y --data_dir resources/eggnog_db/
-    """
+        """
+        download_eggnog_data.py -y --data_dir resources/eggnog_db/
+        """
 
 rule emapper:
     input:

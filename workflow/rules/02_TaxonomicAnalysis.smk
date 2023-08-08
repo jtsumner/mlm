@@ -64,8 +64,6 @@ rule metaphlan_merge:
         metaphlan_merge_inputs
     output:
         "results/metaphlan_merged/merged_metaphlan_profile.tsv"
-    conda:
-        "../envs/metaphlan.yml"
     shell:
         """
         python3 workflow/scripts/merge_metaphlan_tables_abs.py {input} > {output}
