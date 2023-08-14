@@ -1,5 +1,5 @@
 cluster:
-  mkdir -p logs/{rule} &&
+  mkdir -p results/logs/{rule} &&
   sbatch
     --account={resources.account}
     --partition={resources.partition}
@@ -8,14 +8,14 @@ cluster:
     --mem={resources.mem}
     --time={resources.time}
     --job-name={rule}-{wildcards}
-    --output=logs/{rule}/smk-{rule}-{wildcards}-{jobid}.out
+    --output=results/logs/{rule}/smk-{rule}-{wildcards}-{jobid}.out
 default-resources:
-  - account="b1042"
-  - partition="genomics"
+  - account="p31752"
+  - partition="normal"
   - nodes=1
   - mem="5G"
   - time="01:00:00"
-jobs: 300
+jobs: 100
 restart-times: 0
 max-jobs-per-second: 15
 max-status-checks-per-second: 1

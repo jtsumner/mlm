@@ -4,6 +4,46 @@ output: html_notebook
 ---
 
 ```{r}
+nature_theme <- function(x_axis_labels, y_label) {
+    # set default text format based on categorical and length
+    angle = NULL
+    hjust = NULL
+    size = 12
+    if (max(nchar(x_axis_labels), na.rm=TRUE) > 5) {
+        angle = 45
+        hjust = 1
+        size = 12
+    }
+    axis_title_size = 12
+    if (nchar(y_label) > 15) {
+        axis_title_size = 12
+    }
+    if (nchar(y_label) > 25) {
+        axis_title_size = 12
+    }
+    axis_title_size = 14
+    size=12
+    return ( ggplot2::theme_bw() + ggplot2::theme(
+        axis.text.x = ggplot2::element_text(size = size, vjust = 1, hjust = hjust, angle = angle, colour = "black"),
+        axis.text.y = ggplot2::element_text(size = axis_title_size, hjust = 1, colour = "black"),
+        axis.title = ggplot2::element_text(size = axis_title_size),
+        plot.title = ggplot2::element_text(size = size, hjust = 0.5),
+        legend.title = ggplot2::element_text(size = 12),
+        legend.text = ggplot2::element_text(size = 12),
+        axis.line = ggplot2::element_line(colour = 'black', size = .5),
+        axis.line.x = ggplot2::element_line(colour = 'black', size = .5),
+        axis.line.y = ggplot2::element_line(colour = 'black', size = .5),
+        panel.border = ggplot2::element_blank(),
+        panel.grid.major = ggplot2::element_blank(),
+        panel.grid.minor = ggplot2::element_blank(),
+        axis.ticks = element_line(color="black"),
+        text = element_text(family = "Arial"))
+   )
+}
+
+```
+
+```{r}
 library(tidyverse)
 library(ggplot2)
 library(ggpubr)
@@ -38,17 +78,18 @@ fastqc_summary <- tmp_readqc %>%
     # mutate("fastp-raw"= fastp_qc.merged/raw_qc.1) %>% 
     # mutate("bbduk-fastp"= bbduk_qc.1/fastp_qc.merged) %>% 
     # mutate("bowtie-bbduk"= bowtie_qc.1/bbduk_qc.1) #%>% mutate("bbmerge-bowtie"= bbmerge_qc.merged/bowtie_qc.1)    
-    mutate("raw.FC"= raw_qc.1/raw_qc.1) %>% 
-    mutate("fastp.FC"= fastp_qc.merged/raw_qc.1) %>% 
-    mutate("bbduk.FC"= bbduk_qc.1/raw_qc.1) %>% 
-    mutate("bowtie.FC"= bowtie_qc.1/raw_qc.1) #%>% mutate("bbmerge-bowtie"= bbmerge_qc.merged/bowtie_qc.1)
+    mutate("raw.FC"= raw_qc.2/raw_qc.2) %>% 
+    mutate("fastp.FC"= fastp_qc.merged/raw_qc.2) %>% 
+    mutate("bbduk.FC"= bbduk_qc.2/raw_qc.2) %>% 
+    mutate("bowtie.FC"= bowtie_qc.2/bbduk_qc.2) #%>% mutate("bbmerge-bowtie"= bbmerge_qc.merged/bowtie_qc.1)
 
-write_tsv(fastqc_summary, summary_out)
+#write_tsv(fastqc_summary, summary_out)
 ```
 
 ```{r}
 # Make major summary/output table for total sequences by tools per 
 fastqc_tidy <- fastqc_summary %>% 
+  filter(str_detect(Sample, "PMA|Na|DNase")) %>%
   select(Sample, raw.FC,fastp.FC, bbduk.FC, bowtie.FC) %>%
   pivot_longer(2:last_col()) %>%
   mutate(name = factor(name, levels=c("raw.FC","fastp.FC", "bbduk.FC", "bowtie.FC")))
@@ -76,6 +117,48 @@ ggplot(fastqc_tidy, aes(x=name, y=value)) +
        y="Read Fold Change", 
        title="Stepwise Loss of Sequencing Data") +
   theme(aspect.ratio = 1)
+```
+```{r}
+fastqc_tidy %>%
+    filter(name =="bowtie.FC") %>%
+  separate(Sample, into=c("Samples", "Method")) %>%
+    group_by(Method) %>%
+  summarize(min = min(value),
+            q1 = quantile(value, 0.25),
+            median = median(value),
+            mean = mean(value),
+            q3 = quantile(value, 0.75),
+            max = max(value))
+
+fastqc_tidy %>% 
+  mutate(value = 1-value) %>%
+  filter(name =="bowtie.FC") %>%
+  separate(Sample, into=c("Samples", "Method")) %>%
+  mutate(Samples = str_replace(Samples, "Blank.|Water", "Blank")) %>%
+  mutate(Method2 = if_else(str_detect(Method, "DNase"), "DNase",
+                          #if_else(str_detect(Method, "LyPMA"), "lyPMA",
+                          if_else(str_detect(Method, "PMA"), "PMA", "NA"
+                                  ))) %>%
+  mutate(Method0 = if_else(str_detect(Method, "Ly"), "Ly",
+                          #if_else(str_detect(Method, "LyPMA"), "lyPMA",
+                          if_else(str_detect(Method, "Re"), "Re", "NA"
+                                  ))) %>%
+  arrange(value) %>%
+  filter(Samples != "B21") %>%
+  ggplot(., aes(x=Method2, y=value)) +
+  geom_boxplot(aes(fill=Method0), outlier.alpha = 0) +
+  geom_point(aes(fill=Method0), 
+             alpha = 0.75,
+             size = 1, 
+             shape = 21, 
+             color = 'black',
+             position = position_jitterdodge(jitter.width = .2)) +
+  scale_fill_simpsons() +
+  nature_theme("Read", "Fol") +
+  labs(x="ReadQC Step", 
+       y="Read Fold Change", 
+       title="Stepwise Loss of Sequencing Data") +
+  theme(aspect.ratio = 1) + rotate_x_text(45)
 ```
 
 # Quast
@@ -124,3 +207,84 @@ quast_tidy %>%
 
 ```
 
+# FlagStat
+```{r}
+flagstat <- read_delim("../../results/bowtie_out/flagstat_summary.txt", 
+           col_names = c("Sample", "Value", "Percent", "Description"),
+           delim="\t") %>%
+  filter(Description == "mapped %") %>%
+  separate(Value, into = c("Value", NA), sep="%", convert = TRUE) %>%
+  separate(Sample, into=c("Samples", "Method")) %>%
+  mutate(Samples = str_replace(Samples, "Blank.|Water", "Blank")) %>%
+  mutate(Method2 = if_else(str_detect(Method, "DNase"), "DNase",
+                          if_else(str_detect(Method, "PMA"), "PMA", 
+                                  if_else(str_detect(Method, "Na"), "Na", "Control"
+                                  )))) %>%
+  mutate(Method0 = if_else(str_detect(Method, "Ly"), "Ly",
+                          #if_else(str_detect(Method, "LyPMA"), "lyPMA",
+                          if_else(str_detect(Method, "Re"), "Re", 
+                                  if_else(str_detect(Method, "Na"), "Na", "Control"
+                                  ))))
+
+
+flagstat %>%
+  ggplot(., aes(x=Method2, y=Value)) +
+  geom_boxplot(aes(fill=Method0), outlier.alpha = 0) +
+  geom_point(aes(fill=Method0), 
+             alpha = 0.75,
+             size = 1, 
+             shape = 21, 
+             color = 'black',
+             position = position_jitterdodge(jitter.width = .2)) +
+  scale_fill_simpsons() +
+  nature_theme("Read", "Fol") +
+  labs(x="ReadQC Step", 
+       y="Read Fold Change", 
+       title="Stepwise Loss of Sequencing Data") +
+  theme(aspect.ratio = 1) + rotate_x_text(45)
+
+flagstat %>% arrange(Value)
+  group_by(Method) %>%
+  summarize(min = min(Value),
+            q1 = quantile(Value, 0.25),
+            median = median(Value),
+            mean = mean(Value),
+            q3 = quantile(Value, 0.75),
+            max = max(Value))
+
+```
+
+```{r}
+# grep -P "\tmapped" flagstat_summary.txt | grep -v "%" > tmp.flagstat.tsv 
+
+percent_mapped <- read_tsv("../../results/tmp.flagstat.tsv") %>%
+  separate(Percent, into=c("Percent", NA), sep = "%", convert = TRUE) %>%
+  separate(Sample, into=c(NA, "Batch",NA), sep = "_", remove = FALSE) %>%
+  filter(str_detect(Sample, "DNA"))
+
+ggplot(percent_mapped, aes(x=Percent, y=Batch)) +
+  geom_density_ridges2(scale=1) +
+  nature_theme("", "") +
+  theme(aspect.ratio = 1) 
+```
+```{r}
+percent_mapped <- read_tsv("../../results/tmp.flagstat.tsv") %>%
+  separate(Percent, into=c("Percent", NA), sep = "%", convert = TRUE) %>%
+  separate(Sample, into=c(NA, "Batch",NA), sep = "_", remove = FALSE) %>%
+  filter(str_detect(Sample, "DNA")) %>%
+  pivot_wider(names_from = "Category", values_from = "Percent") %>%
+  mutate(Percent = total - mapped)
+
+ggplot(percent_mapped, aes(x=Percent, y=Batch, fill=Batch)) +
+  geom_density_ridges(
+    aes(point_color = Batch, point_fill = Batch, point_shape = Batch),
+    alpha = .2, point_alpha = 1, jittered_points = TRUE, scale=1, quantile_lines = TRUE, quantiles = 2) +
+  scale_point_color_hue(l = 40) +
+  xlab("Reads") +
+  scale_discrete_manual(aesthetics = "point_shape", values = c(21, 22, 23, 24)) +
+  nature_theme("", "") + facet_zoom(xlim = c(0, 1000000), zoom.size = 1) +
+  theme(aspect.ratio = 1) 
+
+percent_mapped %>% group_by(Batch) %>% summarise(median_unmapped = median(Percent),
+                                                 mean_unmapped = mean(Percent))
+```

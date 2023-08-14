@@ -1,10 +1,10 @@
 #! /bin/bash
-#SBATCH -A b1042
+#SBATCH -A p31752
 #SBATCH --job-name="scheduler"
-#SBATCH -t 20:00:00
+#SBATCH -t 40:00:00
 #SBATCH -N 1
 #SBATCH -n 5
-#SBATCH -p genomics
+#SBATCH -p normal
 #SBATCH --mem=8gb
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=jacksumner2026@u.northwestern.edu
@@ -29,8 +29,7 @@ Loading conda...
 # Load Conda Environment with Snakemake
 module purge all
 module load mamba
-which mamba
-which conda
+#mamba init
 mamba activate snakemake
 #source activate snakemamba
 

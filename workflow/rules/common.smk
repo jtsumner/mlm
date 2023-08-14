@@ -12,7 +12,7 @@ def get_rules(wildcards):
     if config["MODULE_READ_QC"]:
         if config["MERGE_READS"]:
             all_rules = all_rules + expand(
-                "results/bbmerge_out/{sample}/{sample}.bbmerge.fastq.gz",
+                "results/bbmerge_out/{sample}/{sample}.fastq.gz",
                 sample=samples["sample"])
         elif config["DECONVOLUTE"]:
             if config["BOWTIE2"]:
@@ -132,7 +132,7 @@ def get_decontaminated_read2(wildcards):
 ### Helper functions for getting merged reads ###
 
 def get_merged_reads(wildcards):
-    return  "results/bbmerge_out/{sample}/{sample}.bbmerge.fastq.gz"
+    return  "results/bbmerge_out/{sample}/{sample}.fastq.gz"
 
 ### Helper functions for determining inputs for control decontamination module ###
 

@@ -17,8 +17,11 @@ samples: "config/sample_sheet.tsv"
 #  PART 2: CONTROL NAMES   #
 ############################
 
-controls: ["Blank1","Blank2","Blank3","Blank4","Blank5","Blank6", "Blank7", "Water", "20221117_Zymo_10ng"] 
-negative_controls: ["Blank1","Blank2","Blank3","Blank4","Blank5","Blank6", "Blank7", "Water"] 
+controls: ["STD_B01_10ng", "STD_B01_01ng", "STD_B02_10ng", "STD_B02_01ng", "STD_B03_10ng", "STD_B03_01ng", "STD_B04A_10ng", "STD_B04A_01ng", "STD_B04B_10ng", "STD_B04B_01ng"]
+negative_controls: [] 
+
+#controls: ["Blank1","Blank2","Blank3","Blank4","Blank5","Blank6", "Blank7", "Water", "20221117_Zymo_10ng"] 
+#negative_controls: ["Blank1","Blank2","Blank3","Blank4","Blank5","Blank6", "Blank7", "Water"] 
 
 ############################
 #  PART 3: DB PARAMETERS   #
@@ -38,7 +41,7 @@ genome_name: "hg38.fa.gz"
 MODULE_READ_QC: True
 TRIM_READS: True
 COMPLEXITY_FILTER: True
-CTRL_CONTAMINANT_FILTER: True
+CTRL_CONTAMINANT_FILTER: False
 DECONVOLUTE: True
 BOWTIE2: True
 MERGE_READS: False
@@ -51,7 +54,7 @@ METAXA2: False
 ASSEMBLE: True
 MEGAHIT: True
 SPADES: True
-METABAT2: True
+METABAT2: False
 CHECKM: False
-PROKKA: False
-VIRAL: False
+PROKKA: True
+VIRAL: True

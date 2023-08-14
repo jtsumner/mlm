@@ -145,7 +145,7 @@ rule host_decontamination:
         module load bowtie2/2.4.5
         module load samtools/1.10.1
 
-        bowtie2 -p {threads} -x {params.filter_db} --local -1 {input.r1} -2 {input.r2}| \
+        bowtie2 -p {threads} -x {params.filter_db} --very-sensitive -1 {input.r1} -2 {input.r2}| \
         samtools view -bS -@ {threads}| \
         samtools sort -@ {threads} -n -o {output.sorted_bam}
 
@@ -178,7 +178,7 @@ rule merge_reads:
         r1 = get_final_read1,
         r2 = get_final_read2
     output:
-        r3 = "results/bbmerge_out/{sample}/{sample}.bbmerge.fastq.gz"
+        r3 = "results/bbmerge_out/{sample}/{sample}.fastq.gz"
     threads: 5
     resources:
         mem="10G"

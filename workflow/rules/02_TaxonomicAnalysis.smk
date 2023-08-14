@@ -276,3 +276,35 @@ rule metaxa2:
 
 #  metaxa2_ttt -i 20221221-Comunal-Zymo_metaxa2.taxonomy.txt -o test -t A,b 
 # --cpu 24 --multi_thread T --unknown T -r 1 --distance=0
+
+
+############################
+###    PART 2: HUMANN    ###
+############################
+
+rule humann:
+    input:
+        metaphlan_db = rules.metaphlan_setup.output.metaphlan_db,
+        merged_reads = get_final_merged_read #get_final_read1
+    output:
+        gene_fam = "results/humann_out/{sample}/{sample}_genefamilies.tsv",
+        path_cov = "results/humann_out/{sample}/{sample}_pathcoverage.tsv",
+        path_abund = "results/humann_out/{sample}/{sample}__pathabundance.tsv"
+    conda: 
+        "../envs/humann.yml"
+    params:
+        metaphlan_idx = config["metaphlan_idx"] # Index for metaphlan
+    threads: 20
+    resources:
+        mem="60G",
+        time="02:00:00"
+    shell:
+        """
+        outdir=$(dirname {output.gene_fam})
+        humann --input {input.merged_reads} \
+            --output $outdir \
+            --threads {threads} \
+            --nucleotide-database /projects/b1180/software/conda_envs/humann/lib/python3.7/site-packages/humann/data/chocophlan/ \
+            --protein-database /projects/b1180/software/conda_envs/humann/lib/python3.7/site-packages/humann/data/uniref/ \
+            --metaphlan-options="--index {params.metaphlan_idx} --bowtie2db {input.metaphlan_db}"
+        """

@@ -29,12 +29,26 @@ Nonpareil.legend(Nonpareil.curve.batch(np_list,
                                                         plot.diversity = F,
                                                         main = NA)), cex = 0.90)
 Nonpareil.curve.batch(np_list, plot.opts = list(legend = NA, 
-                                                        plot.model = T, 
+                                                        plot.model = F, 
                                                         plot.diversity = F,
                                                         main = NA))
+np_list_pma<-np_list[grep("PMA", np_list)]
 
+Nonpareil.curve.batch(np_list_pma, plot.opts = list(legend = NA, 
+                                                        plot.model = F, 
+                                                        plot.diversity = F,
+                                                        main = NA))
 #dev.off()
+np_list_npma<-np_list[!grepl("PMA", np_list)]
+
+Nonpareil.curve.batch(np_list_npma, plot.opts = list(legend = NA, 
+                                                        plot.model = F, 
+                                                        plot.diversity = F,
+                                                        main = NA))
+#dev.off()
+
 ```
+
 
 # Save NonPareil Summary
 ```{r}
@@ -58,11 +72,24 @@ sd(summary(Nonpareil.curve.batch(np_list, plot = F))[,2])/sqrt(np_length)
 ```{r}
 np_summary %>%
   ggplot( aes(x=C)) +
-    geom_density(fill="#69b3a2", color="#e9ecef", alpha=0.8) + theme_q2r()
+    geom_density(fill="#69b3a2", color="#e9ecef", alpha=0.8) 
 
 np_summary %>%
   ggplot( aes(x=diversity, y=C)) +
-    geom_point() + theme_q2r()
+    geom_point() 
+
+np_summary %>% 
+  as_tibble(rownames = "Samples") %>%
+  separate(Samples, into=c("Sample", "Method")) %>%
+  filter(!str_detect(Sample,"B20")) %>%
+  mutate(Method2 = if_else(str_detect(Method, "DNase"), "DNase", 
+                          if_else(str_detect(Method, "PMA"), "PMA", "Na"
+                                  ))) %>%
+  ggplot(aes(x=Method, y=C)) + 
+  geom_violin(trim = F, aes(fill=Method2)) + 
+  geom_boxplot(width=0.1) + stat_compare_means(paired = TRUE, ref.group = "NaNa", hide.ns	= T) 
+
+tmp <- list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf), symbols = c("****", "***", "**", "*", "ns"))
 ```
 
 
