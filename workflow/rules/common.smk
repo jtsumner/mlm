@@ -44,11 +44,17 @@ def get_rules(wildcards):
     if config["METAPHLAN"]:
         all_rules.append("results/metaphlan_bowtie_out/merged_metaphlan_profile_genus.tsv")
         all_rules.append("results/metaphlan_bowtie_out/merged_metaphlan_profile_species.tsv")
+        if config["METAPHLAN_MERGED"]:
+            all_rules = all_rules + expand("results/metaphlan_bbmerge_out/{sample}/{sample}.metaphlan_profile.txt",sample=samples["sample"])
     if config["KRAKEN2"]:
         all_rules.append("results/kraken/merged_kraken_report_profile.tsv")
         #all_rules = all_rules + expand("results/kraken/{sample}/{sample}_kraken2out.txt", sample=samples["sample"])
     if config["METAXA2"]:
         all_rules = all_rules + expand("results/metaxa2/{sample}/{sample}_metaxa2.taxonomy.txt", sample=samples["sample"])
+    if config["HUMANN"]:
+        all_rules = all_rules + expand("results/humann_out/{sample}/{sample}_genefamilies.tsv", sample=samples["sample"])
+    
+
     if config["ASSEMBLE"]:
         #if config["MEGAHIT"]:
         #    all_rules = all_rules + expand(

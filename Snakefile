@@ -20,8 +20,8 @@ rule all:
     input:
         get_rules,
         #"results/humann_out/DNA_B03_02/DNA_B03_02_genefamilies.tsv"
-        expand("results/humann_out/{sample}/{sample}_genefamilies.tsv", sample=samples["sample"]),
-        expand("results/metaphlan_bbmerge_out/{sample}/{sample}.metaphlan_profile.txt",sample=samples["sample"])
+        #expand("results/humann_out/{sample}/{sample}_genefamilies.tsv", sample=samples["sample"]), #added
+        # expand("results/metaphlan_bbmerge_out/{sample}/{sample}.metaphlan_profile.txt",sample=samples["sample"])# added
         #"results/metaphlan_bowtie_out/merged_metaphlan_profile.tsv",
 
 # Make report for snakemake. 

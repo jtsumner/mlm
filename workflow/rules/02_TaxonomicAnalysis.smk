@@ -264,7 +264,39 @@ rule merge_kraken:
         workflow/scripts/combine_mpa.py -i {input.kraken_mpas} \
             -o {output.merged_mpa} \
         """ 
-    
+
+rule bracken:
+    """
+    Performs abundance estimation from with Kraken2 classification
+    """
+    input: 
+        kraken_out = "results/kraken/{sample}/{sample}_kraken2out.txt",
+        kraken_report = "results/kraken/{sample}/{sample}_kraken2report.txt"
+    output:
+        bracken_out = "bracken_out/{sample}/{sample}.bracken",
+        bracken_report = "bracken_out/{sample}/{sample}.breport"
+    threads: 10
+    conda:
+        "../envs/bracken.yml"
+    resources:
+        mem="30G",
+        time="0:20:00"
+    params:
+        read_length = "100",
+        taxonomic_level = "S",
+        read_threshold = "10",
+        kraken_database = "/software/kraken/database/kraken_db"
+    shell:
+        """
+        module load kraken/2
+        bracken -d {params.kraken_database} \
+            -i {input.kraken_report} \
+            -r {params.read_length} \
+            -l {params.taxonomic_level} \
+            -t {read_threshold} \
+            -o {input.bracken_out} \
+            -w {input.bracken_report} \
+        """  
 
 ############################
 ###   PART 1C: METAXA2   ###
