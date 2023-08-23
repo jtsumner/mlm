@@ -39,11 +39,11 @@ rule spades:
     threads: 25
     resources:
         mem="100g",
-        time="10:00:00"
+        time="05:00:00"
     shell:
         """
         module load spades/3.14.1
-        spades.py -1 {input.r1_clean} -2 {input.r2_clean} -o {params.out_dir} -t {threads} -m 100 --meta
+        spades.py -1 {input.r1_clean} -2 {input.r2_clean} -o {params.out_dir} -t {threads} -m 100 --meta -k 21,33,55,77,99,127
         """
 # -k 21,33,55,77,99,127 --only-assembler
 

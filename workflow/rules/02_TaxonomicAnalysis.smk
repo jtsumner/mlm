@@ -161,6 +161,33 @@ use rule metaphlan_species_abundance as metaphlan_bowtie_species_abundance with:
     output:
         "results/metaphlan_bowtie_out/merged_metaphlan_profile_species.tsv"
 
+rule metaphlan_bbmerge:
+    input:
+        metaphlan_db = rules.metaphlan_setup.output.metaphlan_db,
+        merged_reads = get_final_merged_read #get_final_read1
+    output:
+        profile = "results/metaphlan_bbmerge_out/{sample}/{sample}.metaphlan_profile.txt",
+        bowtie_out = "results/metaphlan_bbmerge_out/{sample}/{sample}.bowtie2.bz2"
+    conda: 
+        "../envs/metaphlan.yml"
+    params:
+        metaphlan_idx = config["metaphlan_idx"] # Index for metaphlan
+    threads: 10
+    resources:
+        mem="20g",
+        time="04:00:00"
+    shell:
+        """
+        metaphlan {input.merged_reads} \
+        --bowtie2out {output.bowtie_out} \
+        --index {params.metaphlan_idx} \
+        --bowtie2db {input.metaphlan_db} \
+        --nproc {threads} \
+        --input_type fastq \
+        --unclassified_estimation \
+        -t rel_ab_w_read_stats \
+        -o {output.profile}
+        """
 ############################
 ###  PART 1B: KRACKEN2   ###
 ############################
@@ -289,7 +316,7 @@ rule humann:
     output:
         gene_fam = "results/humann_out/{sample}/{sample}_genefamilies.tsv",
         path_cov = "results/humann_out/{sample}/{sample}_pathcoverage.tsv",
-        path_abund = "results/humann_out/{sample}/{sample}__pathabundance.tsv"
+        path_abund = "results/humann_out/{sample}/{sample}_pathabundance.tsv"
     conda: 
         "../envs/humann.yml"
     params:

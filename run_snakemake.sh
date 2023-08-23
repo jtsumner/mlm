@@ -1,10 +1,10 @@
 #! /bin/bash
-#SBATCH -A p31752
+#SBATCH -A b1042
 #SBATCH --job-name="scheduler"
-#SBATCH -t 40:00:00
+#SBATCH -t 24:00:00
 #SBATCH -N 1
 #SBATCH -n 5
-#SBATCH -p normal
+#SBATCH -p genomics
 #SBATCH --mem=8gb
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=jacksumner2026@u.northwestern.edu

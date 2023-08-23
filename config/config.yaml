@@ -56,5 +56,5 @@ MEGAHIT: True
 SPADES: True
 METABAT2: False
 CHECKM: False
-PROKKA: True
-VIRAL: True
+PROKKA: False
+VIRAL: False

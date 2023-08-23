@@ -181,19 +181,19 @@ rule merge_reads:
         r3 = "results/bbmerge_out/{sample}/{sample}.fastq.gz"
     threads: 5
     resources:
-        mem="10G"
+        mem="20G"
     shell:
         """
         module load BBMap
-        bbmerge.sh \
+        bbmerge-auto.sh \
             in1={input.r1} \
             in2={input.r2} \
             out={output.r3} \
-            strict=t \
-            k=60 \
-            mininsert=90 \
+            rem k=62 \
+            extend2=50 ecct\
             threads={threads}
         """
+# strict=t k=60 mininsert=90 \
 
 ###############################
 ###  PART 5A: QC NONPAREIL  ###
