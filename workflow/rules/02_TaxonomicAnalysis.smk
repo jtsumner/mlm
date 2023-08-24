@@ -236,7 +236,7 @@ rule kraken_mpa:
     threads: 1
     resources:
         mem="3G",
-        time="0:10:00"
+        time="0:02:00"
     shell:
         """
         workflow/scripts/kreport2mpa.py -r {input.kraken_report} \
@@ -255,6 +255,8 @@ rule merge_kraken:
     output:
         merged_reports = "results/kraken/merged_kraken_report_profile.tsv",
         merged_mpa = "results/kraken/merged_kraken_mpa_profile.tsv"
+    params:
+        sample_list = samples["sample"]
     threads: 1
     resources:
         mem="15G",
@@ -263,7 +265,8 @@ rule merge_kraken:
         """
         workflow/scripts/combine_kreports.py -r {input.kraken_reports} \
             -o {output.merged_reports} \
-            --display-headers
+            --sample_list {params.sample_list} \
+            --display-headers 
         
         workflow/scripts/combine_mpa.py -i {input.kraken_mpas} \
             -o {output.merged_mpa} \
@@ -277,9 +280,9 @@ rule bracken:
         kraken_out = "results/kraken/{sample}/{sample}_kraken2out.txt",
         kraken_report = "results/kraken/{sample}/{sample}_kraken2report.txt"
     output:
-        bracken_out = "bracken_out/{sample}/{sample}.bracken",
-        bracken_report = "bracken_out/{sample}/{sample}.breport"
-    threads: 2
+        bracken_out = "results/bracken_out/{sample}/{sample}.bracken",
+        bracken_report = "results/bracken_out/{sample}/{sample}.breport"
+    threads: 1
     conda:
         "../envs/bracken.yml"
     resources:
@@ -293,7 +296,6 @@ rule bracken:
     shell:
         """
         module load kraken/2
-        bracken-build -d krakendb -t 8 -k 35 -l 100
         bracken -d {params.kraken_db} \
             -i {input.kraken_report} \
             -r {params.read_length} \
@@ -303,6 +305,20 @@ rule bracken:
             -w {output.bracken_report} \
         """  
 
+use rule kraken_mpa as bracken_mpa with:
+    input: 
+        kraken_report = "results/bracken_out/{sample}/{sample}.breport"
+    output:
+        kraken_mpa = "results/bracken_out/{sample}/{sample}_mpa.tsv"
+
+use rule merge_kraken as merge_bracken with:
+    input: 
+        kraken_reports = expand("results/bracken_out/{sample}/{sample}.breport", sample=samples["sample"]),
+        kraken_mpas = expand("results/bracken_out/{sample}/{sample}_mpa.tsv", sample=samples["sample"])
+    output:
+        merged_reports = "results/bracken_out/merged_bracken_report_profile.tsv",
+        merged_mpa = "results/bracken_out/merged_bracken_mpa_profile.tsv"
+#"results/bracken_out/{sample}/{sample}.bracken"
 ############################
 ###   PART 1C: METAXA2   ###
 ############################
@@ -371,4 +387,61 @@ rule humann:
             --nucleotide-database /projects/b1180/software/conda_envs/humann/lib/python3.7/site-packages/humann/data/chocophlan/ \
             --protein-database /projects/b1180/software/conda_envs/humann/lib/python3.7/site-packages/humann/data/uniref/ \
             --metaphlan-options="--index {params.metaphlan_idx} --bowtie2db {input.metaphlan_db}"
+        """
+
+rule merge_humann:
+    input:
+        gene_fam = expand("results/humann_out/{sample}/{sample}_genefamilies.tsv", sample=samples["sample"]),
+        path_cov = expand("results/humann_out/{sample}/{sample}_pathcoverage.tsv", sample=samples["sample"]),
+        path_abund = expand("results/humann_out/{sample}/{sample}_pathabundance.tsv", sample=samples["sample"])
+    output:
+        gene_fam = "results/humann_out/merged_genefamilies.tsv",
+        path_cov = "results/humann_out/merged_pathcoverage.tsv",
+        path_abund = "results/humann_out/merged_pathabundance.tsv"
+    params:
+        humann_dir = "results/humann_out"
+    resources:
+        time="0:15:00"
+    threads: 1
+    conda: 
+        "../envs/humann.yml"
+    shell:
+        """
+        humann_join_tables -i {params.humann_dir} \
+            -o {output.gene_fam} \
+            --file_name genefamilies \
+            --search-subdirectories 
+
+        humann_join_tables -i {params.humann_dir} \
+            -o {output.path_cov} \
+            --file_name pathcoverage \
+            --search-subdirectories
+
+        humann_join_tables -i {params.humann_dir} \
+            -o {output.path_abund} \
+            --file_name pathabundance \
+            --search-subdirectories
+        """
+
+rule renorm_humann:
+    input:
+        gene_fam = "results/humann_out/merged_genefamilies.tsv",
+        path_cov = "results/humann_out/merged_pathcoverage.tsv",
+        path_abund = "results/humann_out/merged_pathabundance.tsv"
+    output:
+        gene_fam = "results/humann_out/merged_genefamilies-cpm.tsv",
+    params:
+        humann_dir = "results/humann_out"
+    resources:
+        time="0:15:00",
+        mem = "15G"
+    threads: 1
+    conda: 
+        "../envs/humann.yml"
+    shell:
+        """
+        humann_renorm_table --input {input.gene_fam}.tsv \
+            --output {output.gene_fam} \
+            --units cpm \
+            --update-snames
         """
