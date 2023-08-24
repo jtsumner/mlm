@@ -163,7 +163,7 @@ rule flagstat_summarize:
     shell:
         """
         cd results/bowtie_out/
-        for i in $(ls -d *) ; do sed -e "s/^/$i\t/" $i/*.flagstat.tsv >> flagstat_summary.txt ; done
+        for i in $(ls -d *) ; do sed -e "s/^/${{i}}\t/" ${{i}}/*.flagstat.tsv >> flagstat_summary.txt ; done
         """
 
 ############################

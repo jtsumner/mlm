@@ -207,17 +207,21 @@ rule kraken2:
         kraken_report = "results/kraken/{sample}/{sample}_kraken2report.txt"
     threads: 20
     resources:
-        mem="180G",
-        time="0:10:00"
+        mem="650G",
+        time="01:00:00",
+        partition="genomics-himem"
+    params:
+        kraken_db = "/projects/b1188/bmo/mlm/resources/kraken_db" #/software/kraken/database/kraken_db
     shell:
         """
         module load kraken/2
         kraken2 --threads {threads} \
             --output {output.kraken_out} \
             --report {output.kraken_report} \
-            --confidence 0.5 \
+            --confidence 0.7 \
             --gzip-compressed \
             --minimum-hit-groups 3 \
+            --db {params.kraken_db} \
             --paired {input.r1_clean} {input.r2_clean}
         """ 
 
@@ -275,27 +279,28 @@ rule bracken:
     output:
         bracken_out = "bracken_out/{sample}/{sample}.bracken",
         bracken_report = "bracken_out/{sample}/{sample}.breport"
-    threads: 10
+    threads: 2
     conda:
         "../envs/bracken.yml"
     resources:
-        mem="30G",
-        time="0:20:00"
+        mem="5G",
+        time="0:10:00"
     params:
         read_length = "100",
         taxonomic_level = "S",
         read_threshold = "10",
-        kraken_database = "/software/kraken/database/kraken_db"
+        kraken_db = "/projects/b1188/bmo/mlm/resources/kraken_db" #/software/kraken/database/kraken_db
     shell:
         """
         module load kraken/2
-        bracken -d {params.kraken_database} \
+        bracken-build -d krakendb -t 8 -k 35 -l 100
+        bracken -d {params.kraken_db} \
             -i {input.kraken_report} \
             -r {params.read_length} \
             -l {params.taxonomic_level} \
-            -t {read_threshold} \
-            -o {input.bracken_out} \
-            -w {input.bracken_report} \
+            -t {params.read_threshold} \
+            -o {output.bracken_out} \
+            -w {output.bracken_report} \
         """  
 
 ############################

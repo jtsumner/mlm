@@ -19,7 +19,7 @@ include: "workflow/rules/06_SingleGenomeBins.smk"
 rule all:
     input:
         get_rules,
-        #"results/humann_out/DNA_B03_02/DNA_B03_02_genefamilies.tsv"
+        "bracken_out/DNA_B01_03/DNA_B01_03.bracken",
         #expand("results/humann_out/{sample}/{sample}_genefamilies.tsv", sample=samples["sample"]), #added
         # expand("results/metaphlan_bbmerge_out/{sample}/{sample}.metaphlan_profile.txt",sample=samples["sample"])# added
         #"results/metaphlan_bowtie_out/merged_metaphlan_profile.tsv",
