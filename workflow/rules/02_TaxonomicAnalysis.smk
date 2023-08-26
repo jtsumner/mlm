@@ -256,7 +256,7 @@ rule merge_kraken:
         merged_reports = "results/kraken/merged_kraken_report_profile.tsv",
         merged_mpa = "results/kraken/merged_kraken_mpa_profile.tsv"
     params:
-        sample_list = samples["sample"]
+        sample_list = list(samples["sample"])
     threads: 1
     resources:
         mem="15G",
@@ -433,14 +433,14 @@ rule renorm_humann:
     params:
         humann_dir = "results/humann_out"
     resources:
-        time="0:15:00",
-        mem = "15G"
+        time="0:30:00",
+        mem = "50G"
     threads: 1
     conda: 
         "../envs/humann.yml"
     shell:
         """
-        humann_renorm_table --input {input.gene_fam}.tsv \
+        humann_renorm_table --input {input.gene_fam} \
             --output {output.gene_fam} \
             --units cpm \
             --update-snames
