@@ -1,0 +1,116 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+nature_theme <- function(x_axis_labels, y_label) {
+    # set default text format based on categorical and length
+    angle = NULL
+    hjust = NULL
+    size = 12
+    if (max(nchar(x_axis_labels), na.rm=TRUE) > 5) {
+        angle = 45
+        hjust = 1
+        size = 12
+    }
+    axis_title_size = 12
+    if (nchar(y_label) > 15) {
+        axis_title_size = 12
+    }
+    if (nchar(y_label) > 25) {
+        axis_title_size = 12
+    }
+    axis_title_size = 14
+    size=12
+    return ( ggplot2::theme_bw() + ggplot2::theme(
+        axis.text.x = ggplot2::element_text(size = size, vjust = 1, hjust = hjust, angle = angle, colour = "black"),
+        axis.text.y = ggplot2::element_text(size = axis_title_size, hjust = 1, colour = "black"),
+        axis.title = ggplot2::element_text(size = axis_title_size),
+        plot.title = ggplot2::element_text(size = size, hjust = 0.5),
+        legend.title = ggplot2::element_text(size = 12),
+        legend.text = ggplot2::element_text(size = 12),
+        axis.line = ggplot2::element_line(colour = 'black', size = .5),
+        axis.line.x = ggplot2::element_line(colour = 'black', size = .5),
+        axis.line.y = ggplot2::element_line(colour = 'black', size = .5),
+        panel.border = ggplot2::element_blank(),
+        panel.grid.major = ggplot2::element_blank(),
+        panel.grid.minor = ggplot2::element_blank(),
+        axis.ticks = element_line(color="black"),
+        text = element_text(family = "Arial"))
+   )
+}
+
+```
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(ggpubr)
+```
+
+```{r}
+# Set multiqc file name and summary output name
+readqc = "../../results/fastqc_out/multiqc_data/multiqc_fastqc.txt"
+summary_out = "../../results/tables/ReadNumberSummary.tsv"
+# Parse multiqc/fastqc data to have columns for Sample and Tool+Read# 
+#   (e.g., bowtie_qc.1, bowtie_qc.2, bbmerge.merged)
+tmp_readqc<- read_tsv(readqc, name_repair = "universal") %>% 
+  select(Sample,Total.Sequences,Sequence.length,.GC, 
+         total_deduplicated_percentage, avg_sequence_length) %>%
+  separate(Sample, into = c("Tool", "Sample", "Read"), sep = "\\s*\\|\\s*") %>%
+  mutate(Read = ifelse(grepl("_R1_", Read), "1",
+                       ifelse(grepl("_R2_", Read), "2", 
+                              ifelse(grepl("_R1", Read), "1",
+                              ifelse(grepl("_R2", Read), "2",
+                              ifelse(grepl(".r1", Read), "1",
+                              ifelse(grepl(".r2", Read), "2", "merged")))))), .after="Read") %>%
+  mutate(Tool_Read = paste(Tool, Read, sep = ".")) #%>% select(!c(Tool, Read)) 
+
+# Make major summary/output table for total sequences by tools per 
+fastqc_summary <- tmp_readqc %>% 
+  select(Sample, Tool_Read, Total.Sequences) %>% 
+  pivot_wider(names_from = Tool_Read, values_from = Total.Sequences) %>%
+  select(Sample, raw_qc.1, raw_qc.2, fastp_qc.merged, bbduk_qc.1, bbduk_qc.2, bowtie_qc.1, bowtie_qc.2) %>% #bbmerge_qc.merged
+    # mutate("fastp-raw"= fastp_qc.merged/raw_qc.1) %>% 
+    # mutate("bbduk-fastp"= bbduk_qc.1/fastp_qc.merged) %>% 
+    # mutate("bowtie-bbduk"= bowtie_qc.1/bbduk_qc.1) #%>% mutate("bbmerge-bowtie"= bbmerge_qc.merged/bowtie_qc.1)    
+    mutate("raw.FC"= raw_qc.2/raw_qc.2) %>% 
+    mutate("fastp.FC"= fastp_qc.merged/raw_qc.2) %>% 
+    mutate("bbduk.FC"= bbduk_qc.2/raw_qc.2) %>% 
+    mutate("bowtie.FC"= bowtie_qc.2/bbduk_qc.2) #%>% mutate("bbmerge-bowtie"= bbmerge_qc.merged/bowtie_qc.1)
+
+#write_tsv(fastqc_summary, summary_out)
+```
+
+```{r}
+# Make major summary/output table for total sequences by tools per 
+fastqc_tidy <- fastqc_summary %>% 
+  filter(str_detect(Sample, "PMA|Na|DNase")) %>%
+  select(Sample, raw.FC,fastp.FC, bbduk.FC, bowtie.FC) %>%
+  pivot_longer(2:last_col()) %>%
+  mutate(name = factor(name, levels=c("raw.FC","fastp.FC", "bbduk.FC", "bowtie.FC")))
+
+fastqc_tidy %>%
+  group_by(name) %>%
+  summarize(min = min(value),
+            q1 = quantile(value, 0.25),
+            median = median(value),
+            mean = mean(value),
+            q3 = quantile(value, 0.75),
+            max = max(value))
+
+ggplot(fastqc_tidy, aes(x=name, y=value)) +
+  geom_boxplot(aes(fill=name), outlier.alpha = 0) +
+  geom_point(aes(fill=name), 
+             alpha = 0.75,
+             size = 1, 
+             shape = 21, 
+             color = 'black',
+             position = position_jitterdodge(jitter.width = 1)) +
+  scale_fill_simpsons() +
+  nature_theme("Read", "Fol") +
+  labs(x="ReadQC Step", 
+       y="Read Fold Change", 
+       title="Stepwise Loss of Sequencing Data") +
+  theme(aspect.ratio = 1)
+```

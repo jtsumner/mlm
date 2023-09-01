@@ -376,8 +376,8 @@ rule humann:
         metaphlan_idx = config["metaphlan_idx"] # Index for metaphlan
     threads: 20
     resources:
-        mem="60G",
-        time="02:00:00"
+        mem="30G",
+        time="01:00:00"
     shell:
         """
         outdir=$(dirname {output.gene_fam})

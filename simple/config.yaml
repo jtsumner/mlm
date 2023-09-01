@@ -9,17 +9,19 @@ cluster:
     --time={resources.time}
     --job-name={rule}-{wildcards}
     --output=results/logs/{rule}/smk-{rule}-{wildcards}-{jobid}.out
+    --mail-type=ALL
+    --mail-user=jts.quest.notifications@gmail.com
 default-resources:
-  - account="b1042"
-  - partition="genomics"
+  - account="p31737"
+  - partition="normal"
   - nodes=1
   - mem="5G"
   - time="01:00:00"
-jobs: 150
+jobs: 100
 restart-times: 0
 max-jobs-per-second: 15
 max-status-checks-per-second: 1
-local-cores: 10
+local-cores: 25
 latency-wait: 60
 keep-going: True
 rerun-incomplete: True

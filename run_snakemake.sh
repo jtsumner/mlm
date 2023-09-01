@@ -1,5 +1,5 @@
 #! /bin/bash
-#SBATCH -A p31752
+#SBATCH -A p31737
 #SBATCH -p normal
 #SBATCH --job-name="scheduler"
 #SBATCH -t 24:00:00
@@ -7,7 +7,7 @@
 #SBATCH -n 10
 #SBATCH --mem=15G
 #SBATCH --mail-type=ALL
-#SBATCH --mail-user=jacksumner2026@u.northwestern.edu
+#SBATCH --mail-user=jts.quest.notifications@gmail.com
 #SBATCH --output="slurm_mlm.out"
 # module load anaconda3
 # source activate snakemake
@@ -35,7 +35,7 @@ mamba activate snakemake
 
 # Execute snakemake
 echo "Starting snakemake on cluster..."
-snakemake --profile simple
+snakemake --profile simple --prioritize renorm_humann
 
 snakemake --forceall --rulegraph | dot -Tpdf > results/dag.pdf
 # Annotating the output file

@@ -43,7 +43,7 @@ rule spades:
     shell:
         """
         module load spades/3.14.1
-        spades.py -1 {input.r1_clean} -2 {input.r2_clean} -o {params.out_dir} -t {threads} -m 100 --meta -k 21,33,55,77,99,127
+        spades.py -1 {input.r1_clean} -2 {input.r2_clean} -o {params.out_dir} -t {threads} -m 100 --meta -k 21,33,55,77,99
         """
 # -k 21,33,55,77,99,127 --only-assembler
 
@@ -98,13 +98,13 @@ rule drop_short_contigs_spades:
     output:
         parsed = "results/spades_parsed/{sample}/{sample}.fa"
     params:
-        min_length = "1000",
+        min_length = "2000",
         assembler="spades"
     conda:
         "../envs/seq_processing.yml"
     shell:
         """
-        python3 workflow/scripts/parse_contigs.py --sample {wildcards.sample} \
+        workflow/scripts/parse_contigs.py --sample {wildcards.sample} \
             --scaffolds {input.scaffolds} \
             --parsed {output.parsed} \
             --min_length {params.min_length} \

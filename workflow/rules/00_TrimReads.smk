@@ -29,7 +29,7 @@ rule fastp_pe:
             --out2 {output.r2_filtered} \
             --detect_adapter_for_pe \
             --thread {threads} \
-            --length_required 50 \
+            --length_required 75 \
             -j {output.json} \
             -h {output.html} \
             -V 
@@ -330,7 +330,7 @@ rule fastqc_multiqc:
     shell:
         """
         module load multiqc
-        multiqc --outdir {params.out_dir} --dirs --dirs-depth 2 results/fastqc_out/ -f
+        multiqc --outdir {params.out_dir} --dirs --dirs-depth 2 results/fastqc_out/ --fullnames -f
         """
 
 ###############################

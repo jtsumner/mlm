@@ -72,9 +72,6 @@ rule metabat_depth:
         """
         jgi_summarize_bam_contig_depths \
             --outputDepth {output.depth_fi} \
-            --percentIdentity 97 \
-            --minContigLength 1000 \
-            --minContigDepth 1.0 \
             --referenceFasta {input.contigs} {input.bam_sorted}
         """
 
@@ -94,7 +91,6 @@ rule metabat_bin:
     shell:
         """
         metabat2 -t {threads} \
-            --minClsSize 10000 \
             --abdFile {input.depth_fi} \
             --inFile {input.contigs} \
             --outFile {output.bin_dir}/{wildcards.sample}.bin \
