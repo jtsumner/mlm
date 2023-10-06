@@ -55,7 +55,7 @@ library(ggsci)
 # Set multiqc file name and summary output name
 readqc = "../../results/fastqc_out/multiqc_data/multiqc_fastqc.txt"
 summary_out = "../../results/tables/ReadNumberSummary.tsv"
-
+/projects/b1188/bmo/mlm/results/fastqc_out/multiqc_data/mqc_fastqc_sequence_counts_plot_1.txt
 # Parse multiqc/fastqc data to have columns for Sample and Tool+Read# 
 #   (e.g., bowtie_qc.1, bowtie_qc.2, bbmerge.merged)
 tmp_readqc<- read_tsv(readqc, name_repair = "universal") %>% 
@@ -166,11 +166,11 @@ fastqc_tidy %>%
 ```{r}
 quast_tidy <- read_tsv("../../results/quast_out/multiqc_data/multiqc_quast.txt") %>%
   pivot_longer(2:last_col()) %>%
-  separate(Sample, into=c(NA, NA, "Sample"), sep="\\| ") %>%
-  left_join(., s_meta, by=c("Sample" = "seq_id")) %>%
-  filter(!stringr::str_detect(name, ">")) %>%
+  separate(Sample, into=c("Assembler", NA, "Sample"), sep="\\| ") %>%
+  #left_join(., s_meta, by=c("Sample" = "seq_id")) %>%
+  filter(!stringr::str_detect(name, ">")) 
   #mutate(value = sqrt(value)) %>%
-  mutate(RepeatID=if_else(str_detect(Sample.y, "BAL00"), "Baseline", if_else(str_detect(Sample.y, "BAL"), "Repeat", NA)))
+  #mutate(RepeatID=if_else(str_detect(Sample.y, "BAL00"), "Baseline", if_else(str_detect(Sample.y, "BAL"), "Repeat", NA)))
   
 quast_tidy %>%
   group_by(cluster_num, name) %>%
@@ -207,6 +207,467 @@ quast_tidy %>%
 
 ```
 
+```{r}
+quast_tidy <- read_tsv("../../results/assembly_defaults/spades/multiqc_data_1/multiqc_quast.tsv") %>%
+  pivot_longer(2:last_col()) %>%
+  separate(Sample, into=c("Assembler", "Sample"), sep="\\| ") %>%
+  filter(!stringr::str_detect(Sample, "STD")) %>%
+  separate(Sample, into=c(NA, "Batch", NA), remove = FALSE) %>%
+  mutate(Assembler = "spades_HK") %>% 
+  mutate(value = if_else(str_detect(name, "length|contigs"), log10(value +1), value ))
+         
+quast_tidy %>%
+  group_by(Batch, name) %>%
+  summarize(min = min(value),
+            q1 = quantile(value, 0.25),
+            median = median(value),
+            mean = mean(value),
+            q3 = quantile(value, 0.75),
+            max = max(value))
+
+
+ggplot(quast_tidy, aes(x=value, y=Batch, fill=Batch)) +
+  geom_density_ridges(
+    aes(point_color = Batch, point_fill = Batch, point_shape = Batch),
+    alpha = .2, point_alpha = 1, jittered_points = TRUE, scale=1, quantile_lines = TRUE, quantiles = 2) +
+  scale_point_color_hue(l = 40) +
+  xlab("Reads") +
+  scale_discrete_manual(aesthetics = "point_shape", values = c(21, 22, 23, 24)) +
+  nature_theme("", "") +# facet_zoom(xlim = c(1000000, 10000000), zoom.size = 1) +
+  theme(aspect.ratio = 1)  +
+  facet_wrap(vars(name), scales = "free_x", nrow = 3) +
+  rotate_x_text(angle = 45)
+
+ggplot(quast_tidy, aes(x=Batch, y=value)) +
+  geom_boxplot(aes(fill=cluster_num), outlier.alpha = 0, alpha=0.75) +
+  geom_point(aes(fill=cluster_num), 
+             alpha = 0.9,
+             size = 1, 
+             shape = 21, 
+             color = 'black',
+             position = position_jitterdodge(jitter.width = .5)) +
+  scale_fill_npg() +
+  nature_theme("Clust", "Stat") +
+  labs(x="Pneumotype Cluster", 
+       y="Square Root of Quast Statistic", 
+       title="Number of Contigs") +
+  facet_wrap(~ name, scales = "free") +
+  theme(aspect.ratio = 1, 
+        strip.background = element_blank(), 
+        strip.text.x = element_text(size = 5, face="bold")) 
+```
+```{r}
+# VERY SENSITIVE HOST DECONTAMINATION
+## DEFAULT
+quast_tidy_SD <- read_tsv("../../results/assembly_defaults/spades/multiqc_data_1/multiqc_quast.tsv") %>%
+  pivot_longer(2:last_col()) %>%
+  separate(Sample, into=c(NA, "Sample"), sep="\\| ") %>%
+  filter(!stringr::str_detect(Sample, "STD")) %>%
+  separate(Sample, into=c(NA, "Batch", NA), remove = FALSE) %>%
+  mutate(value = if_else(str_detect(name, "length|contig|N50"), log10(value +1), value )) %>%
+  rename(value_SD = "value")
+
+## HIGH KMER NO CORRECTION
+quast_tidy_SH <- read_tsv("../../results/spades_out_SH_quast/multiqc_data/multiqc_quast.tsv") %>%
+  pivot_longer(2:last_col()) %>%
+  separate(Sample, into=c(NA, "Sample"), sep="\\| ") %>%
+  filter(!stringr::str_detect(Sample, "STD")) %>%
+  separate(Sample, into=c(NA, "Batch", NA), remove = FALSE) %>%
+  mutate(value = if_else(str_detect(name, "length|contig|N50"), log10(value +1), value )) %>%
+  rename(value_SH = "value")
+
+## HIGH KMER WITH CORRECTION
+quast_tidy_SHC <- read_tsv("../../results/quast_out/spades/multiqc_data/multiqc_quast.txt") %>%
+  pivot_longer(2:last_col()) %>%
+  separate(Sample, into=c(NA, "Sample"), sep="\\| ") %>%
+  filter(!stringr::str_detect(Sample, "STD")) %>%
+  separate(Sample, into=c(NA, "Batch", NA), remove = FALSE) %>%
+  mutate(value = if_else(str_detect(name, "length|contig|N50"), log10(value +1), value )) %>%
+  rename(value_SHC = "value")
+
+## MEGAHIT
+quast_tidy_M <- read_tsv("../../results/quast_out/megahit/multiqc_data/multiqc_quast.txt") %>%
+  pivot_longer(2:last_col()) %>%
+  separate(Sample, into=c(NA, "Sample"), sep="\\| ") %>%
+  filter(!stringr::str_detect(Sample, "STD")) %>%
+  separate(Sample, into=c(NA, "Batch", NA), remove = FALSE) %>%
+  mutate(value = if_else(str_detect(name, "length|contig|N50"), log10(value +1), value )) %>%
+  rename(value_M = "value")
+
+# LOCAL HOST DECONTAMINATION
+## DEFAULT SPADES
+quast_tidy_SDL <- read_tsv("../../results/old_local/quast_out/spades/multiqc_data/multiqc_quast.txt") %>%
+  pivot_longer(2:last_col()) %>%
+  separate(Sample, into=c(NA, "Sample"), sep="\\| ") %>%
+  filter(!stringr::str_detect(Sample, "STD")) %>%
+  separate(Sample, into=c(NA, "Batch", NA), remove = FALSE) %>%
+  mutate(value = if_else(str_detect(name, "length|contig|N50"), log10(value +1), value )) %>%
+  rename(value_SDL = "value")
+
+quast_tidy_ML <- read_tsv("../../results/old_local/quast_out/megahit/multiqc_data/multiqc_quast.txt") %>%
+  pivot_longer(2:last_col()) %>%
+  separate(Sample, into=c(NA, "Sample"), sep="\\| ") %>%
+  filter(!stringr::str_detect(Sample, "STD")) %>%
+  separate(Sample, into=c(NA, "Batch", NA), remove = FALSE) %>%
+  mutate(value = if_else(str_detect(name, "length|contig|N50"), log10(value +1), value )) %>%
+  rename(value_ML = "value")
+
+# MERGE QUAST OUTPUTS
+quasts_tidy <- quast_tidy_SD %>% 
+  left_join(quast_tidy_SH, by=c("Sample", "Batch", "name")) %>% 
+  left_join(quast_tidy_M, by=c("Sample", "Batch", "name")) %>%
+  left_join(quast_tidy_SDL, by=c("Sample", "Batch", "name"),) %>%
+  left_join(quast_tidy_ML, by=c("Sample", "Batch", "name")) %>% 
+  left_join(quast_tidy_SHC, by=c("Sample", "Batch", "name")) %>% 
+  replace_na(list(value_ML = 0, value_SDL = 0))
+
+
+# VISUALIZE
+ggplot(quasts_tidy, aes(x=value_SD, y=value_SH)) +
+  geom_point(aes(shape = Batch, fill=Batch))+
+  geom_abline(slope=1, intercept=0) +
+  scale_point_color_hue(l = 40) +
+  scale_discrete_manual(aesthetics = "shape", values = c(21, 22, 23, 24)) +
+  nature_theme("", "") +# facet_zoom(xlim = c(1000000, 10000000), zoom.size = 1) +
+  theme(aspect.ratio = 1)  +
+  facet_wrap(vars(name), scales = "free", nrow = 3) +
+  rotate_x_text(angle = 45) + 
+  ggtitle("Spades-Default Bowtie-VS vs Spades-HighKmerNoCorrection Bowtie-VS")
+
+ggplot(quasts_tidy, aes(x=value_SD, y=value_M)) +
+  geom_point(aes(shape = Batch, fill=Batch))+
+  geom_abline(slope=1, intercept=0) +
+  scale_point_color_hue(l = 40) +
+  scale_discrete_manual(aesthetics = "shape", values = c(21, 22, 23, 24)) +
+  nature_theme("", "") +# facet_zoom(xlim = c(1000000, 10000000), zoom.size = 1) +
+  theme(aspect.ratio = 1)  +
+  facet_wrap(vars(name), scales = "free", nrow = 3) +
+  rotate_x_text(angle = 45) + 
+  ggtitle("Spades-Default Bowtie-VS vs Megahit Bowtie-VS")
+
+ggplot(quasts_tidy, aes(x=value_SH, y=value_M)) +
+  geom_point(aes(shape = Batch, fill=Batch))+
+  geom_abline(slope=1, intercept=0) +
+  scale_point_color_hue(l = 40) +
+  scale_discrete_manual(aesthetics = "shape", values = c(21, 22, 23, 24)) +
+  nature_theme("", "") +# facet_zoom(xlim = c(1000000, 10000000), zoom.size = 1) +
+  theme(aspect.ratio = 1)  +
+  facet_wrap(vars(name), scales = "free", nrow = 3) +
+  rotate_x_text(angle = 45) +  
+  ggtitle("Spades-HighKmerNoCorrection Bowtie-VS vs Megahit Bowtie-VS")
+
+
+ggplot(quasts_tidy, aes(x=value_SD, y=value_SDL)) +
+  geom_point(aes(shape = Batch, fill=Batch))+
+  geom_abline(slope=1, intercept=0) +
+  scale_point_color_hue(l = 40) +
+  scale_discrete_manual(aesthetics = "shape", values = c(21, 22, 23, 24)) +
+  nature_theme("", "") +# facet_zoom(xlim = c(1000000, 10000000), zoom.size = 1) +
+  theme(aspect.ratio = 1)  +
+  facet_wrap(vars(name), scales = "free", nrow = 3) +
+  rotate_x_text(angle = 45) + 
+  ggtitle("Spades-Default Bowtie-VS vs Spades-Default Bowtie-Local ") 
+
+ggplot(quasts_tidy, aes(x=value_SD, y=value_ML)) +
+  geom_point(aes(shape = Batch, fill=Batch))+
+  geom_abline(slope=1, intercept=0) +
+  scale_point_color_hue(l = 40) +
+  scale_discrete_manual(aesthetics = "shape", values = c(21, 22, 23, 24)) +
+  nature_theme("", "") +# facet_zoom(xlim = c(1000000, 10000000), zoom.size = 1) +
+  theme(aspect.ratio = 1)  +
+  facet_wrap(vars(name), scales = "free", nrow = 3) +
+  rotate_x_text(angle = 45) + 
+  ggtitle("Spades-Default Bowtie-VS vs Megahit Bowtie-Local ") 
+
+ggplot(quasts_tidy, aes(x=value_SDL, y=value_ML)) +
+  geom_point(aes(shape = Batch, fill=Batch))+
+  geom_abline(slope=1, intercept=0) +
+  scale_point_color_hue(l = 40) +
+  scale_discrete_manual(aesthetics = "shape", values = c(21, 22, 23, 24)) +
+  nature_theme("", "") +# facet_zoom(xlim = c(1000000, 10000000), zoom.size = 1) +
+  theme(aspect.ratio = 1)  +
+  facet_wrap(vars(name), scales = "free", nrow = 3) +
+  rotate_x_text(angle = 45) + 
+  ggtitle("Spades-Default Bowtie-Local vs Megahit Bowtie-Local ") 
+
+ggplot(quasts_tidy, aes(x=value_SD, y=value_SHC)) +
+  geom_point(aes(shape = Batch, fill=Batch))+
+  geom_abline(slope=1, intercept=0) +
+  scale_point_color_hue(l = 40) +
+  scale_discrete_manual(aesthetics = "shape", values = c(21, 22, 23, 24)) +
+  nature_theme("", "") +# facet_zoom(xlim = c(1000000, 10000000), zoom.size = 1) +
+  theme(aspect.ratio = 1)  +
+  facet_wrap(vars(name), scales = "free", nrow = 3) +
+  rotate_x_text(angle = 45) + 
+  ggtitle("Spades-Default Bowtie-VS vs Spades-HighKmerWithCorrection Bowtie-VS") 
+```
+```{r}
+quasts_tidy %>% 
+  pivot_longer(4:last_col(), names_to =  c("valuename")) %>% drop_na(value) %>%
+  mutate(value = 10^value) %>%
+  group_by(name, valuename) %>%
+  summarise(mean = mean(value))
+```
+
+```{r}
+# VERY SENSITIVE HOST DECONTAMINATION
+## DEFAULT
+quast_tidy_SD <- read_tsv("../../results/assembly_defaults/spades/multiqc_data_1/multiqc_quast.tsv") %>%
+  pivot_longer(2:last_col()) %>%
+  separate(Sample, into=c(NA, "Sample"), sep="\\| ") %>%
+  filter(!stringr::str_detect(Sample, "STD")) %>%
+  separate(Sample, into=c(NA, "Batch", NA), remove = FALSE) %>%
+  rename(value_SD = "value")
+
+## HIGH KMER NO CORRECTION
+quast_tidy_SH <- read_tsv("../../results/spades_out_SH_quast/multiqc_data/multiqc_quast.tsv") %>%
+  pivot_longer(2:last_col()) %>%
+  separate(Sample, into=c(NA, "Sample"), sep="\\| ") %>%
+  filter(!stringr::str_detect(Sample, "STD")) %>%
+  separate(Sample, into=c(NA, "Batch", NA), remove = FALSE) %>%
+  rename(value_SH = "value")
+
+
+## MEGAHIT
+quast_tidy_M <- read_tsv("../../results/quast_out/megahit/multiqc_data/multiqc_quast.txt") %>%
+  pivot_longer(2:last_col()) %>%
+  separate(Sample, into=c(NA, "Sample"), sep="\\| ") %>%
+  filter(!stringr::str_detect(Sample, "STD")) %>%
+  separate(Sample, into=c(NA, "Batch", NA), remove = FALSE) %>%
+  mutate(value = if_else(str_detect(name, "length|contig|N50"), log10(value +1), value )) %>%
+  rename(value_M = "value")
+
+# LOCAL HOST DECONTAMINATION
+## DEFAULT SPADES
+quast_tidy_SDL <- read_tsv("../../results/old_local/quast_out/spades/multiqc_data/multiqc_quast.txt") %>%
+  pivot_longer(2:last_col()) %>%
+  separate(Sample, into=c(NA, "Sample"), sep="\\| ") %>%
+  filter(!stringr::str_detect(Sample, "STD")) %>%
+  separate(Sample, into=c(NA, "Batch", NA), remove = FALSE) %>%
+  rename(value_SDL = "value")
+
+quast_tidy_ML <- read_tsv("../../results/old_local/quast_out/megahit/multiqc_data/multiqc_quast.txt") %>%
+  pivot_longer(2:last_col()) %>%
+  separate(Sample, into=c(NA, "Sample"), sep="\\| ") %>%
+  filter(!stringr::str_detect(Sample, "STD")) %>%
+  separate(Sample, into=c(NA, "Batch", NA), remove = FALSE) %>%
+  rename(value_ML = "value")
+
+# MERGE QUAST OUTPUTS
+quasts_tidy <- quast_tidy_SD %>% 
+  left_join(quast_tidy_SH, by=c("Sample", "Batch", "name")) %>% 
+  left_join(quast_tidy_M, by=c("Sample", "Batch", "name")) %>%
+  left_join(quast_tidy_SDL, by=c("Sample", "Batch", "name"),) %>%
+  left_join(quast_tidy_ML, by=c("Sample", "Batch", "name")) %>% replace_na(list(value_ML = 0, value_SDL = 0))
+
+#write_tsv(quasts_tidy, "../../quasts_tidy.tsv")
+```
+
+```{r}
+# VERY SENSITIVE HOST DECONTAMINATION
+## DEFAULT
+quast_tidy_SD <- read_tsv("../../results/assembly_defaults/spades/multiqc_data_1/multiqc_quast.tsv") %>%
+  pivot_longer(2:last_col()) %>%
+  separate(Sample, into=c(NA, "Sample"), sep="\\| ") %>%
+  filter(!stringr::str_detect(Sample, "STD")) %>%
+  separate(Sample, into=c(NA, "Batch", NA), remove = FALSE) %>%
+  mutate(value = if_else(str_detect(name, "length|contig|N50"), log2(value +1), value )) %>%
+  rename(value_SD = "value")
+
+## HIGH KMER NO CORRECTION
+quast_tidy_SH <- read_tsv("../../results/spades_out_SH_quast/multiqc_data/multiqc_quast.tsv") %>%
+  pivot_longer(2:last_col()) %>%
+  separate(Sample, into=c(NA, "Sample"), sep="\\| ") %>%
+  filter(!stringr::str_detect(Sample, "STD")) %>%
+  separate(Sample, into=c(NA, "Batch", NA), remove = FALSE) %>%
+  mutate(value = if_else(str_detect(name, "length|contig|N50"), log2(value +1), value )) %>%
+  rename(value_SH = "value")
+
+## MEGAHIT
+quast_tidy_M <- read_tsv("../../results/quast_out/megahit/multiqc_data/multiqc_quast.txt") %>%
+  pivot_longer(2:last_col()) %>%
+  separate(Sample, into=c(NA, "Sample"), sep="\\| ") %>%
+  filter(!stringr::str_detect(Sample, "STD")) %>%
+  separate(Sample, into=c(NA, "Batch", NA), remove = FALSE) %>%
+  mutate(value = if_else(str_detect(name, "length|contig|N50"), log2(value +1), value )) %>%
+  rename(value_M = "value")
+
+# LOCAL HOST DECONTAMINATION
+## DEFAULT SPADES
+quast_tidy_SDL <- read_tsv("../../results/old_local/quast_out/spades/multiqc_data/multiqc_quast.txt") %>%
+  pivot_longer(2:last_col()) %>%
+  separate(Sample, into=c(NA, "Sample"), sep="\\| ") %>%
+  filter(!stringr::str_detect(Sample, "STD")) %>%
+  separate(Sample, into=c(NA, "Batch", NA), remove = FALSE) %>%
+  mutate(value = if_else(str_detect(name, "length|contig|N50"), log2(value +1), value )) %>%
+  rename(value_SDL = "value")
+
+quast_tidy_ML <- read_tsv("../../results/old_local/quast_out/megahit/multiqc_data/multiqc_quast.txt") %>%
+  pivot_longer(2:last_col()) %>%
+  separate(Sample, into=c(NA, "Sample"), sep="\\| ") %>%
+  filter(!stringr::str_detect(Sample, "STD")) %>%
+  separate(Sample, into=c(NA, "Batch", NA), remove = FALSE) %>%
+  mutate(value = if_else(str_detect(name, "length|contig|N50"), log2(value +1), value )) %>%
+  rename(value_ML = "value")
+
+# MERGE QUAST OUTPUTS
+quasts_tidy <- quast_tidy_SD %>% 
+  left_join(quast_tidy_SH, by=c("Sample", "Batch", "name")) %>% 
+  left_join(quast_tidy_M, by=c("Sample", "Batch", "name")) %>%
+  left_join(quast_tidy_SDL, by=c("Sample", "Batch", "name"),) %>%
+  left_join(quast_tidy_ML, by=c("Sample", "Batch", "name")) %>% replace_na(list(value_ML = 0, value_SDL = 0))
+
+```
+
+
+```{r}
+quasts_tidyr <- quasts_tidy %>% pivot_longer(4:last_col(), names_to =  c("valuename"))
+
+quasts_tidyr %>%
+  ggplot(.,  aes(valuename, value)) +
+  geom_jitter(aes(shape = Batch, fill=Batch))+
+  geom_boxplot(alpha=0.7) +
+  scale_point_color_hue(l = 40) +
+  scale_discrete_manual(aesthetics = "shape", values = c(21, 22, 23, 24)) +
+  nature_theme("", "") +# facet_zoom(xlim = c(1000000, 10000000), zoom.size = 1) +
+  theme(aspect.ratio = 1)  +
+  facet_wrap(vars(name), scales = "free", nrow = 3) +
+  rotate_x_text(angle = 45) + 
+  ggtitle("Spades-Default Bowtie-VS vs Megahit Bowtie-Local ")
+
+ggplot(quasts_tidyr, aes(x=value, y=valuename, fill=valuename)) +
+  geom_density_ridges(
+    aes(point_color = valuename, point_fill = valuename, point_shape = valuename),
+    alpha = .2, point_alpha = .8, jittered_points = TRUE, point_size=.5,scale=1, quantile_lines = TRUE, quantiles = 2) +
+  scale_point_color_hue(l = 40) +
+  xlab("Reads") +
+  scale_discrete_manual(aesthetics = "point_shape", values = c(21, 22, 23, 24, 25)) +
+  nature_theme("", "") +# facet_zoom(xlim = c(1000000, 10000000), zoom.size = 1) +
+  theme(aspect.ratio = 1)  +
+  facet_wrap(vars(name), scales = "free_x", nrow = 3) +
+  rotate_x_text(angle = 45)
+```
+### Standards Compare
+```{r}
+# VERY SENSITIVE HOST DECONTAMINATION
+## DEFAULT
+quast_tidy_SD <- read_tsv("../../results/assembly_defaults/spades/multiqc_data_1/multiqc_quast.tsv") %>%
+  pivot_longer(2:last_col()) %>%
+  separate(Sample, into=c(NA, "Sample"), sep="\\| ") %>%
+  filter(stringr::str_detect(Sample, "STD")) %>%
+  separate(Sample, into=c(NA, "Batch", NA), remove = FALSE) %>%
+  rename(value_SD = "value")
+
+## HIGH KMER NO CORRECTION
+quast_tidy_SH <- read_tsv("../../results/spades_out_SH_quast/multiqc_data/multiqc_quast.tsv") %>%
+  pivot_longer(2:last_col()) %>%
+  separate(Sample, into=c(NA, "Sample"), sep="\\| ") %>%
+  filter(stringr::str_detect(Sample, "STD")) %>%
+  separate(Sample, into=c(NA, "Batch", NA), remove = FALSE) %>%
+  rename(value_SH = "value")
+
+## MEGAHIT
+quast_tidy_M <- read_tsv("../../results/quast_out/megahit/multiqc_data/multiqc_quast.txt") %>%
+  pivot_longer(2:last_col()) %>%
+  separate(Sample, into=c(NA, "Sample"), sep="\\| ") %>%
+  filter(stringr::str_detect(Sample, "STD")) %>%
+  separate(Sample, into=c(NA, "Batch", NA), remove = FALSE) %>%
+  mutate(value = if_else(str_detect(name, "length|contig|N50"), log10(value +1), value )) %>%
+  rename(value_M = "value")
+
+# LOCAL HOST DECONTAMINATION
+## DEFAULT SPADES
+quast_tidy_SDL <- read_tsv("../../results/old_local/quast_out/spades/multiqc_data/multiqc_quast.txt") %>%
+  pivot_longer(2:last_col()) %>%
+  separate(Sample, into=c(NA, "Sample"), sep="\\| ") %>%
+  filter(stringr::str_detect(Sample, "STD")) %>%
+  separate(Sample, into=c(NA, "Batch", NA), remove = FALSE) %>%
+  rename(value_SDL = "value")
+
+quast_tidy_ML <- read_tsv("../../results/old_local/quast_out/megahit/multiqc_data/multiqc_quast.txt") %>%
+  pivot_longer(2:last_col()) %>%
+  separate(Sample, into=c(NA, "Sample"), sep="\\| ") %>%
+  filter(!stringr::str_detect(Sample, "STD")) %>%
+  separate(Sample, into=c(NA, "Batch", NA), remove = FALSE) %>%
+  rename(value_ML = "value")
+
+# MERGE QUAST OUTPUTS
+quasts_tidy <- quast_tidy_SD %>% 
+  left_join(quast_tidy_SH, by=c("Sample", "Batch", "name")) %>% 
+  left_join(quast_tidy_M, by=c("Sample", "Batch", "name")) %>%
+  left_join(quast_tidy_SDL, by=c("Sample", "Batch", "name"),) %>%
+  left_join(quast_tidy_ML, by=c("Sample", "Batch", "name")) %>% replace_na(list(value_ML = 0, value_SDL = 0))
+
+
+# VISUALIZE
+ggplot(quasts_tidy, aes(x=value_SD, y=value_SH)) +
+  geom_point(aes(shape = Batch, fill=Batch))+
+  geom_abline(slope=1, intercept=0) +
+  scale_point_color_hue(l = 40) +
+  scale_discrete_manual(aesthetics = "shape", values = c(21, 22, 23, 24, 25)) +
+  nature_theme("", "") +# facet_zoom(xlim = c(1000000, 10000000), zoom.size = 1) +
+  theme(aspect.ratio = 1)  +
+  facet_wrap(vars(name), scales = "free", nrow = 3) +
+  rotate_x_text(angle = 45) + 
+  ggtitle("Spades-Default Bowtie-VS vs Spades-HighKmerNoCorrection Bowtie-VS")
+
+ggplot(quasts_tidy, aes(x=value_SD, y=value_M)) +
+  geom_point(aes(shape = Batch, fill=Batch))+
+  geom_abline(slope=1, intercept=0) +
+  scale_point_color_hue(l = 40) +
+  scale_discrete_manual(aesthetics = "shape", values = c(21, 22, 23, 24, 25)) +
+  nature_theme("", "") +# facet_zoom(xlim = c(1000000, 10000000), zoom.size = 1) +
+  theme(aspect.ratio = 1)  +
+  facet_wrap(vars(name), scales = "free", nrow = 3) +
+  rotate_x_text(angle = 45) + 
+  ggtitle("Spades-Default Bowtie-VS vs Megahit Bowtie-VS")
+
+ggplot(quasts_tidy, aes(x=value_SH, y=value_M)) +
+  geom_point(aes(shape = Batch, fill=Batch))+
+  geom_abline(slope=1, intercept=0) +
+  scale_point_color_hue(l = 40) +
+  scale_discrete_manual(aesthetics = "shape", values = c(21, 22, 23, 24)) +
+  nature_theme("", "") +# facet_zoom(xlim = c(1000000, 10000000), zoom.size = 1) +
+  theme(aspect.ratio = 1)  +
+  facet_wrap(vars(name), scales = "free", nrow = 3) +
+  rotate_x_text(angle = 45) +  
+  ggtitle("Spades-HighKmerNoCorrection Bowtie-VS vs Megahit Bowtie-VS")
+
+
+ggplot(quasts_tidy, aes(x=value_SD, y=value_SDL)) +
+  geom_point(aes(shape = Batch, fill=Batch))+
+  geom_abline(slope=1, intercept=0) +
+  scale_point_color_hue(l = 40) +
+  scale_discrete_manual(aesthetics = "shape", values = c(21, 22, 23, 24)) +
+  nature_theme("", "") +# facet_zoom(xlim = c(1000000, 10000000), zoom.size = 1) +
+  theme(aspect.ratio = 1)  +
+  facet_wrap(vars(name), scales = "free", nrow = 3) +
+  rotate_x_text(angle = 45) + 
+  ggtitle("Spades-Default Bowtie-VS vs Spades-Default Bowtie-Local ") 
+
+ggplot(quasts_tidy, aes(x=value_SD, y=value_ML)) +
+  geom_point(aes(shape = Batch, fill=Batch))+
+  geom_abline(slope=1, intercept=0) +
+  scale_point_color_hue(l = 40) +
+  scale_discrete_manual(aesthetics = "shape", values = c(21, 22, 23, 24)) +
+  nature_theme("", "") +# facet_zoom(xlim = c(1000000, 10000000), zoom.size = 1) +
+  theme(aspect.ratio = 1)  +
+  facet_wrap(vars(name), scales = "free", nrow = 3) +
+  rotate_x_text(angle = 45) + 
+  ggtitle("Spades-Default Bowtie-VS vs Megahit Bowtie-Local ") 
+
+ggplot(quasts_tidy, aes(x=value_SDL, y=value_ML)) +
+  geom_point(aes(shape = Batch, fill=Batch))+
+  geom_abline(slope=1, intercept=0) +
+  scale_point_color_hue(l = 40) +
+  scale_discrete_manual(aesthetics = "shape", values = c(21, 22, 23, 24)) +
+  nature_theme("", "") +# facet_zoom(xlim = c(1000000, 10000000), zoom.size = 1) +
+  theme(aspect.ratio = 1)  +
+  facet_wrap(vars(name), scales = "free", nrow = 3) +
+  rotate_x_text(angle = 45) + 
+  ggtitle("Spades-Default Bowtie-Local vs Megahit Bowtie-Local ") 
+#write_tsv(quasts_tidy, "../../quasts_tidy.tsv")
+```
 # FlagStat
 ```{r}
 flagstat <- read_delim("../../results/bowtie_out/flagstat_summary.txt", 
@@ -257,7 +718,7 @@ flagstat %>% arrange(Value)
 ```{r}
 # grep -P "\tmapped" flagstat_summary.txt | grep -v "%" > tmp.flagstat.tsv 
 
-percent_mapped <- read_tsv("../../results/tmp.flagstat.tsv") %>%
+percent_mapped <- read_tsv("../../results/bowtie_out/tmp.flagstat.tsv") %>%
   separate(Percent, into=c("Percent", NA), sep = "%", convert = TRUE) %>%
   separate(Sample, into=c(NA, "Batch",NA), sep = "_", remove = FALSE) %>%
   filter(str_detect(Sample, "DNA"))
@@ -268,7 +729,9 @@ ggplot(percent_mapped, aes(x=Percent, y=Batch)) +
   theme(aspect.ratio = 1) 
 ```
 ```{r}
-percent_mapped <- read_tsv("../../results/tmp.flagstat.tsv") %>%
+#grep -P "\tmapped" flagstat_summarytmp.txt  | grep -v "%" > tmp.flagstat.tsv
+# grep "total" flagstat_summarytmp.txt >> tmp.flagstat.tsv 
+percent_mapped <- read_tsv("../../results/bowtie_out/tmp.flagstat.tsv") %>%
   separate(Percent, into=c("Percent", NA), sep = "%", convert = TRUE) %>%
   separate(Sample, into=c(NA, "Batch",NA), sep = "_", remove = FALSE) %>%
   filter(str_detect(Sample, "DNA")) %>%
@@ -282,7 +745,7 @@ ggplot(percent_mapped, aes(x=Percent, y=Batch, fill=Batch)) +
   scale_point_color_hue(l = 40) +
   xlab("Reads") +
   scale_discrete_manual(aesthetics = "point_shape", values = c(21, 22, 23, 24)) +
-  nature_theme("", "") + facet_zoom(xlim = c(0, 1000000), zoom.size = 1) +
+  nature_theme("", "") + facet_zoom(xlim = c(1000000, 10000000), zoom.size = 1) +
   theme(aspect.ratio = 1) 
 
 percent_mapped %>% group_by(Batch) %>% summarise(median_unmapped = median(Percent),

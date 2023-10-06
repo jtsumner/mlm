@@ -377,7 +377,7 @@ rule humann:
     threads: 20
     resources:
         mem="30G",
-        time="01:00:00"
+        time="01:45:00"
     shell:
         """
         outdir=$(dirname {output.gene_fam})
@@ -445,3 +445,11 @@ rule renorm_humann:
             --units cpm \
             --update-snames
         """
+
+use rule renorm_humann as renorm_humann_path with:
+    input:
+        gene_fam = "results/humann_out/merged_pathabundance.tsv",
+        path_cov = "results/humann_out/merged_pathcoverage.tsv",
+        path_abund = "results/humann_out/merged_pathabundance.tsv"
+    output:
+        gene_fam = "results/humann_out/merged_pathabundance-cpm.tsv",

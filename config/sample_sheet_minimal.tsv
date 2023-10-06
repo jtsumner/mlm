@@ -1,3 +1,0 @@
-sample	dataset	forward_read	reverse_read
-B22_RePMA	MGX_DATA	/projects/p31648/bmo_shotgun_fastq/ds.82d3fd5e1df54b8a825201cee0cbe2ec/B22_RePMA_S58_L001_R1_001.fastq.gz	/projects/p31648/bmo_shotgun_fastq/ds.82d3fd5e1df54b8a825201cee0cbe2ec/B22_RePMA_S58_L001_R2_001.fastq.gz
-B16_LyPMA	MGX_DATA	/projects/p31648/bmo_shotgun_fastq/ds.26de31cab7fa4bed90e4ef42a5acc773/B16_LyPMA_S8_L001_R1_001.fastq.gz	/projects/p31648/bmo_shotgun_fastq/ds.26de31cab7fa4bed90e4ef42a5acc773/B16_LyPMA_S8_L001_R2_001.fastq.gz

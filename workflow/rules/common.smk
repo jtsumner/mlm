@@ -52,7 +52,7 @@ def get_rules(wildcards):
     if config["METAXA2"]:
         all_rules = all_rules + expand("results/metaxa2/{sample}/{sample}_metaxa2.taxonomy.txt", sample=samples["sample"])
     if config["HUMANN"]:
-        all_rules = all_rules + expand("results/humann_out/{sample}/{sample}_genefamilies.tsv", sample=samples["sample"])
+        all_rules.append("results/humann_out/merged_genefamilies-cpm.tsv")
     
 
     if config["ASSEMBLE"]:

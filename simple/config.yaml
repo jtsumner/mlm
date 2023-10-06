@@ -12,8 +12,8 @@ cluster:
     --mail-type=ALL
     --mail-user=jts.quest.notifications@gmail.com
 default-resources:
-  - account="p31737"
-  - partition="normal"
+  - account="b1042"
+  - partition="genomics"
   - nodes=1
   - mem="5G"
   - time="01:00:00"

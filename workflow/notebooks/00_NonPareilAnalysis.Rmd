@@ -16,7 +16,7 @@ library(Nonpareil)
 # Get list of NonPareil outputs
 ```{r}
 np_list <- list.files(path = "../../results/nonpareil_out", pattern='*\\.npo', recursive=TRUE, full.names=TRUE)
-np_list<-np_list[grep("B1|B2", np_list)]
+#np_list<-np_list[grep("B1|B2", np_list)]
 np_length <- length(np_list)
 ```
 
@@ -92,6 +92,9 @@ np_summary %>%
 tmp <- list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf), symbols = c("****", "***", "**", "*", "ns"))
 ```
 
+```{r}
+np_summary %>% filter(C>.6)
+```
 
 
 ```{r}

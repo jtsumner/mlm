@@ -8,19 +8,18 @@ rule megahit:
         r1_clean = get_final_read1,
         r2_clean = get_final_read2
     output:
-        scaffolds = "results/megahit_out/{sample}/{sample}.contigs.fa"
+        scaffolds = "results/megahit_out/{sample}/{sample}.contigs.fa",
+        out_dir = directory("results/megahit_out/{sample}")
     params:
-        out_dir = "results/megahit_out/{sample}"
+    conda:
+        "../envs/megahit.yml"
     threads: 20
     resources:
         mem="100g",
-        time="10:00:00"
+        time="02:00:00"
     shell:
         """
-        module load megahit/1.0.6.1
-        megahit -t {threads} -m 0.9 -1 {input.r1_clean} -2 {input.r2_clean} --out-prefix {wildcards.sample} -o {params.out_dir}_tmp
-        mv {params.out_dir}_tmp/* {params.out_dir}
-        rmdir {params.out_dir}_tmp
+        megahit -t {threads} -m 0.9 -1 {input.r1_clean} -2 {input.r2_clean} --out-prefix {wildcards.sample} -o {output.out_dir}
         """
         
 ############################
@@ -39,7 +38,7 @@ rule spades:
     threads: 25
     resources:
         mem="100g",
-        time="05:00:00"
+        time="10:00:00"
     shell:
         """
         module load spades/3.14.1
@@ -98,7 +97,7 @@ rule drop_short_contigs_spades:
     output:
         parsed = "results/spades_parsed/{sample}/{sample}.fa"
     params:
-        min_length = "2000",
+        min_length = "0",
         assembler="spades"
     conda:
         "../envs/seq_processing.yml"
@@ -116,7 +115,7 @@ use rule drop_short_contigs_spades as drop_short_contigs_megahit with:
     output:
         parsed = "results/megahit_parsed/{sample}/{sample}.fa"
     params:
-        min_length = "1000",
+        min_length = "0",
         assembler="megahit"
 
 ############################
@@ -254,7 +253,7 @@ rule emapper:
     resources:
         mem="30G"
     conda:
-        "../env/eggnog.yml"
+        "../envs/eggnog.yml"
     shell:
         """
         emapper.py \

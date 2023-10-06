@@ -9,70 +9,80 @@ rule index_contigs:
     input:
         "results/{assembler}_parsed/{sample}/{sample}.fa"
     output:
-        "results/{assembler}_parsed/{sample}/{sample}.fa.bwt"
+        "results/{assembler}_parsed/{sample}/{sample}.1.bt2"
+    params:
+        index_name = "results/{assembler}_parsed/{sample}/{sample}"
     shell:
         """
-        module load bwa/0.7.17
+        module load bowtie2/2.4.5
         module load samtools/1.10.1
 
-        bwa index {input}
+        bowtie2-build {input} {params.index_name}
         """
-
+# TODO add reduced time to index contis ... 
 
 rule map2contigs:
     input:
         r1_clean = get_final_read1,
         r2_clean = get_final_read2,
         parsed_contigs = "results/{assembler}_parsed/{sample}/{sample}.fa",
-        index = "results/{assembler}_parsed/{sample}/{sample}.fa.bwt"
+        index = "results/{assembler}_parsed/{sample}/{sample}.1.bt2"
     output:
-        bam_sorted = "results/{assembler}_bams/{sample}/{sample}.sorted.bam"
+        sorted_bam = "results/{assembler}_parsed/{sample}/{sample}.sorted.bam",
+        flagstat = "results/{assembler}_parsed/{sample}/{sample}.flagstat.tsv"
     params:
-        sam = "results/{assembler}_bams/{sample}/{sample}.sam",
-        bam_unsorted = "results/{assembler}_bams/{sample}/{sample}.bam"
+        index_name = "results/{assembler}_parsed/{sample}/{sample}"
     benchmark:
-        "logs/benchmarks/{assembler}_{sample}.map2contigs_benchmark.txt"
-    threads: 15
+        "results/logs/benchmarks/{assembler}_{sample}.map2contigs_benchmark.txt"
+    threads: 40
     resources:
-        mem="40G"
+        mem="25G",
+        time="01:00:00"
     shell:
         """
-        module purge all
-        module load bwa/0.7.17
+        module load bowtie2/2.4.5
         module load samtools/1.10.1
-        module load bedtools/2.29.2
-        bwa mem -t {threads} {input.parsed_contigs} {input.r1_clean} {input.r2_clean} > {params.sam}
-        samtools view -Subh -o {params.bam_unsorted} {params.sam}
-        samtools sort -o {output.bam_sorted} {params.bam_unsorted}
+
+        bowtie2 -p {threads} -x {params.index_name} --very-sensitive -1 {input.r1_clean} -2 {input.r2_clean}| \
+        samtools view -bS -@ {threads}| \
+        samtools sort -@ {threads} -n -o {output.sorted_bam}
+
+        samtools flagstat -@ {threads} -O tsv {output.sorted_bam} > {output.flagstat}
         """
 
+# TODO take out sort in index bam and remove -n in map2contigs + put bams spades_parse
 rule index_bam:
     input:
-        bam_sorted = "results/{assembler}_bams/{sample}/{sample}.sorted.bam"
+        bam_sorted = "results/{assembler}_parsed/{sample}/{sample}.sorted.bam"
     output:
-        bam_index = "results/{assembler}_bams/{sample}/{sample}.sorted.bam.bai"
+        bam_index = "results/{assembler}_parsed/{sample}/{sample}.sorted.bam.bai"
+    threads: 1
+    resources:
+        time = "00:05:00"
     shell:
         """
         module load samtools/1.10.1
-
+        samtools sort -@ {threads} -o {input.bam_sorted} {input.bam_sorted}
         samtools index {input.bam_sorted}
         """
 
 rule metabat_depth:
     input:
-        bam_sorted = "results/{assembler}_bams/{sample}/{sample}.sorted.bam",
+        sorted_bam = "results/{assembler}_parsed/{sample}/{sample}.sorted.bam",
         contigs = "results/{assembler}_parsed/{sample}/{sample}.fa",
-        bam_index = "results/{assembler}_bams/{sample}/{sample}.sorted.bam.bai"
+        bam_index = "results/{assembler}_parsed/{sample}/{sample}.sorted.bam.bai"
     output:
         depth_fi = "results/metabat_{assembler}_out/{sample}/{sample}_depth.txt"
     conda:
         "../envs/metabat2.yml"
-    threads: 10
+    threads: 1
+    resources:
+        time = "00:05:00"
     shell:
         """
         jgi_summarize_bam_contig_depths \
             --outputDepth {output.depth_fi} \
-            --referenceFasta {input.contigs} {input.bam_sorted}
+            --referenceFasta {input.contigs} {input.sorted_bam}
         """
 
 rule metabat_bin:
@@ -84,10 +94,10 @@ rule metabat_bin:
         #bin_one = "results/metabat_{assembler}_out/{sample}/bins/bin.1.fa"
     conda:
         "../envs/metabat2.yml"
-    threads: 5
+    threads: 2
     resources:
         mem="10g",
-        time="00:30:00"
+        time="00:05:00"
     shell:
         """
         metabat2 -t {threads} \

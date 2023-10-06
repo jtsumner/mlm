@@ -196,7 +196,7 @@ srun -A b1042 --partition=genomics -N 1 -n 24 --mem=64G --time=02:00:00 --pty ba
 Start interactive job on slurm with salloc 
 ssh onto the qnode it outputs
 ```
-salloc -A p31737 --partition=normal -N 1 -n 30 --mem=80G --time=12:00:00 bash -i
+salloc -A b1042 --partition=genomics-himem -N 1 -n 25 --mem=40G --time=20:00:00 bash -i
 ```
 
 -------------

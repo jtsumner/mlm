@@ -29,7 +29,6 @@ rule fastp_pe:
             --out2 {output.r2_filtered} \
             --detect_adapter_for_pe \
             --thread {threads} \
-            --length_required 75 \
             -j {output.json} \
             -h {output.html} \
             -V 
@@ -400,3 +399,39 @@ use rule host_decontamination as negative_decontamination with:
     resources:
         mem="25G",
         time="02:00:00"
+
+##########
+rule kneaddata:
+    input:
+        r1 = get_r1,
+        r2 = get_r2
+    output:
+        out_dir = directory("results/kneaddata_out/{sample}"),
+        r1_clean = "results/kneaddata_out/{sample}/{sample}_paired_1.fastq",
+        r2_clean = "results/kneaddata_out/{sample}/{sample}_paired_2.fastq",
+        r1_unclean = "results/kneaddata_out/{sample}/{sample}_unmatched_1.fastq",
+        r2_unclean = "results/kneaddata_out/{sample}/{sample}_unmatched_2.fastq"
+    params:
+        db_index = "resources/bowtie_human/chm13.draft_v1.0_plusY/",
+        seq_source = "TruSeq3"
+    conda:
+        "../envs/kneaddata.yml"
+    threads: 25
+    resources:
+        mem="30G",
+        time="02:00:00"
+    shell:
+        """
+        fastqc_loc=$(which fastqc)
+        kneaddata \
+            --input1 {input.r1} \
+            --input2 {input.r2} \
+            --output {output.out_dir} \
+            --reference-db {params.db_index} \
+            -t {threads} \
+            --run-trim-repetitive \
+            --sequencer-source {params.seq_source}  \
+            --fastqc $fastqc_loc \
+            --output-prefix {wildcards.sample} \
+            --bowtie2-options="--very-sensitive"
+        """

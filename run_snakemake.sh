@@ -1,6 +1,6 @@
 #! /bin/bash
-#SBATCH -A p31737
-#SBATCH -p normal
+#SBATCH -A b1042
+#SBATCH -p genomics-himem
 #SBATCH --job-name="scheduler"
 #SBATCH -t 24:00:00
 #SBATCH -N 1
