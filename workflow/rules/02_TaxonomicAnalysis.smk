@@ -377,7 +377,7 @@ rule humann:
     threads: 20
     resources:
         mem="30G",
-        time="01:45:00"
+        time="03:30:00"
     shell:
         """
         outdir=$(dirname {output.gene_fam})
@@ -453,3 +453,24 @@ use rule renorm_humann as renorm_humann_path with:
         path_abund = "results/humann_out/merged_pathabundance.tsv"
     output:
         gene_fam = "results/humann_out/merged_pathabundance-cpm.tsv",
+
+
+rule regroup_humann:
+    input:
+        gene_fam = "results/humann_out/merged_genefamilies-cpm.tsv,
+    output:
+        ko_table = "results/humann_out/ko_genefamilies-cpm.tsv",
+    params:
+        mapping_file = "/projects/b1180/software/conda_envs/humann/lib/python3.7/site-packages/humann/data/utility_mapping/map_ko_uniref90.txt.gz"
+    resources:
+        time="0:30:00",
+        mem = "50G"
+    threads: 1
+    conda: 
+        "../envs/humann.yml"
+    shell:
+        """
+        humann_regroup_table --input {input.gene_fam} \
+            -c {params.mapping_file} \
+            --output {output.ko_table}
+        """

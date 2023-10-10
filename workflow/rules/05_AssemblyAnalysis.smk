@@ -1,3 +1,6 @@
+import glob
+import pandas as pd
+from snakemake.utils import validate
 
 ############################
 ###   PART 1A: MEGAHIT   ###
@@ -9,17 +12,25 @@ rule megahit:
         r2_clean = get_final_read2
     output:
         scaffolds = "results/megahit_out/{sample}/{sample}.contigs.fa",
-        out_dir = directory("results/megahit_out/{sample}")
     params:
+        out_dir = "results/megahit_out/{sample}"
     conda:
         "../envs/megahit.yml"
     threads: 20
     resources:
         mem="100g",
-        time="02:00:00"
+        time="02:00:00",
+        partition="genomics-himem",
+        account="b1042"
     shell:
         """
-        megahit -t {threads} -m 0.9 -1 {input.r1_clean} -2 {input.r2_clean} --out-prefix {wildcards.sample} -o {output.out_dir}
+        megahit -t {threads} \
+            -m 0.9 -1 {input.r1_clean} \
+            -2 {input.r2_clean} \
+            --out-prefix {wildcards.sample} \
+            -o {params.out_dir}_tmp
+        mv {params.out_dir}_tmp/* {params.out_dir}
+        rmdir {params.out_dir}_tmp
         """
         
 ############################
@@ -38,7 +49,9 @@ rule spades:
     threads: 25
     resources:
         mem="100g",
-        time="10:00:00"
+        time="10:00:00",
+        partition="genomics-himem",
+        account="b1042"
     shell:
         """
         module load spades/3.14.1

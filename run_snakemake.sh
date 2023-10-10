@@ -35,7 +35,7 @@ mamba activate snakemake
 
 # Execute snakemake
 echo "Starting snakemake on cluster..."
-snakemake --profile simple --prioritize renorm_humann
+snakemake --profile simple --prioritize renorm_humann renorm_humann_path metaphlan_bowtie_species_abundance regroup_humann
 
 snakemake --forceall --rulegraph | dot -Tpdf > results/dag.pdf
 # Annotating the output file

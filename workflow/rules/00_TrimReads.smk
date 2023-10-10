@@ -180,7 +180,7 @@ rule merge_reads:
         r3 = "results/bbmerge_out/{sample}/{sample}.fastq.gz"
     threads: 5
     resources:
-        mem="20G"
+        mem="40G"
     shell:
         """
         module load BBMap
