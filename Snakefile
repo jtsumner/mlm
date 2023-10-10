@@ -24,7 +24,8 @@ rule all:
         #"results/bracken_out/merged_bracken_mpa_profile.tsv",
         "results/mlm_out/ReadNumberSummary.tsv",
         "results/humann_out/merged_genefamilies-cpm.tsv",
-        expand("results/kneaddata_out/{sample}/{sample}_unmatched_1.fastq", sample=samples["sample"])
+        expand("results/kneaddata_out/{sample}/{sample}_unmatched_1.fastq", sample=samples["sample"]),
+        "results/humann_out/ko_genefamilies-cpm.tsv",
         #expand("results/humann_out/{sample}/{sample}_genefamilies.tsv", sample=samples["sample"]), #added
         # expand("results/metaphlan_bbmerge_out/{sample}/{sample}.metaphlan_profile.txt",sample=samples["sample"])# added
         #"results/metaphlan_bowtie_out/merged_metaphlan_profile.tsv",

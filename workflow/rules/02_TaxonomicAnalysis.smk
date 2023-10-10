@@ -457,7 +457,7 @@ use rule renorm_humann as renorm_humann_path with:
 
 rule regroup_humann:
     input:
-        gene_fam = "results/humann_out/merged_genefamilies-cpm.tsv,
+        gene_fam = "results/humann_out/merged_genefamilies-cpm.tsv",
     output:
         ko_table = "results/humann_out/ko_genefamilies-cpm.tsv",
     params:
