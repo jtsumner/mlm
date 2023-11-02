@@ -46,16 +46,16 @@ rule spades:
     params:
         out_dir=directory("results/spades_out/{sample}")
 
-    threads: 25
+    threads: 20
     resources:
-        mem="100g",
-        time="10:00:00",
+        mem="200g",
+        time="03:00:00",
         partition="genomics-himem",
         account="b1042"
     shell:
         """
         module load spades/3.14.1
-        spades.py -1 {input.r1_clean} -2 {input.r2_clean} -o {params.out_dir} -t {threads} -m 100 --meta -k 21,33,55,77,99
+        spades.py -1 {input.r1_clean} -2 {input.r2_clean} -o {params.out_dir} -t {threads} -m 300 --meta -k 21,33,55,77,99
         """
 # -k 21,33,55,77,99,127 --only-assembler
 
