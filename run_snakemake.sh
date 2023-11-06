@@ -1,10 +1,10 @@
 #! /bin/bash
 #SBATCH -A b1042
-#SBATCH -p genomics-himem
+#SBATCH -p genomics
 #SBATCH --job-name="scheduler"
-#SBATCH -t 24:00:00
+#SBATCH -t 48:00:00
 #SBATCH -N 1
-#SBATCH -n 10
+#SBATCH -n 5
 #SBATCH --mem=15G
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=jts.quest.notifications@gmail.com
@@ -30,12 +30,12 @@ Loading conda...
 module purge all
 module load mamba
 #mamba init
-mamba activate snakemake
+source activate snakemake
 #source activate snakemamba
 
 # Execute snakemake
 echo "Starting snakemake on cluster..."
-snakemake --profile simple --prioritize renorm_humann renorm_humann_path metaphlan_bowtie_species_abundance regroup_humann spades
+snakemake --profile simple --prioritize renorm_humann renorm_humann_path metaphlan_bowtie_species_abundance regroup_humann 
 
 snakemake --forceall --rulegraph | dot -Tpdf > results/dag.pdf
 # Annotating the output file

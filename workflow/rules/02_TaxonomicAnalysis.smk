@@ -55,7 +55,7 @@ rule metaphlan:
         --nproc {threads} \
         --input_type fastq \
         --unclassified_estimation \
-        -t rel_ab_w_read_stats \
+        -t rel_ab \
         -o {output.profile}
         """
 
@@ -64,10 +64,13 @@ rule metaphlan_merge:
         metaphlan_merge_inputs
     output:
         "results/metaphlan_merged/merged_metaphlan_profile.tsv"
+    conda: 
+        "../envs/metaphlan.yml"
     shell:
         """
-        python3 workflow/scripts/merge_metaphlan_tables_abs.py {input} > {output}
+        merge_metaphlan_tables.py {input} > {output}
         """
+#       python3 workflow/scripts/merge_metaphlan_tables_abs.py {input} > {output} # for stats based
 
 rule metaphlan_species_abundance:
     input:
@@ -185,9 +188,10 @@ rule metaphlan_bbmerge:
         --nproc {threads} \
         --input_type fastq \
         --unclassified_estimation \
-        -t rel_ab_w_read_stats \
+        -t rel_ab \
         -o {output.profile}
         """
+        #-t rel_ab_w_read_stats \
 ############################
 ###  PART 1B: KRACKEN2   ###
 ############################
@@ -365,8 +369,10 @@ rule metaxa2:
 rule humann:
     input:
         metaphlan_db = rules.metaphlan_setup.output.metaphlan_db,
-        merged_reads = get_final_merged_read #get_final_read1
+        r1_clean = get_final_read1,
+        r2_clean = get_final_read2
     output:
+        concatenated_reads = temp("results/concat_reads_humann/{sample}.fastq.gz"),
         gene_fam = "results/humann_out/{sample}/{sample}_genefamilies.tsv",
         path_cov = "results/humann_out/{sample}/{sample}_pathcoverage.tsv",
         path_abund = "results/humann_out/{sample}/{sample}_pathabundance.tsv"
@@ -380,13 +386,16 @@ rule humann:
         time="03:30:00"
     shell:
         """
+        cat {input.r1_clean} {input.r2_clean} > {output.concatenated_reads}
+
         outdir=$(dirname {output.gene_fam})
-        humann --input {input.merged_reads} \
+        
+        humann --input {output.concatenated_reads} \
             --output $outdir \
             --threads {threads} \
             --nucleotide-database /projects/b1180/software/conda_envs/humann/lib/python3.7/site-packages/humann/data/chocophlan/ \
             --protein-database /projects/b1180/software/conda_envs/humann/lib/python3.7/site-packages/humann/data/uniref/ \
-            --metaphlan-options="--index {params.metaphlan_idx} --bowtie2db {input.metaphlan_db}"
+            --metaphlan-options="-t rel_ab --index {params.metaphlan_idx} --bowtie2db {input.metaphlan_db}"
         """
 
 rule merge_humann:
@@ -474,3 +483,7 @@ rule regroup_humann:
             -c {params.mapping_file} \
             --output {output.ko_table}
         """
+
+    # rule humann_stratified
+
+    # rule humann_rename_keggs

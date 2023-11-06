@@ -17,11 +17,11 @@ default-resources:
   - nodes=1
   - mem="5G"
   - time="01:00:00"
-jobs: 100
+jobs: 300
 restart-times: 0
 max-jobs-per-second: 15
 max-status-checks-per-second: 1
-local-cores: 25
+local-cores: 5
 latency-wait: 60
 keep-going: True
 rerun-incomplete: True

@@ -148,7 +148,7 @@ rule host_decontamination:
         samtools view -bS -@ {threads}| \
         samtools sort -@ {threads} -n -o {output.sorted_bam}
 
-        samtools fastq -1 {output.r1_clean} -2 {output.r2_clean} -@ {threads} -f 12 -F 256 {output.sorted_bam}
+        samtools fastq -1 {output.r1_clean} -2 {output.r2_clean} -@ {threads} -f 12 -F 256 -N {output.sorted_bam}
 
         samtools flagstat -@ {threads} -O tsv {output.sorted_bam} > {output.flagstat}
         """

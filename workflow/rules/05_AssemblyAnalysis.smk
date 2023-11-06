@@ -19,8 +19,8 @@ rule megahit:
     threads: 20
     resources:
         mem="100g",
-        time="02:00:00",
-        partition="genomics-himem",
+        time="00:30:00",
+        partition="genomics",
         account="b1042"
     shell:
         """
@@ -50,12 +50,12 @@ rule spades:
     resources:
         mem="200g",
         time="03:00:00",
-        partition="genomics-himem",
+        partition="genomics",
         account="b1042"
     shell:
         """
         module load spades/3.14.1
-        spades.py -1 {input.r1_clean} -2 {input.r2_clean} -o {params.out_dir} -t {threads} -m 300 --meta -k 21,33,55,77,99
+        spades.py -1 {input.r1_clean} -2 {input.r2_clean} -o {params.out_dir} -t {threads} -m 300 --meta
         """
 # -k 21,33,55,77,99,127 --only-assembler
 
@@ -110,13 +110,13 @@ rule drop_short_contigs_spades:
     output:
         parsed = "results/spades_parsed/{sample}/{sample}.fa"
     params:
-        min_length = "0",
+        min_length = "200",
         assembler="spades"
     conda:
-        "../envs/seq_processing.yml"
+        "../envs/biopython.yml"
     shell:
         """
-        workflow/scripts/parse_contigs.py --sample {wildcards.sample} \
+        python workflow/scripts/parse_contigs.py --sample {wildcards.sample} \
             --scaffolds {input.scaffolds} \
             --parsed {output.parsed} \
             --min_length {params.min_length} \

@@ -29,42 +29,46 @@ rule map2contigs:
         index = "results/{assembler}_parsed/{sample}/{sample}.1.bt2"
     output:
         sorted_bam = "results/{assembler}_parsed/{sample}/{sample}.sorted.bam",
-        flagstat = "results/{assembler}_parsed/{sample}/{sample}.flagstat.tsv"
+        flagstat = "results/{assembler}_parsed/{sample}/{sample}.flagstat.tsv",
+        bam_index = "results/{assembler}_parsed/{sample}/{sample}.sorted.bam.bai"
+    threads: 1
     params:
         index_name = "results/{assembler}_parsed/{sample}/{sample}"
     benchmark:
         "results/logs/benchmarks/{assembler}_{sample}.map2contigs_benchmark.txt"
-    threads: 40
+    threads: 10
     resources:
-        mem="25G",
+        mem="15G",
         time="01:00:00"
     shell:
         """
         module load bowtie2/2.4.5
         module load samtools/1.10.1
 
-        bowtie2 -p {threads} -x {params.index_name} --very-sensitive -1 {input.r1_clean} -2 {input.r2_clean}| \
+        bowtie2 -p {threads} -x {params.index_name} --very-sensitive-local -1 {input.r1_clean} -2 {input.r2_clean}| \
         samtools view -bS -@ {threads}| \
         samtools sort -@ {threads} -n -o {output.sorted_bam}
+
+        samtools index {output.sorted_bam}
 
         samtools flagstat -@ {threads} -O tsv {output.sorted_bam} > {output.flagstat}
         """
 
 # TODO take out sort in index bam and remove -n in map2contigs + put bams spades_parse
-rule index_bam:
-    input:
-        bam_sorted = "results/{assembler}_parsed/{sample}/{sample}.sorted.bam"
-    output:
-        bam_index = "results/{assembler}_parsed/{sample}/{sample}.sorted.bam.bai"
-    threads: 1
-    resources:
-        time = "00:05:00"
-    shell:
-        """
-        module load samtools/1.10.1
-        samtools sort -@ {threads} -o {input.bam_sorted} {input.bam_sorted}
-        samtools index {input.bam_sorted}
-        """
+# rule index_bam:
+#     input:
+#         bam_sorted = "results/{assembler}_parsed/{sample}/{sample}.sorted.bam"
+#     output:
+#         bam_index = "results/{assembler}_parsed/{sample}/{sample}.sorted.bam.bai"
+#     threads: 1
+#     resources:
+#         time = "00:05:00"
+#     shell:
+#         """
+#         module load samtools/1.10.1
+#         samtools sort -@ {threads} -o {input.bam_sorted} {input.bam_sorted}
+#         samtools index {input.bam_sorted}
+#         """
 
 rule metabat_depth:
     input:
