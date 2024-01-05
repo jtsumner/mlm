@@ -1,12 +1,12 @@
 channels:
- - conda-forge
- - bioconda
- - defaults
+  - conda-forge
+  - bioconda
+  - defaults
 dependencies:
- - r-base
- - r-tidyverse>=2.0.0
- - r-pheatmap
- - r-ggpubr
- - r-viridislite
- - r-ggridges
- - r-vegan
+  - r-base
+  - r-tidyverse>=2.0.0
+  - r-pheatmap
+  - r-ggpubr
+  - r-viridislite
+  - r-ggridges
+  - r-vegan

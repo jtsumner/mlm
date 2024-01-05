@@ -47,7 +47,7 @@ rule map2contigs:
 
         bowtie2 -p {threads} -x {params.index_name} --very-sensitive-local -1 {input.r1_clean} -2 {input.r2_clean}| \
         samtools view -bS -@ {threads}| \
-        samtools sort -@ {threads} -n -o {output.sorted_bam}
+        samtools sort -@ {threads} -o {output.sorted_bam}
 
         samtools index {output.sorted_bam}
 

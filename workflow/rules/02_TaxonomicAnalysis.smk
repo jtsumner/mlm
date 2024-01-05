@@ -393,6 +393,7 @@ rule humann:
         humann --input {output.concatenated_reads} \
             --output $outdir \
             --threads {threads} \
+            --translated-subject-coverage-threshold 0.0 --nucleotide-subject-coverage-threshold 0.0 --bowtie-options="--very-sensitive-local" \
             --nucleotide-database /projects/b1180/software/conda_envs/humann/lib/python3.7/site-packages/humann/data/chocophlan/ \
             --protein-database /projects/b1180/software/conda_envs/humann/lib/python3.7/site-packages/humann/data/uniref/ \
             --metaphlan-options="-t rel_ab --index {params.metaphlan_idx} --bowtie2db {input.metaphlan_db}"
@@ -410,7 +411,8 @@ rule merge_humann:
     params:
         humann_dir = "results/humann_out"
     resources:
-        time="0:15:00"
+        time="0:15:00",
+        mem="20G",
     threads: 1
     conda: 
         "../envs/humann.yml"
@@ -442,8 +444,8 @@ rule renorm_humann:
     params:
         humann_dir = "results/humann_out"
     resources:
-        time="0:30:00",
-        mem = "50G"
+        time="01:00:00",
+        mem = "200G"
     threads: 1
     conda: 
         "../envs/humann.yml"
@@ -462,6 +464,9 @@ use rule renorm_humann as renorm_humann_path with:
         path_abund = "results/humann_out/merged_pathabundance.tsv"
     output:
         gene_fam = "results/humann_out/merged_pathabundance-cpm.tsv",
+    resources:
+        time="0:30:00",
+        mem = "20G"
 
 
 rule regroup_humann:
@@ -472,11 +477,11 @@ rule regroup_humann:
     params:
         mapping_file = "/projects/b1180/software/conda_envs/humann/lib/python3.7/site-packages/humann/data/utility_mapping/map_ko_uniref90.txt.gz"
     resources:
-        time="0:30:00",
-        mem = "50G"
+        time="01:00:00",
+        mem = "150G"
     threads: 1
     conda: 
-        "../envs/humann.yml"
+        "../envs/humann.yml",
     shell:
         """
         humann_regroup_table --input {input.gene_fam} \
@@ -487,3 +492,25 @@ rule regroup_humann:
     # rule humann_stratified
 
     # rule humann_rename_keggs
+
+
+rule stratify_humann_kegg:
+    input:
+        kegg = "results/humann_out/ko_genefamilies-cpm.tsv",
+    output:
+        strat = "results/humann_out/ko_genefamilies-cpm_stratified.tsv",
+        unstrat = "results/humann_out/ko_genefamilies-cpm_unstratified.tsv"
+    params:
+        humann_dir = "results/humann_out"
+    resources:
+        time="01:00:00",
+        mem = "30G"
+    threads: 1
+    conda: 
+        "../envs/humann.yml"
+    shell:
+        """
+        humann_split_stratified_table --input {input.kegg} \
+            --output {params.humann_dir} 
+        """
+#humann_rename_table -i results/humann_out/ko_genefamilies-cpm_unstratified.tsv -n kegg-orthology -o results/humann_out/ko_genefamilies-cpm_unstratified_named.tsv 

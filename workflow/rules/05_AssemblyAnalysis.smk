@@ -112,23 +112,25 @@ rule drop_short_contigs_spades:
     params:
         min_length = "200",
         assembler="spades"
+    
     conda:
         "../envs/biopython.yml"
     shell:
         """
-        python workflow/scripts/parse_contigs.py --sample {wildcards.sample} \
+        .snakemake/conda/3cac06327597fe89b28a87b1f6e65a77_/bin/python workflow/scripts/parse_contigs.py --sample {wildcards.sample} \
             --scaffolds {input.scaffolds} \
             --parsed {output.parsed} \
             --min_length {params.min_length} \
             --assembler {params.assembler}
         """
+
 use rule drop_short_contigs_spades as drop_short_contigs_megahit with:
     input:
         scaffolds = "results/megahit_out/{sample}/{sample}.contigs.fa"
     output:
         parsed = "results/megahit_parsed/{sample}/{sample}.fa"
     params:
-        min_length = "0",
+        min_length = "200",
         assembler="megahit"
 
 ############################

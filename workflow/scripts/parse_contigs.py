@@ -1,4 +1,4 @@
-import argparse
+import os, sys, argparse
 from Bio import SeqIO
 
 def parse_scaffolds(sample, scaffolds, parsed, min_length, assembler):
